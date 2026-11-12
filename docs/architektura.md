@@ -60,6 +60,7 @@ src/
 - `initPerf` owija metody `Agent.prototype.decide`, `pathTo` i `see`, a także `renderer.render` z three.js. Zagnieżdżone wywołania liczą się raz, do zewnętrznej kategorii.
 - Czas karty graficznej: `EXT_disjoint_timer_query_webgl2`, jeśli przeglądarka go udostępnia. Bez niego co 15. klatkę `gl.finish()` mierzy, ile karta jeszcze rysuje.
 - `frameStart()` i `frameEnd(interval, steps)` zbierają pomiary klatki. Część „poza kodem gry” to przerwa między klatkami minus praca gry i budżet 16,7 ms.
+- Klatka, w której model w przeglądarce liczył (`llm.inflight > 0` albo `llm.lastDone` w czasie tej przerwy), zalicza resztę przerwy do kategorii `llm` zamiast `other`.
 - Gdy okienko jest zamknięte, owinięte funkcje od razu wołają oryginały, więc pomiar nic nie kosztuje.
 
 ## Podgląd do testów

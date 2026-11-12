@@ -3,6 +3,10 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.22.1] - 2026-11-12
+### Zmienione
+- Pomiar wydajności sprawdza, czy model w przeglądarce liczył w danej klatce. Czas i przycięcia z tych chwil trafiają do osobnej pozycji „🤖 Model w przeglądarce”, a podsumowanie i raport podają, w ilu procentach klatek model liczył i ile przycięć wtedy wypadło. Gdy to model przycina grę, okienko podpowiada, co pomaga.
+
 ## [0.22.0] - 2026-11-12
 ### Dodane
 - Dwa tryby wiedzy w menu („Wiedza postaci”): **🧪 Odkrywa sam** (jak dotąd: postacie zaczynają bez wiedzy i uczą się metodą prób) oraz **📚 Wie wszystko**. W drugim trybie postacie od startu znają wszystkie receptury, jedzenie, mapę świata z zasobami i to, co grzeje, chroni i szkodzi, więc nie eksperymentują, tylko od razu zbierają i budują.
@@ -188,6 +192,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.22.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.1
 [0.22.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.0
 [0.21.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.21.0
 [0.20.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.20.0

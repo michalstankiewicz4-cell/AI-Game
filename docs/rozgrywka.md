@@ -169,8 +169,9 @@ Przycisk ⏱️ w górnym pasku (albo klawisz P) otwiera okienko „⏱️ Wydaj
 | 🖌️ Rysowanie: wysyłanie do karty | wywołanie rysowania three.js (procesor) |
 | 🎮 Karta graficzna | czas pracy karty; dokładny, gdy przeglądarka ma licznik czasu GPU, a bez niego przybliżony co 15. klatkę |
 | 🪟 Interfejs | panele, karty postaci, dziennik i czat |
-| ❓ Poza kodem gry | przerwa między klatkami, której gra nie zajęła: przeglądarka i składanie obrazu, sprzątanie pamięci, model językowy liczony w głównym wątku |
+| 🤖 Model w przeglądarce | przerwa między klatkami w chwilach, gdy model liczył (pytanie w toku albo odpowiedź właśnie przyszła); model zajmuje tę samą kartę graficzną, na której rysuje się gra |
+| ❓ Poza kodem gry | reszta przerwy między klatkami, której gra nie zajęła: przeglądarka i składanie obrazu, sprzątanie pamięci |
 
 Gra nie ma osobnego silnika fizyki: ruch zwierząt i fale morza liczą się w częściach „Świat” i „Rysowanie”.
 
-Przycięcie to klatka dłuższa niż 50 ms (poniżej 20 FPS). Każde przycięcie trafia do części, która w tej klatce trwała najdłużej, a podsumowanie podaje najczęstszą przyczynę i 5 najgorszych klatek. Gdy przycięcia są „poza kodem gry”, przełącz grafikę na „🎨 Niska”: jeśli ich ubędzie, wąskim gardłem jest karta graficzna. „📋 Kopiuj raport” kopiuje wyniki razem z nazwą karty graficznej, a „↺ Od nowa” zeruje pomiar. Zamknięte okienko niczego nie mierzy.
+Przycięcie to klatka dłuższa niż 50 ms (poniżej 20 FPS). Każde przycięcie trafia do części, która w tej klatce trwała najdłużej, a podsumowanie podaje najczęstszą przyczynę i 5 najgorszych klatek. Podsumowanie podaje też, w ilu procentach klatek liczył model i ile przycięć wypadło w tym czasie. Jeśli przycina model, pomaga mocniejsza karta (np. ustawienie Chrome na kartę NVIDIA w Ustawienia › System › Ekran › Grafika), mniejszy model albo Claude API. Gdy przycięcia są „poza kodem gry”, przełącz grafikę na „🎨 Niska”: jeśli ich ubędzie, wąskim gardłem jest karta graficzna. „📋 Kopiuj raport” kopiuje wyniki razem z nazwą karty graficznej, a „↺ Od nowa” zeruje pomiar. Zamknięte okienko niczego nie mierzy.
