@@ -28,6 +28,8 @@ const KEYWORDS = [
   ['Wziąć z zapasów', ['wziac', 'zabra', 'zapas', 'skladzi', 'magazyn']],
   ['Wziąć jedzenie ze skrzyni', ['skrzyn', 'kufer', 'zapas jedzen', 'wyjm']],
   ['Budować z desek', ['desk', 'poloz', 'podlog', 'scian', 'dach', 'dom', 'buduj', 'skos', 'chat']],
+  ['Zrobić pochodnię', ['pochodn', 'swiatl', 'oswietl', 'ciemn']],
+  ['Zapalić pochodnię', ['pochodn', 'zapal', 'swiatl', 'ciemn', 'oswietl']],
   ['Zrobić skrzynię', ['skrzyn', 'kufer', 'zbij', 'pojemnik', 'schowek']],
   ['Zrobić łóżko', ['lozk', 'posla', 'legow', 'wyspac']],
   ['Eksperymentować przy stole', ['eksperym', 'sprob', 'polacz', 'stol', 'warsztat', 'kombin']],
@@ -93,6 +95,7 @@ export function describeFree(a) {
     a.bodyT < 35.3 ? 'trzęsiesz się z zimna i drętwieją ci ręce' : a.bodyT < 36.1 ? 'jest ci zimno' : a.bodyT > 38.3 ? 'jest ci bardzo gorąco, kręci ci się w głowie' : a.bodyT > 37.5 ? 'jest ci gorąco' : null,
   ].filter(Boolean);
   lines.push(`Na zewnątrz jest ${w.weatherWord(w.airTemp(a.i, a.j))}.`);
+  if (w.daylight() < 0.35) lines.push(a.torchLit && a.torchLit() ? 'Jest ciemno, ale trzymasz płonącą pochodnię i widzisz okolicę.' : 'Jest ciemno, widzisz tylko na kilka kroków.');
   lines.push(feels.length ? 'Czujesz: ' + feels.join(', ') + '.' : 'Czujesz się dobrze.');
   // co pamięta w pobliżu
   const near = new Map();

@@ -83,6 +83,7 @@ Na starcie każda postać ma siekierę i kilof. Receptur nie zna, odkrywa je, ł
 | Miecz | 2 rudy + deska | wykuwany przy ogniu; najlepsza broń na dziki |
 | Tarcza | 3 deski + lina | odkrywana tylko przy stole rzemieślniczym; cios dzika słabszy o 60% |
 | Łóżko | 3 deski + 2 gałęzie + 4 liście | odkrywane tylko przy stole rzemieślniczym; dużo szybszy sen |
+| Pochodnia | gałąź + 2 liście + lina | odkrywana tylko przy ognisku; zapala się od palącego się ogniska, w ręku pali się ok. 70 s |
 | Skrzynia | 4 deski + 2 gałęzie | odkrywana wszędzie; stawiana przy ognisku albo pod dachem; trzyma materiały i jedzenie |
 
 Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo przy ogniu, łóżko przy stole rzemieślniczym. Próba w złym miejscu kończy się wskazówką w myślach postaci.
@@ -102,6 +103,12 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Branie z zapasów:** gdy czegoś brakuje do planów, postać najpierw bierze to ze znanego składziku, zanim pójdzie zbierać.
 - **Skrzynia:** postać, która odkryje skrzynię, zbija ją przy obozie. Do skrzyni trafia nadmiar materiałów (ma pierwszeństwo przed kupką na ziemi) i nadmiar jedzenia (przy sobie zostają po 2 sztuki). Głodna postać bez jedzenia w plecaku idzie po nie do skrzyni, a jedzenie w skrzyni liczy się do zapasu, więc postacie nie zbierają jagód bez końca.
 - **Wiedza o składzikach:** postacie mówią sobie o nich w rozmowach. Pusty składzik znika z mapy.
+
+## Noc, pochodnie i przedmiot w ręku
+- **Widoczność:** w dzień postać widzi na 18 pól. W nocy widzi na ok. 1/4 tego (4–5 pól), a z płonącą pochodnią w ręku albo przy palącym się ognisku na połowę (9 pól). O zmierzchu i świcie zasięg zmienia się płynnie.
+- **Pochodnia:** robi się ją przy ognisku (zapas 2 sztuk). Po zmroku postać idzie do ogniska i od niego zapala pochodnię. Pali się tylko w ręku, w dzień postać ją gasi i chowa.
+- **W ręku:** postać trzyma jeden przedmiot z plecaka: po zmroku pochodnię, w walce z dzikiem miecz albo włócznię, przy ścinaniu siekierę, przy kopaniu kilof, przy łowieniu wędkę. Widać to na modelu postaci i w jej karcie („✋ W ręku”), razem z aktualnym zasięgiem wzroku.
+- Model językowy dostaje informację, że jest ciemno i na ile kroków postać widzi.
 
 ## Budowanie z desek
 Postać, która zna deski, może kłaść je pojedynczo. Każda deska to osobny element z własną nazwą, np. „podłoga deska 1”.

@@ -197,8 +197,20 @@ export const modelsMethods = {
       const eye = new THREE.Mesh(new THREE.SphereGeometry(0.022, 6, 4), this.mat.dark); eye.position.set(s * 0.055, 0.84, 0.13); g.add(eye);
     }
     const arm = new THREE.Group(); arm.position.set(0.2, 0.55, 0); arm.name = 'arm'; g.add(arm);
-    const tool = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.4, 0.04), this.mat.post); tool.position.y = -0.1; tool.rotation.x = 0.4; arm.add(tool);
-    const head2 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.06, 0.05), this.mat.stone); head2.position.set(0, 0.07, 0.03); tool.add(head2);
+    // przedmioty w ręku: widać tylko ten, który postać akurat trzyma
+    const held = (name, build) => { const h = new THREE.Group(); h.name = 'h_' + name; h.position.y = -0.1; h.rotation.x = 0.4; h.visible = false; build(h); arm.add(h); };
+    const stick = (h, len = 0.4, mat = this.mat.post) => { const s = new THREE.Mesh(new THREE.BoxGeometry(0.04, len, 0.04), mat); h.add(s); return s; };
+    held('axe', (h) => { stick(h); const b = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.06, 0.05), this.mat.stone); b.position.set(0, 0.17, 0.03); h.add(b); });
+    held('pickaxe', (h) => { stick(h); const b = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.04, 0.04), this.mat.stone); b.position.set(0, 0.18, 0); h.add(b); });
+    held('sword', (h) => { const hilt = stick(h, 0.12, this.mat.post); hilt.position.y = -0.1; const bl = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.42, 0.015), new THREE.MeshStandardMaterial({ color: 0xc8ccd2, metalness: 0.6, roughness: 0.3 })); bl.position.y = 0.17; h.add(bl); const g2 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.025, 0.04), this.mat.post); g2.position.y = -0.04; h.add(g2); });
+    held('spear', (h) => { const s = stick(h, 0.7); s.position.y = 0.1; const tip = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.1, 4), this.mat.stone); tip.position.y = 0.5; h.add(tip); });
+    held('rod', (h) => { const s = stick(h, 0.8); s.position.y = 0.15; s.scale.set(0.6, 1, 0.6); });
+    held('torch', (h) => {
+      stick(h, 0.32);
+      const wrap = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.035, 0.08, 6), this.mat.weed); wrap.position.y = 0.17; h.add(wrap);
+      const f = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.18, 6), this.mat.flame); f.position.y = 0.29; f.name = 'tflame'; h.add(f);
+      const f2 = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.12, 5), new THREE.MeshBasicMaterial({ color: 0xffe070 })); f2.position.y = 0.27; h.add(f2);
+    });
     g.userData.agent = a;
     g.traverse((o) => { o.userData.agent = a; });
     this.scene.add(g);

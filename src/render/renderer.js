@@ -109,16 +109,18 @@ export class Renderer {
       this.cone.visible = eye.alive && !eye.asleep;
       this.cone.position.set(eye.x, world.groundHeight(eye.x, eye.z) + 0.3, eye.z);
       this.cone.rotation.y = eye.facing;
+      this.cone.scale.setScalar((eye.viewR || VIEW_RANGE) / VIEW_RANGE);
     } else if (this.fogFor) { this.applyFog(null); this.cone.visible = false; }
     else this.cone.visible = false;
     const inCone = (x, z) => {
       if (!eye) return true;
       const dx = x - eye.x, dz = z - eye.z, d = Math.hypot(dx, dz);
-      if (d > VIEW_RANGE) return false;
+      const R = eye.viewR || VIEW_RANGE, mul = R / VIEW_RANGE; // w nocy postać widzi bliżej
+      if (d > R) return false;
       if (d <= VIEW_NEAR) return true;
       let a = Math.atan2(dx, dz) - eye.facing;
       while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2;
-      return Math.abs(a) <= viewHalfAngle(d) && !eye.asleep;
+      return Math.abs(a) <= viewHalfAngle(d / mul) && !eye.asleep;
     };
     const known = (x, z) => { if (!eye) return true; const t = toTile(x, z); return !!eye.seen[idx(t.i, t.j)]; };
     if (eye || this.hadEye) {
@@ -188,11 +190,16 @@ export class Renderer {
       fl.scale.set(1, k, 1); fl2.scale.set(1, 2 - k, 1);
       fires.push({ g, k, d: g.position.distanceToSquared(this.controls.target) });
     }
+    // płonące pochodnie świecą jak małe ogniska
+    for (const a of agents) {
+      const g = this.agentMeshes.get(a);
+      if (g && a.alive && !a.asleep && a.held === 'torch' && a.torchBurn > 0 && g.visible) fires.push({ g, k: 0.45 + Math.sin(rt * 15 + a.id) * 0.05, d: g.position.distanceToSquared(this.controls.target), torch: true });
+    }
     fires.sort((a, b) => a.d - b.d);
     this.fireLights.forEach((l, n) => {
       const f = fires[n];
       l.intensity = f ? (1 - dl) * 6 * f.k + 0.5 : 0;
-      if (f) l.position.set(f.g.position.x, f.g.position.y + 0.7, f.g.position.z);
+      if (f) l.position.set(f.g.position.x, f.g.position.y + (f.torch ? 1.1 : 0.7), f.g.position.z);
     });
 
     // ryby
@@ -274,6 +281,13 @@ export class Renderer {
         g.rotation.set(0, a.facing, 0);
         arm.rotation.x = a.working ? Math.sin(rt * 9 + a.id) * 1.0 - 0.6 : moving ? Math.sin(rt * 10) * 0.4 : 0;
       }
+      // przedmiot w ręku
+      const want = !a.alive || a.asleep ? null : ({ ironAxe: 'axe', ironPick: 'pickaxe' }[a.held] || a.held || null);
+      if (g.userData.held !== want) {
+        for (const c of arm.children) c.visible = c.name === 'h_' + want;
+        g.userData.held = want;
+      }
+      if (want === 'torch') { const f = arm.getObjectByName('tflame'); if (f) f.scale.set(1, 1 + Math.sin(rt * 15 + a.id) * 0.25, 1); }
       g.getObjectByName('ring').visible = a === selected;
       const seenNow = a === eye || inCone(a.x, a.z);
       g.visible = seenNow;

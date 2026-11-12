@@ -6,7 +6,7 @@ import { llm } from './llm.js';
 import { mapIntent } from './intent.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
-  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp,
+  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp, TORCH,
 } from './data.js';
 import { perceptionMethods } from './perception.js';
 import { knowledgeMethods } from './knowledge.js';
@@ -31,7 +31,7 @@ export class Agent {
     this.hunger = 85; this.thirst = 80; this.energy = 90; this.health = 100;
     this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
     this.mood = 60; this.joy = 0; this.lastTalk = -999; // samopoczucie 0-100, chwilowa radość, ostatnia rozmowa
-    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0 };
+    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0 };
     this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false };
     this.task = null;
     this.alive = true;
@@ -291,9 +291,37 @@ export class Agent {
       const labels = [this.lastLabel, ...this.scores.map((s) => s.label).filter((l) => l !== this.lastLabel)].filter(Boolean).slice(0, 6);
       if (labels.length) llm.ask(this, llm.decides ? labels : [this.task.label]);
     }
+    this.updateHeld(dt);
     // wzrok (śpiący nie widzi)
     this.visionT -= dt;
     if (this.visionT <= 0 && !this.asleep) { this.visionT = 0.3; this.see(false); }
+  }
+
+  // co postać trzyma w ręku: po zmroku płonącą pochodnię, w walce broń, przy pracy narzędzie
+  updateHeld(dt) {
+    const w = this.world;
+    // pochodnia pali się tylko w ręku (w dzień postać ją gasi i chowa)
+    if (this.torchBurn > 0 && this.held === 'torch') {
+      this.torchBurn -= dt;
+      if (this.torchBurn <= 0) { this.torchBurn = 0; if (this.held === 'torch') this.held = null; this.speak('Pochodnia mi zgasła...', true); }
+    }
+    const dark = w.daylight() < 0.35;
+    // zapalenie pochodni od palącego się ogniska
+    if (dark && !this.asleep && !(this.torchBurn > 0) && this.inv.torch > 0 && this.known.has('torch') && this.nearStructure('campfire', 2.6)) {
+      this.inv.torch--; this.torchBurn = TORCH.burn; this.held = 'torch';
+      this.say('zapala pochodnię 🔥');
+    }
+    const lbl = (this.task && this.task.label) || '';
+    let h = null;
+    if (this.asleep) h = null;
+    else if (this.fightBoar || /dzik/i.test(lbl)) h = this.tools.sword ? 'sword' : this.tools.spear ? 'spear' : 'axe';
+    else if (dark && this.torchBurn > 0) h = 'torch';
+    else if (/Ścina|Bada drzewo|Bada palm|deski|Ciosa/i.test(lbl)) h = this.tools.ironAxe ? 'ironAxe' : 'axe';
+    else if (/Kopie|skał|kamie|kopalni/i.test(lbl)) h = this.tools.ironPick ? 'ironPick' : 'pickaxe';
+    else if (/Łowi|ryb/i.test(lbl) && this.tools.rod) h = 'rod';
+    else if (/ptak/i.test(lbl) && this.tools.spear) h = 'spear';
+    else h = this.tools.sword ? 'sword' : 'axe';
+    this.held = h;
   }
 
   runTask(dt) {

@@ -3,22 +3,34 @@ import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
-  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
+  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp, TORCH,
 } from './data.js';
 
 export const perceptionMethods = {
   // ---------- percepcja ----------
   // aktualizuje pamięć o to, co agent widzi w swoim stożku widzenia (full = rozglądanie dookoła)
-  see(full = false, range = VIEW_RANGE) {
+  // zasięg wzroku: w nocy dużo mniejszy; płonąca pochodnia w ręku albo bliskie ognisko daje połowę dziennego
+  viewMul() {
     const w = this.world;
-    const R = range, x0 = this.x, z0 = this.z;
+    const day = clamp(w.daylight() * 1.6, 0, 1);
+    let night = TORCH.night;
+    if (this.torchLit() || this.nearStructure('campfire', 3)) night = TORCH.light;
+    return night + (1 - night) * day;
+  },
+  torchLit() { return this.held === 'torch' && this.torchBurn > 0; },
+
+  see(full = false, range = null) {
+    const w = this.world;
+    const mul = range ? 1 : this.viewMul();
+    const R = range || VIEW_RANGE * mul, x0 = this.x, z0 = this.z;
+    this.viewR = R;
     const i0 = Math.max(0, Math.floor(this.i - R)), i1 = Math.min(W - 1, Math.ceil(this.i + R));
     const j0 = Math.max(0, Math.floor(this.j - R)), j1 = Math.min(H - 1, Math.ceil(this.j + R));
     const visible = (dx, dz) => {
       const d = Math.hypot(dx, dz);
       if (d > R) return false;
       if (full || d <= VIEW_NEAR) return true;
-      return Math.abs(wrapAng(Math.atan2(dx, dz) - this.facing)) <= viewHalfAngle(d);
+      return Math.abs(wrapAng(Math.atan2(dx, dz) - this.facing)) <= viewHalfAngle(d / mul);
     };
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
       const p = toWorld(i, j);

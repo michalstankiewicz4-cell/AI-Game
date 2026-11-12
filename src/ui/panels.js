@@ -51,6 +51,7 @@ export function renderDetail(state) {
     <div class="temp">🌡️ Ciało <b class="${a.bodyT < 36 ? 'cold' : a.bodyT > 37.5 ? 'hot' : ''}">${a.bodyT.toFixed(1)}°C</b> · odczuwalnie ${Math.round(a.feltT)}°C · powietrze ${Math.round(state.world.airTemp(a.i, a.j))}°C${a.bodyT < 35 ? ' · 🥶 wychłodzenie!' : a.bodyT < 36 ? ' · zimno' : a.bodyT > 39 ? ' · 🥵 przegrzanie!' : a.bodyT > 37.5 ? ' · gorąco' : ''}</div>
     <h4>Teraz</h4><div>${!a.alive ? '💀' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔'}${a.llmDriven ? ' <span title="Wybór modelu językowego">🤖</span>' : ''}</div>
     ${a.llmIntent ? `<div class="intent">🤖 Zamiar: „${esc(a.llmIntent.text || '…')}” ${a.llmIntent.label ? `→ ${a.llmIntent.label}` : '<span class="no">(nie da się teraz)</span>'}</div>` : ''}
+    <div class="temp">✋ W ręku: ${a.held === 'torch' ? `🔥 Płonąca pochodnia (jeszcze ${Math.ceil(a.torchBurn)} s)` : a.held ? (TOOL_LABELS[a.held] || a.held) : '—'} · 👁️ widzi na ${Math.round(a.viewR || 18)} pól${state.world.daylight() < 0.35 ? ' (ciemno)' : ''}</div>
     ${a.bubble ? `<div style="margin-top:4px;color:#cfe3f2">💬 „${esc(a.bubble.text)}”</div>` : ''}
     <h4>Wiedza</h4><div>🗺️ Zna ${(a.seenCount / (W * H) * 100).toFixed(0)}% mapy · 🧠 pamięta ${a.mem.size} miejsc z zasobami${a.memBirds.size ? ` · 🐦 ${a.memBirds.size} ptaków` : ''}</div>
     <h4>Rozważane decyzje (użyteczność)</h4><div class="util">${util}</div>

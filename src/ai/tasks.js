@@ -204,6 +204,29 @@ export const tasksMethods = {
     };
   },
 
+  // pochodnie robi się przy ogniu; od palącego się ogniska od razu się zapalają, gdy jest ciemno
+  taskMakeTorch(fire, cost, n = 2) {
+    const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
+    return {
+      path: this.pathTo(spot.i, spot.j), face: fire.s, label: '🔥 Robi pochodnię',
+      act: (dt, t) => {
+        if (t.elapsed < 3) return null;
+        t.elapsed = 0;
+        for (const k in cost) if (this.inv[k] < cost[k]) return t.made ? 'done' : 'fail';
+        for (const k in cost) this.inv[k] -= cost[k];
+        this.inv.torch++;
+        t.made = (t.made || 0) + 1;
+        if (t.made === 1) this.say('owija gałąź liśćmi i obwiązuje liną: pochodnia 🔥');
+        return t.made >= n ? 'done' : null;
+      },
+    };
+  },
+  // po zmroku: podejść do ogniska i zapalić pochodnię (zapala się sama, gdy postać stoi przy ogniu)
+  taskLightTorch(fire) {
+    const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
+    return { path: this.pathTo(spot.i, spot.j), face: fire.s, label: '🔥 Zapala pochodnię', act: (dt, t) => (this.torchBurn > 0 || t.elapsed > 2 ? 'done' : null) };
+  },
+
   // weź ze składziku to, czego brakuje do celów
   taskTakeStash(st, want) {
     return {

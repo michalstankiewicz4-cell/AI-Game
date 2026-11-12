@@ -300,6 +300,7 @@ function describe(a, labels, decide) {
   let s = `Postać: ${a.name}, ${a.role}. Dzień ${w.day()}, godz. ${w.clock()}${w.isNight() ? ' (noc)' : ''}. Wyspa ${a.island + 1} z ${w.islandDefs.length}.\n`
     + `Potrzeby 0-100 (100 = w pełni zaspokojone): głód ${Math.round(a.hunger)}, pragnienie ${Math.round(a.thirst)}, energia ${Math.round(a.energy)}, zdrowie ${Math.round(a.health)}.\n`
     + `Temperatura powietrza ok. ${Math.round(w.airTemp(a.i, a.j))}°C (${w.weatherWord(w.airTemp(a.i, a.j))}), twoje ciało ${a.bodyT.toFixed(1)}°C${a.bodyT < 36.1 ? ' (marzniesz)' : a.bodyT > 37.5 ? ' (jest ci gorąco)' : ''}.\n`
+    + (w.daylight() < 0.35 ? `Jest ciemno: widzisz na ok. ${Math.round(a.viewR || 18)} kroków${a.torchLit && a.torchLit() ? ' (trzymasz płonącą pochodnię)' : ''}.\n` : '')
     + `Samopoczucie ${Math.round(a.mood)}/100. Plecak: ${a.invTotal()} rzeczy, ${a.invWeight().toFixed(1)} z 25 kg.\n`
     + `Ekwipunek: ${inv}. Narzędzia: ${tools}. Znane receptury: ${recipes}. Jadalne: ${edible}.\n`
     + `Pozostali: ${others}.\n`
