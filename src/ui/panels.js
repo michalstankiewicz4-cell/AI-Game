@@ -46,6 +46,7 @@ export function renderDetail(state) {
   el.querySelector('.dbody').innerHTML = `
     <h4>Potrzeby</h4>${barsHtml(a)}
     <h4>Teraz</h4><div>${!a.alive ? '💀' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔'}${a.llmDriven ? ' <span title="Wybór modelu językowego">🤖</span>' : ''}</div>
+    ${a.llmIntent ? `<div class="intent">🤖 Zamiar: „${esc(a.llmIntent.text || '…')}” ${a.llmIntent.label ? `→ ${a.llmIntent.label}` : '<span class="no">(nie da się teraz)</span>'}</div>` : ''}
     ${a.bubble ? `<div style="margin-top:4px;color:#cfe3f2">💬 „${esc(a.bubble.text)}”</div>` : ''}
     <h4>Wiedza</h4><div>🗺️ Zna ${(a.seenCount / (W * H) * 100).toFixed(0)}% mapy · 🧠 pamięta ${a.mem.size} miejsc z zasobami${a.memBirds.size ? ` · 🐦 ${a.memBirds.size} ptaków` : ''}</div>
     <h4>Rozważane decyzje (użyteczność)</h4><div class="util">${util}</div>

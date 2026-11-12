@@ -16,6 +16,9 @@ export function initLlmMenu() {
     const b = e.target.closest('button'); if (!b) return;
     llm.provider = b.dataset.v; llm.paused = false; llm.persist(); sync();
   });
+  const fr = $('optFree');
+  fr.checked = llm.freedom;
+  fr.onchange = () => { llm.freedom = fr.checked; llm.persist(); };
   // Claude
   const sel = $('llmModel');
   sel.innerHTML = Object.entries(MODELS).map(([id, m]) => `<option value="${id}">${m.name} · $${m.inp}/$${m.out} za 1M tok.</option>`).join('');

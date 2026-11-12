@@ -216,6 +216,7 @@ export const decideMethods = {
 
     opts.sort((a, c) => c.score - a.score);
     this.scores = opts.slice(0, 6).map((o) => ({ label: o.label, score: o.score }));
+    this.allLabels = opts.map((o) => o.label); // dla trybu pełnej swobody
     // tryb LLM: wybór modelu (jeśli świeży) wygrywa, chyba że lokalnie coś jest krytyczne
     let order = opts;
     this.llmDriven = false;

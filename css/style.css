@@ -132,3 +132,8 @@ h1 .ver { font-size: 14px; font-weight: 600; color: #8fd0f0; background: rgba(63
 ::-webkit-scrollbar-thumb { background: rgba(63,167,214,.45); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(63,167,214,.8); background-clip: padding-box; }
 ::-webkit-scrollbar-corner { background: transparent; }
+.llm-box .free { font-size: 12px; color: #9fb2c8; line-height: 1.4; display: block; }
+.llm-box .free b { color: #e8f1f8; }
+.llm-box .free input { vertical-align: -2px; margin: 0 4px 0 0; }
+#detail .intent { margin-top: 4px; color: #cfe3f2; }
+#detail .intent .no { color: #f0b05a; }
