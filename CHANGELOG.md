@@ -3,6 +3,11 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.28.0] - 2026-11-12
+### Dodane
+- Karta postaci podzielona na zakładki: 🧍 Stan (potrzeby, temperatura, zajęcie, ręce, statystyki), ⚖️ Priorytety, 🎒 Plecak (plecak i narzędzia) i 🧠 Wiedza (mapa, receptury, doświadczenie).
+- Zakładka „Priorytety” pokazuje, od czego zależą decyzje i reakcje: ranking rozważanych działań, wnioski, podejrzenia, szansę odpowiedzi na to, co postać słyszy (z mnożnikami za humor, zdrowie, zmęczenie i pilne sprawy) oraz to, co ostatnio słyszała.
+
 ## [0.27.0] - 2026-11-12
 ### Dodane
 - Pamięć oczekiwań: postać pamięta, co zostawiła na kupce albo w skrzyni i co posadziła. Gdy wraca i czegoś brakuje, zastanawia się na głos, co się stało, i podejrzewa tego, kogo widziała przy zapasach.
@@ -258,6 +263,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.28.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.28.0
 [0.27.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.27.0
 [0.26.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.26.0
 [0.25.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.25.0
