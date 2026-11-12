@@ -40,7 +40,7 @@ Model odpowiada `{"mysl": "...", "zamiar": "ściąć drzewo"}`. Gra (`src/ai/int
 Krytyczne potrzeby nadal mają pierwszeństwo. Mały model częściej wymyśla rzeczy niewykonalne, więc lepiej sprawdzają się Qwen3.5 2B lub 4B albo Claude.
 
 ## Model w przeglądarce (za darmo)
-Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN jsDelivr. Model liczy na karcie graficznej przez WebGPU, a pliki pobiera z Hugging Face. Po pierwszym pobraniu zostają w pamięci przeglądarki.
+Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN jsDelivr. Model liczy na karcie graficznej przez WebGPU, a pliki pobiera z Hugging Face. Po pierwszym pobraniu zostają w pamięci przeglądarki. Pobrane modele mają na liście znaczek ✅ i dopisek „pobrany”: gra sprawdza w pamięci podręcznej WebLLM, czy są tam wszystkie pliki wag, więc model pobrany tylko częściowo znaczka nie dostaje.
 
 | Model | Pobranie | VRAM |
 |---|---|---|

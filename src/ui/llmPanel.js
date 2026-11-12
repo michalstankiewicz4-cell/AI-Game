@@ -1,6 +1,6 @@
 // Ustawienia trybu Claude API w menu, licznik tokenów w HUD i przesuwanie okienek.
 import { $ } from './dom.js';
-import { llm, MODELS, WEB_MODELS, hasWebGPU } from '../ai/llm.js';
+import { llm, MODELS, WEB_MODELS, hasWebGPU, cachedWebModels } from '../ai/llm.js';
 
 const fmt = (n) => (n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n));
 
@@ -33,8 +33,8 @@ export function initLlmMenu() {
   bud.onchange = () => { const v = +bud.value; if (v > 0) { llm.budget = v; llm.persist(); if (llm.usage.cost < v) llm.paused = false; } };
   // model w przeglądarce
   const ws = $('webModel');
-  ws.innerHTML = Object.entries(WEB_MODELS).map(([id, m]) => `<option value="${id}">${m.name} · pobranie ${m.size}, VRAM ${m.vram}</option>`).join('');
-  ws.value = llm.webModel;
+  fillWebModels();
+  refreshCached();
   const th = $('webThink');
   th.checked = llm.think;
   th.onchange = () => { llm.think = th.checked; llm.persist(); };
@@ -43,6 +43,21 @@ export function initLlmMenu() {
   $('tokBtn').onclick = () => { if (confirm('Wyzerować licznik tokenów i wznowić model?')) llm.resetUsage(); };
   setInterval(updateWebStatus, 300);
   sync();
+}
+
+// lista modeli: pobrane mają ✅ (sprawdzane w pamięci przeglądarki)
+let cached = new Set(), wasReady = false;
+function fillWebModels() {
+  const ws = $('webModel');
+  ws.innerHTML = Object.entries(WEB_MODELS).map(([id, m]) => {
+    const ok = cached.has(id) || (llm.web.id === id && !!llm.web.engine);
+    return `<option value="${id}">${ok ? '✅ ' : ''}${m.name} · ${ok ? 'pobrany' : 'pobranie ' + m.size}, VRAM ${m.vram}</option>`;
+  }).join('');
+  ws.value = llm.webModel;
+}
+async function refreshCached() {
+  const now = await cachedWebModels();
+  if ([...now].sort().join() !== [...cached].sort().join()) { cached = now; fillWebModels(); }
 }
 
 // przy starcie gry: w trybie przeglądarkowym zacznij pobierać model, jeśli jeszcze nie działa
@@ -58,6 +73,8 @@ function updateWebStatus() {
   else if (llm.webReady) txt = `✅ ${WEB_MODELS[llm.webModel].name} gotowy${W.inWorker ? ' (osobny wątek)' : ''}.`;
   else if (W.note) txt = W.note;
   else txt = 'Model pobierze się po kliknięciu 📥 albo przy starcie gry. Do czasu załadowania za postacie mówi skrypt (📜).';
+  // po załadowaniu modelu odśwież znaczki ✅ na liście
+  if (llm.webReady !== wasReady) { wasReady = llm.webReady; fillWebModels(); if (wasReady) refreshCached(); }
   if ($('webModel').value !== llm.webModel) $('webModel').value = llm.webModel;
   $('webThinkRow').classList.toggle('hidden', !WEB_MODELS[llm.webModel].think);
   st.textContent = txt; st.classList.toggle('err', err);
