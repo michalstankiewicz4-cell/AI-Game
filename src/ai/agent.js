@@ -81,15 +81,14 @@ export class Agent {
   // składzik w zasięgu ręki albo nowa kupka obok
   stashHere() {
     const w = this.world;
-    const near = w.structures.find((s) => s.kind === 'stash' && Math.hypot(s.x - this.x, s.z - this.z) < 1.8);
+    const close = (s) => Math.hypot(s.x - this.x, s.z - this.z) < 1.8;
+    const near = w.structures.find((s) => s.kind === 'chest' && close(s)) || w.structures.find((s) => s.kind === 'stash' && close(s));
     if (near) return near;
     const free = (i, j) => w.walkable(i, j) && w.type[idx(i, j)] !== T.BRIDGE && !w.res[idx(i, j)] && !w.structures.some((s) => s.i === i && s.j === j);
     let spot = free(this.i, this.j) ? { i: this.i, j: this.j } : null;
     for (let r = 1; !spot && r < 3; r++) for (let dj = -r; dj <= r && !spot; dj++) for (let di = -r; di <= r && !spot; di++) if (free(this.i + di, this.j + dj)) spot = { i: this.i + di, j: this.j + dj };
     if (!spot) return null;
-    const s = w.addStructure('stash', spot.i, spot.j, this.id);
-    s.items = {};
-    return s;
+    return w.addStructure('stash', spot.i, spot.j, this.id);
   }
 
   // dzik zaatakował: rana (tarcza osłabia cios), lekcja na przyszłość i walka albo ucieczka

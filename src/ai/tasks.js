@@ -4,7 +4,7 @@ import { thought, urgent, eventLine } from './commentary.js';
 import {
   FIRE_FUEL,
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
-  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, WEIGHT, clamp,
+  STORES, SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, WEIGHT, clamp,
 } from './data.js';
 
 const BUILD = {
@@ -13,6 +13,7 @@ const BUILD = {
   tent: ['⛺ Rozbija namiot', 'rozbija namiot z gałęzi i liści ⛺', 6],
   workbench: ['🛠️ Robi stół', 'zbija stół rzemieślniczy 🛠️', 7],
   bed: ['🛏️ Robi łóżko', 'robi łóżko z desek, gałęzi i liści 🛏️', 7],
+  chest: ['📦 Zbija skrzynię', 'zbija skrzynię na zapasy 📦', 6],
 };
 
 export const tasksMethods = {
@@ -214,6 +215,11 @@ export const tasksMethods = {
         this.rememberStruct(s);
         for (const k of MATS) {
           const n = Math.max(0, this.inv[k] - (want[k] || 0));
+          if (n > 0) { this.inv[k] -= n; s.items[k] = (s.items[k] || 0) + n; }
+        }
+        // do skrzyni chowa też nadmiar jedzenia (przy sobie zostawia po 2 sztuki)
+        if (s.kind === 'chest') for (const k in FOOD) {
+          const n = Math.max(0, this.inv[k] - 2);
           if (n > 0) { this.inv[k] -= n; s.items[k] = (s.items[k] || 0) + n; }
         }
         return 'done';

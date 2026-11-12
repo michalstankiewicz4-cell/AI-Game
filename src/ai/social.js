@@ -43,6 +43,7 @@ function news(a, b, world) {
         tent: `Rozbiłem namiot ${where}.`,
         workbench: `Mam stół do pracy ${where}, przy nim wychodzą różne rzeczy.`,
         bed: `${where[0].toUpperCase() + where.slice(1)} stoi łóżko.`,
+        chest: `Zbiłem skrzynię ${where}, chowam w niej zapasy i jedzenie.`,
         stash: s.items && Object.values(s.items).some((v) => v > 0) ? `Zostawiłem zapasy ${where}, możesz z nich brać.` : null,
       }[s.kind];
       if (txt) out.push({ v: 3, text: txt });

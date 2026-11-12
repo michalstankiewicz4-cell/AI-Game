@@ -3,6 +3,14 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.18.0] - 2026-11-12
+### Dodane
+- Skrzynia (4 deski + 2 gałęzie): nowa receptura do odkrycia. Postać zbija ją przy ognisku albo pod dachem i chowa w niej nadmiar materiałów oraz jedzenia (przy sobie zostawia po 2 sztuki).
+- Głodna postać bez jedzenia w plecaku bierze je ze skrzyni („🍱 Wziąć jedzenie ze skrzyni”). Jedzenie w skrzyni liczy się do zapasu, więc postacie nie zbierają ponad miarę.
+- Model 3D skrzyni, wpis w wiki, rozmowy o skrzyni i skrzynia w opisie dla modelu językowego.
+### Zmienione
+- Odkładając zapasy, postać wybiera skrzynię przed kupką na ziemi.
+
 ## [0.17.0] - 2026-11-12
 ### Dodane
 - Na liście modeli w przeglądarce pobrane modele mają znaczek ✅ i dopisek „pobrany” zamiast rozmiaru pobrania. Gra sprawdza pamięć podręczną WebLLM i zalicza tylko model, którego wszystkie pliki wag są na dysku. Znaczek pojawia się też od razu po załadowaniu modelu.
@@ -148,6 +156,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.18.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.18.0
 [0.17.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.17.0
 [0.16.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.16.0
 [0.15.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.15.0

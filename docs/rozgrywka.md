@@ -83,6 +83,7 @@ Na starcie każda postać ma siekierę i kilof. Receptur nie zna, odkrywa je, ł
 | Miecz | 2 rudy + deska | wykuwany przy ogniu; najlepsza broń na dziki |
 | Tarcza | 3 deski + lina | odkrywana tylko przy stole rzemieślniczym; cios dzika słabszy o 60% |
 | Łóżko | 3 deski + 2 gałęzie + 4 liście | odkrywane tylko przy stole rzemieślniczym; dużo szybszy sen |
+| Skrzynia | 4 deski + 2 gałęzie | odkrywana wszędzie; stawiana przy ognisku albo pod dachem; trzyma materiały i jedzenie |
 
 Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo przy ogniu, łóżko przy stole rzemieślniczym. Próba w złym miejscu kończy się wskazówką w myślach postaci.
 
@@ -99,6 +100,7 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Przeładowanie:** postać odkłada połowę najcięższego materiału na kupkę, czyli składzik, w miejscu, gdzie stoi.
 - **Odkładanie zapasów:** gdy plecak jest cięższy niż ok. 55%, postać odnosi to, czego teraz nie potrzebuje, do składziku przy ognisku albo pod dachem.
 - **Branie z zapasów:** gdy czegoś brakuje do planów, postać najpierw bierze to ze znanego składziku, zanim pójdzie zbierać.
+- **Skrzynia:** postać, która odkryje skrzynię, zbija ją przy obozie. Do skrzyni trafia nadmiar materiałów (ma pierwszeństwo przed kupką na ziemi) i nadmiar jedzenia (przy sobie zostają po 2 sztuki). Głodna postać bez jedzenia w plecaku idzie po nie do skrzyni, a jedzenie w skrzyni liczy się do zapasu, więc postacie nie zbierają jagód bez końca.
 - **Wiedza o składzikach:** postacie mówią sobie o nich w rozmowach. Pusty składzik znika z mapy.
 
 ## Mosty
