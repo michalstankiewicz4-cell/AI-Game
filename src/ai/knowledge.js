@@ -32,8 +32,26 @@ export const knowledgeMethods = {
     for (const s of w.structures) this.knownStructs.add(s.id);
   },
 
+  // postać widzi u kogoś rzecz, której nie umie zrobić: przyglądając się, widzi, z czego jest zrobiona
+  noticeIdea(r, by, held = false) {
+    if (!r || !RECIPES[r] || this.known.has(r) || this.ideas.has(r) || this.omniscient) return;
+    this.ideas.set(r, { t: this.world.time, by });
+    const who = by != null && by !== this.id ? this.agentName(by) : null;
+    const parts = Object.keys(RECIPES[r]).map((k) => MAT_NAMES[k]).join(', ');
+    const thing = who ? (held ? `To, co ma w rękach ${who} (${RECIPE_NAMES[r]})` : `To, co postawił${this.fOf(by, '', 'a')} tu ${who} (${RECIPE_NAMES[r]})`) : `Ta rzecz (${RECIPE_NAMES[r]})`;
+    const line = `${thing}... chyba zrobione z tego: ${parts}. Spróbuję tak samo!`;
+    const say = Math.random() < this.reactFactors().chance;
+    this.logReact('💡', `podpatruje: ${RECIPE_NAMES[r]}${who ? ` (${who})` : ''}`, say ? line : null, 'idea');
+    if (say) this.speak(line, true);
+    this.say(`podpatruje${who ? `, co ma ${who}` : ''}: ${RECIPE_NAMES[r]} 👀💡`, 'learn');
+  },
+  // podpatrzone, a jeszcze nieodkryte receptury
+  openIdeas() { return [...this.ideas.keys()].filter((r) => !this.known.has(r)); },
+
   nextExperiment(at = null) {
     const have = MATS.filter((m) => this.inv[m] > 0);
+    const now = this.world.time;
+    for (const m of have) if (!this.matFirst.has(m)) this.matFirst.set(m, now);
     const fire = at ? at.fire : !!this.nearStructure('campfire', 3);
     const bench = at ? at.bench : !!this.nearStructure('workbench', 3);
     const combos = [];
@@ -54,9 +72,21 @@ export const knowledgeMethods = {
       const r = RECIPE_BY_COMBO.get(k);
       return !(r && this.known.has(comboKey(c) === k ? r : RECIPE_BY_COMBO.get(comboKey(c))));
     });
+    // najpierw to, co podpatrzył(a) u innych: ma wszystkie materiały, więc próbuje tak samo
+    for (const r of this.openIdeas()) {
+      const types = Object.keys(RECIPES[r]);
+      if (!types.every((k) => this.inv[k] > 0)) continue;
+      const key = keyOf(types);
+      if (!this.tried.has(key)) return { types, fire, key, idea: r };
+    }
     if (!fresh.length) return null;
-    // ciekawość: preferuj mniejsze kombinacje i te z ogniem w pobliżu
-    fresh.sort((x, y) => x.length - y.length + (Math.random() - 0.5) * 2.5);
+    // ciekawość: preferuj mniejsze kombinacje i te z rzeczą, którą dopiero co zdobył(a)
+    const isNew = (c) => c.some((m) => now - (this.matFirst.get(m) || 0) < 150);
+    // krzemień iskrzy (postać to widziała, badając go): iskra + coś, co się pali, to dobry pomysł, póki nie zna ognia
+    const spark = this.triedKinds.has('flint') && !this.known.has('campfire');
+    const fiery = (c) => spark && c.includes('flint') && c.some((m) => m === 'sticks' || m === 'logs' || m === 'leaves');
+    const bonus = (c) => (isNew(c) ? 1.2 : 0) + (fiery(c) ? 3 : 0);
+    fresh.sort((x, y) => x.length - y.length - bonus(x) + bonus(y) + (Math.random() - 0.5) * 2.5);
     return { types: fresh[0], fire, key: keyOf(fresh[0]) };
   },
 
@@ -69,11 +99,12 @@ export const knowledgeMethods = {
         const r = RECIPE_BY_COMBO.get(comboKey(combo.types));
         this.tried.add(combo.key);
         if (!r) {
+          this.failStreak++;
           this.event('expFail', { what: names });
           return 'done';
         }
         if (FIRE_RECIPES.has(r) && !this.nearStructure('campfire', 3)) {
-          this.speak({ ironTool: 'Ruda i gałąź... może w ogniu by się dało to wykuć?', sword: 'Ruda i deska... w ogniu dałoby się to wykuć?', torch: 'Gałąź owinięta liśćmi... gdyby ją tak podpalić?', pot: 'Ulepiłem(am) z gliny naczynie, ale się rozłazi. Może w ogniu by stwardniało?' }[r] || 'Kamienie i patyki... coś by z tego było nad ogniem.', true);
+          this.speak({ ironTool: 'Ruda i gałąź... może w ogniu by się dało to wykuć?', sword: 'Ruda i deska... w ogniu dałoby się to wykuć?', torch: 'Gałąź owinięta liśćmi... gdyby ją tak podpalić?', pot: `Ulepił${this.f('em', 'am')} z gliny naczynie, ale się rozłazi. Może w ogniu by stwardniało?` }[r] || 'Kamienie i patyki... coś by z tego było nad ogniem.', true);
           return 'done';
         }
         if (BENCH_RECIPES.has(r) && !this.nearStructure('workbench', 3)) {
@@ -81,7 +112,7 @@ export const knowledgeMethods = {
           return 'done';
         }
         if (KNIFE_RECIPES.has(r) && !this.tools.knife) {
-          this.speak(r === 'bow' ? 'Z tej kłody i liny wyszłoby coś sprężystego... gdybym miał(a) czym strugać.' : 'Tę deskę dałoby się wydrążyć, gdybym miał(a) coś ostrego.', true);
+          this.speak(r === 'bow' ? `Z tej kłody i liny wyszłoby coś sprężystego... gdybym miał${this.f('', 'a')} czym strugać.` : `Tę deskę dałoby się wydrążyć, gdybym miał${this.f('', 'a')} coś ostrego.`, true);
           return 'done';
         }
         if (r === 'planks' && !this.tools.axe) return 'done';
@@ -106,6 +137,7 @@ export const knowledgeMethods = {
   learn(r, from) {
     if (this.known.has(r)) return false;
     this.known.add(r);
+    this.failStreak = 0; // udało się: znów chce próbować
     this.joy = Math.min(30, this.joy + (from ? 5 : 15)); // odkrycie cieszy
     if (r === 'campfire') this.known.add('cook');
     const parts = Object.keys(RECIPES[r] || {}).map((k) => MAT_NAMES[k]).join(' + ');
@@ -124,12 +156,13 @@ export const knowledgeMethods = {
     else if (m.kind === 'flower') task = this.taskFlowers(r);
     else if (m.kind === 'seaweed') task = this.taskSeaweed({ r, d: 0 });
     else if (m.kind === 'mine') task = this.taskMine();
+    else if (m.kind === 'flint') task = this.taskFlint(r);
     if (!task) return null;
     task.label = `🔎 Bada ${KIND_NAMES[m.kind]}`;
     task.onEnd = (res) => {
       if (res !== 'done' || this.triedKinds.has(m.kind)) return;
       this.triedKinds.add(m.kind);
-      const got = { tree: 'kłody i gałęzie', palm: 'kłodę i gałąź', rock: 'kamienie', bush: 'jagody (jadalne?)', rye: 'ziarno z kłosów', flower: 'kwiaty i trochę nasion', seaweed: 'wodorosty', mine: 'kamień i może rudę' }[m.kind];
+      const got = { tree: 'kłody i gałęzie', palm: 'kłodę i gałąź', rock: 'kamienie', bush: 'jagody (jadalne?)', rye: 'ziarno z kłosów', flower: 'kwiaty i trochę nasion', seaweed: 'wodorosty', mine: 'kamień i może rudę', flint: 'krzemień: twardy, ostry, iskrzy, gdy uderzyć nim o kamień' }[m.kind];
       this.say(`bada ${KIND_NAMES[m.kind]} i zdobywa: ${got} 🔎`, 'learn');
       if (m.kind === 'tree' || m.kind === 'palm') this.triedKinds.add(m.kind === 'tree' ? 'palm' : 'tree');
     };

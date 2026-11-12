@@ -111,6 +111,8 @@ export const generateMethods = {
       } else if (t === T.SAND) {
         if (v < 0.02) this.addResource('rock', i, j, { stone: 3 });
         else if (v < 0.035) this.addResource('palm', i, j, { wood: 2, growth: 1 });
+        // krzemienie wyrzucone przez morze (do krzesania ognia)
+        else if (v < 0.055) this.addResource('flint', i, j, { amount: 2, max: 2, regrow: 0 });
       } else if (t === T.ROCK) {
         if (v < 0.12) this.addResource('rock', i, j, { stone: 6 });
       }

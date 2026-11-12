@@ -6,6 +6,9 @@ import {
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp, TORCH,
 } from './data.js';
 
+// rzecz w ręku -> receptura, z której powstaje
+const HELD_RECIPE = { ironPick: 'ironTool', ironAxe: 'ironTool' };
+
 export const perceptionMethods = {
   // ---------- percepcja ----------
   // aktualizuje pamięć o to, co agent widzi w swoim stożku widzenia (full = rozglądanie dookoła)
@@ -75,7 +78,7 @@ export const perceptionMethods = {
       }
     }
     for (const s of w.structures) {
-      if (!this.knownStructs.has(s.id)) { if (visible(s.x - x0, s.z - z0)) { this.knownStructs.add(s.id); this.noticeNew(s); } continue; }
+      if (!this.knownStructs.has(s.id)) { if (visible(s.x - x0, s.z - z0)) { this.knownStructs.add(s.id); this.noticeNew(s); if (s.owner !== this.id) this.noticeIdea(s.kind, s.owner); } continue; }
       if (s.kind === 'campfire' && Math.hypot(s.x - x0, s.z - z0) < 12 && visible(s.x - x0, s.z - z0)) this.noticeFire(s);
       // wraca w miejsce, o którym coś pamięta: czy wszystko jest, jak zostawił(a)?
       const near = Math.hypot(s.x - x0, s.z - z0) < 7;
@@ -87,7 +90,14 @@ export const perceptionMethods = {
       else if (b.state !== 'landed' && this.memBirds.has(b.id) && visible(b.x - x0, b.z - z0)) this.memBirds.delete(b.id);
     }
     for (const b of w.boars || []) if (!b.dead && visible(b.x - x0, b.z - z0)) this.memBoars.set(b.id, { b, i: b.i, j: b.j, t: w.time });
-    for (const o of w.agents || []) if (o !== this && o.alive && visible(o.x - x0, o.z - z0)) this.memAgents.set(o.id, { a: o, i: o.i, j: o.j, t: w.time });
+    for (const o of w.agents || []) if (o !== this && o.alive && visible(o.x - x0, o.z - z0)) {
+      this.memAgents.set(o.id, { a: o, i: o.i, j: o.j, t: w.time });
+      // z bliska widać, co ktoś trzyma w rękach: można to podpatrzyć
+      if (Math.hypot(o.x - x0, o.z - z0) < 6) for (const h of [o.held, o.heldL]) if (h) this.noticeIdea(HELD_RECIPE[h] || h, o.id, true);
+      // ktoś śpi w moim łóżku albo majsterkuje przy moim stole
+      if (o.asleep && o.task && o.task.bedId != null) { const bed = w.structures.find((s) => s.id === o.task.bedId); if (bed && bed.owner === this.id) this.witness(o, bed, 'bed'); }
+      else if (o.task && o.task.label && /Próbuje|Robi|Struga|Szyje/.test(o.task.label)) { const b = w.structures.find((s) => s.kind === 'workbench' && s.owner === this.id && Math.hypot(s.x - o.x, s.z - o.z) < 3); if (b) this.witness(o, b, 'bench'); }
+    }
     for (const f of w.fish) if (visible(f.x - x0, f.z - z0)) this.memFish.push({ x: f.x, z: f.z, t: w.time });
     if (this.memFish.length > 60) this.memFish.splice(0, this.memFish.length - 60);
   },

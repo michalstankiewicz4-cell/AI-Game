@@ -73,6 +73,16 @@ Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie t
 - `remark`: komentarz z szansą `reactFactors().chance × 0,6`, najwyżej raz na 20 s.
 - Wzrok: `lineOfSight` idzie po polach między postacią a celem. Zasłania teren wyższy niż linia wzroku (oko 0,8 nad ziemią), krawędź ze ścianą parteru (`wallBits`) i drugie drzewo na drodze. Pola do 1,5 od postaci widać zawsze.
 
+## Świadek i stosunki (`memory.js`, `social.js`)
+- `beSeenDoing(s, act)` wołane przez działającego (`take`, `store`, `harvest`, `water`, `fire` w `tasks.js`; `bed` i `bench` wykrywa `see()`): każdy właściciel (`ownsThing`), który to widzi (`canSee`: zasięg, stożek, `lineOfSight`), dostaje `witness(a, s, act)`. Zapamiętuje zawsze (`expectStore`, `blame`, wnioski, nastrój), mówi z szansą `chance × 1,2` dla przykrych i `× 0,7` dla miłych. To samo zdarzenie najwyżej raz na 40 s (łóżko 200 s).
+- `rel` (id → −100..100) i `relWhy` (ostatnie 3 powody): `like(id, d, why)`. Rozmowa +2, nauka +5, prezent +8, przyznanie się +4, troska +3, dokładanie +4, podlewanie +6, ogień +3; branie −6 (−10 przy nieufności), łóżko −5, plony −8, podejrzenie −3. Przyjaciel (≥30) traktowany jak `shared`, wróg (≤−30) jak `distrust`. Wpływ: rozmowy (cooldown ×0,6 albo ×2,5, przy ≤−50 brak), prezenty, nauka, opcja „Porozmawiać”, szansa odpowiedzi w `reactTo`. `relSummary()` idzie do modelu.
+- `reactLog` (ostatnie 14: ikona, co, co powiedział(a) albo `null` = przemilczał(a)) i `reactKinds` (do wiki).
+
+## Priorytety: zdrowie, nastrój, eksperymenty (`decide.js`, `knowledge.js`)
+- Zdrowie < 60: „🩹 Odpocząć, żeby wydobrzeć” (0,25 + do 0,6); poniżej 50 ciężka praca −0,006 za punkt; < 30 ucieczka przed dzikiem mimo broni. Gojenie: 0,03/s, w spoczynku 0,12/s, we śnie 0,05 + dach (szałas 0,12, namiot 0,08) + łóżko 0,08. Skaleczenia w `practice('chop'|'mine')`.
+- Nastrój < 40: „Posiedzieć przy ognisku”, +0,15 do rozmowy; > 70: +0,05 do tworzenia (eksperymenty, budowa, rzemiosło, sadzenie), < 35: −0,06.
+- `nextExperiment`: najpierw podpatrzone receptury (`ideas`, z `noticeIdea`), potem kombinacje z materiałem zdobytym w ostatnich 150 s i, póki nie zna ognia, krzemień + drewno. `failStreak` obniża ocenę ślepych prób do −0,24.
+
 ## Słyszenie (`agent.js`)
 - `hearAround`: wszystko, co postać powie, słyszą przytomne postacie do 7 pól (`heard`, ostatnie 4 kwestie, trafiają do modelu przez 40 s).
 - `reactTo`: reakcja na swoje imię (tłumaczenie się albo zaprzeczenie), na zaginione rzeczy, odkrycia i wołanie o pomoc. Szansa zależy od humoru, zdrowia, zmęczenia i priorytetów (pilne zadanie, głód, pragnienie); w rozmowie postać odpowiada tylko rozmówcy. Odpowiedzi nie wywołują kolejnych reakcji.

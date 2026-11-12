@@ -156,7 +156,10 @@ export class Social {
       if (Math.hypot(a.x - b.x, a.z - b.z) > TALK_RANGE) continue;
       const key = Math.min(a.id, b.id) + ':' + Math.max(a.id, b.id);
       if ((this.cd.get(key) || -1e9) > w.time) continue;
-      this.cd.set(key, w.time + PAIR_COOLDOWN);
+      // kto się nie lubi, rzadziej zaczyna rozmowę; przyjaciele częściej
+      const rel = Math.min(a.likeOf(b.id), b.likeOf(a.id));
+      this.cd.set(key, w.time + PAIR_COOLDOWN * (rel <= -20 ? 2.5 : rel >= 50 ? 0.6 : 1));
+      if (rel <= -50 || (rel <= -20 && Math.random() < 0.5)) continue;
       a.lastTalk = b.lastTalk = w.time;
       this.talk(a, b);
       return;
@@ -180,7 +183,9 @@ export class Social {
     if (!t1) { t1 = teach(b, a); T1 = b; S1 = a; }
     // przedmioty
     // nie daje prezentów komuś, komu nie ufa
-    const gA = a.beliefs.has('distrust:' + b.id) ? null : gift(a, b), gB = gA || b.beliefs.has('distrust:' + a.id) ? null : gift(b, a);
+    // i komuś, kogo nie lubi; przyjaciołom daje chętniej
+    const giver = (x, y) => !x.beliefs.has('distrust:' + y.id) && x.likeOf(y.id) > -20 && (x.likeOf(y.id) >= 20 || Math.random() < 0.7);
+    const gA = giver(a, b) ? gift(a, b) : null, gB = gA || !giver(b, a) ? null : gift(b, a);
     // podejrzenia: pyta wprost, a tamten mówi prawdę (gra wie, kto co brał)
     for (const [x, y] of [[a, b], [b, a]]) {
       if (!(x.suspect.get(y.id) > 0)) continue;
@@ -189,6 +194,7 @@ export class Social {
       if (took) {
         say(y, pick([`Tak, przepraszam. Potrzebował${y.f('em', 'am')} tego. Myślał${y.f('em', 'am')}, że zapasy są wspólne.`, 'Wziął' + y.f('em', 'am') + ', to prawda. Następnym razem zapytam.']));
         say(x, 'Dobrze, że mówisz prawdę. Zapasy mogą być wspólne, byle uczciwie.');
+        x.like(y.id, 4, 'przyznał' + y.f('', 'a') + ' się, mówi prawdę');
         x.conclude('shared:' + y.id, `${y.name} przyznał${y.f('', 'a')} się do brania rzeczy: zapasy są wspólne, ale warto mieć własną skrzynię.`);
       } else {
         say(y, 'Nie, to nie ja! Może to ktoś inny?');
@@ -199,10 +205,13 @@ export class Social {
       break;
     }
     const logs = [];
-    if (t1) { say(T1, t1.text); say(S1, t1.reply); logs.push(`${T1.name} ${t1.log}`); }
-    if (gA) { say(a, gA.text); say(b, gA.reply); logs.push(`${a.name} ${gA.log}`); }
-    if (gB) { say(b, gB.text); say(a, gB.reply); logs.push(`${b.name} ${gB.log}`); }
-    say(b, pick(['Do zobaczenia!', 'Trzymaj się!', 'Powodzenia!', 'Na razie!']));
+    if (t1 && S1.likeOf(T1.id) > -40) { say(T1, t1.text); say(S1, t1.reply); logs.push(`${T1.name} ${t1.log}`); S1.like(T1.id, 5, 'uczy mnie'); }
+    if (gA) { say(a, gA.text); say(b, gA.reply); logs.push(`${a.name} ${gA.log}`); b.like(a.id, 8, 'daje mi rzeczy'); }
+    if (gB) { say(b, gB.text); say(a, gB.reply); logs.push(`${b.name} ${gB.log}`); a.like(b.id, 8, 'daje mi rzeczy'); }
+    // sama rozmowa trochę zbliża (chyba że ktoś kogoś nie znosi)
+    for (const [x, y] of [[a, b], [b, a]]) if (x.likeOf(y.id) > -50) x.like(y.id, 2, 'rozmawiamy');
+    const cold = a.likeOf(b.id) <= -20 || b.likeOf(a.id) <= -20;
+    say(b, cold ? pick(['No, to cześć.', 'Dobra, idę.', 'Mhm.']) : b.likeOf(a.id) >= 50 ? pick(['Dobrze cię widzieć!', 'Uważaj na siebie, przyjacielu!'.replace('przyjacielu', a.f('przyjacielu', 'przyjaciółko'))]) : pick(['Do zobaczenia!', 'Trzymaj się!', 'Powodzenia!', 'Na razie!']));
     this.convos.push({ t: 0, lines });
     // obaj zatrzymują się na czas rozmowy
     const dur = at + 0.5;

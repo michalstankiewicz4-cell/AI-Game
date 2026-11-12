@@ -78,11 +78,11 @@ export class World {
   }
 
   // ---------- klimat umiarkowany ----------
-  // średnia dnia 7–21°C zmienia się z dnia na dzień (ciepłe i chłodne dni), w ciągu doby ±3–6°C,
+  // średnia dnia 5–19°C zmienia się z dnia na dzień (ciepłe i chłodne dni), w ciągu doby ±3–6°C,
   // najzimniej ok. 4:00, najcieplej ok. 15:00; wyżej jest chłodniej
   dayClimate(k) {
     const r = (n) => { const x = Math.sin((k + 1) * 127.1 + n * 311.7 + this.seed * 0.0137) * 43758.5453; return x - Math.floor(x); };
-    return { mean: 14 + (r(1) * 2 - 1) * 7, amp: 3 + r(2) * 3 };
+    return { mean: 12 + (r(1) * 2 - 1) * 7, amp: 3 + r(2) * 3.5 };
   }
   airTemp(i, j) {
     const t = this.time / DAY_LENGTH, k = Math.floor(t), f = t - k;

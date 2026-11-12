@@ -23,7 +23,7 @@ export const RECIPES = {
   rope: { seaweed: 2 },                       // 2 wodorosty → 1 lina
   rod: { sticks: 2, rope: 1 },                // wędka
   spear: { sticks: 2, stone: 1, rope: 1 },    // włócznia
-  campfire: { sticks: 3, logs: 1, stone: 4 }, // ognisko
+  campfire: { sticks: 3, logs: 1, flint: 1 }, // ognisko: drewno na opał i krzemień, którym krzesze się iskrę
   shelter: { logs: 2, planks: 4, rope: 2 },   // szałas
   ironTool: { iron: 2, sticks: 1 },           // żelazne narzędzie (przy ognisku)
   tent: { sticks: 4, leaves: 6 },             // namiot: lekki dach
@@ -58,14 +58,14 @@ export const RECIPE_NAMES = {
 };
 // miejsca na zapasy: kupka na ziemi i skrzynia
 export const STORES = new Set(['stash', 'chest']);
-export const MATS = ['logs', 'sticks', 'leaves', 'planks', 'seaweed', 'rope', 'stone', 'iron', 'feathers', 'hide', 'clay'];
-export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', leaves: 'liście', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda', feathers: 'pióra', hide: 'skóra', clay: 'glina' };
+export const MATS = ['logs', 'sticks', 'leaves', 'planks', 'seaweed', 'rope', 'stone', 'iron', 'feathers', 'hide', 'clay', 'flint'];
+export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', leaves: 'liście', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda', feathers: 'pióra', hide: 'skóra', clay: 'glina', flint: 'krzemień' };
 export const comboKey = (types) => [...types].sort().join('+');
 // zestawy materiałów, które przy ogniu dają coś innego niż bez ognia
 export const FIRE_COMBOS = new Set([...FIRE_RECIPES].map((r) => comboKey(Object.keys(RECIPES[r]))));
 export const TORCH = { burn: 70, light: 0.5, night: 0.25 }; // pochodnia: s palenia; zasięg wzroku w nocy z pochodnią i bez (część dziennego)
 // tryb „wie wszystko”: fakty, które w trybie odkrywania postać musi sama sprawdzić
-export const WORLD_FACTS = 'Znasz ten świat: przy ognisku i pod dachem (szałas, namiot, deski nad głową i ściany wokół) jest cieplej, w łóżku lepiej się śpi, '
+export const WORLD_FACTS = 'Znasz ten świat: ogień krzesze się krzemieniem (leży na plażach) i bez niego nie rozpalisz ogniska, przy ognisku i pod dachem (szałas, namiot, deski nad głową i ściany wokół) jest cieplej, w łóżku lepiej się śpi, '
   + 'morska woda nie gasi pragnienia (pij ze stawu), surowe mięso i ryba mogą zaszkodzić (lepiej upiec), dziki atakują (miecz, włócznia, tarcza pomagają), '
   + 'pochodnię zapala się od ogniska, a w nocy z nią widać dalej, nożem skóruje się upolowanego dzika (mięso i skóra), z ptaków są mięso i pióra, '
   + 'w jagodach są nasiona: motyką przygotowuje się ziemię i sadzi je, a po ok. półtorej doby wyrasta krzak z jagodami, miskę można napełnić wodą ze stawu i pić z niej z dala od wody, łuk ze strzałami poluje z daleka, '
@@ -75,11 +75,11 @@ export const WORLD_FACTS = 'Znasz ten świat: przy ognisku i pod dachem (szałas
   + 'łopatą ubija się drogę: po drodze chodzi się o połowę szybciej, a pień ściętego drzewa można wyrwać kilofem albo łopatą (zostaje kawałek drewna, ale drzewo już nie odrośnie).';
 export const recipeList = () => Object.entries(RECIPES).map(([r, c]) => `${RECIPE_NAMES[r]} (${Object.entries(c).map(([k, n]) => `${MAT_NAMES[k]} ×${n}`).join(' + ')}${FIRE_RECIPES.has(r) ? ', przy ogniu' : BENCH_RECIPES.has(r) ? ', przy stole' : KNIFE_RECIPES.has(r) ? ', nożem' : ''})`).join('; ');
 export const RECIPE_BY_COMBO = new Map(Object.entries(RECIPES).map(([k, r]) => [comboKey(Object.keys(r)), k]));
-export const KIND_NAMES = { tree: 'drzewo', palm: 'palmę', rock: 'skałę', bush: 'krzak', seaweed: 'wodorosty', mine: 'kopalnię', rye: 'żyto', flower: 'kwiaty' };
+export const KIND_NAMES = { tree: 'drzewo', palm: 'palmę', rock: 'skałę', bush: 'krzak', seaweed: 'wodorosty', mine: 'kopalnię', rye: 'żyto', flower: 'kwiaty', flint: 'krzemienie' };
 
 export const ITEM_LABELS = {
   logs: '🪵 Kłody', sticks: '🥢 Gałęzie', leaves: '🍃 Liście', planks: '🟫 Deski', seaweed: '🌿 Wodorosty', rope: '🪢 Lina',
-  stone: '🪨 Kamień', iron: '⛏️ Ruda żelaza', feathers: '🪶 Pióra', hide: '🟤 Skóra', clay: '🧱 Glina',
+  stone: '🪨 Kamień', iron: '⛏️ Ruda żelaza', feathers: '🪶 Pióra', hide: '🟤 Skóra', clay: '🧱 Glina', flint: '🔸 Krzemień',
   seeds: '🌱 Nasiona jagód', grain: '🌾 Ziarno żyta', flowerSeeds: '🌱 Nasiona kwiatów', flowers: '🌼 Kwiaty', arrows: '🏹 Strzały', bowl: '🥣 Miska', waterBowl: '🥣 Miska z wodą', pot: '🏺 Doniczka', waterPot: '🏺 Doniczka z wodą',
   torch: '🔥 Pochodnia', berries: '🫐 Jagody', rawFish: '🐟 Ryba', cookedFish: '🍣 Piecz. ryba', rawMeat: '🍗 Mięso', cookedMeat: '🍖 Piecz. mięso',
 };
@@ -101,7 +101,7 @@ export const MAX_WEIGHT = 25; // ile kg da się nieść
 export const WEIGHT = {
   logs: 3, sticks: 0.5, leaves: 0.1, planks: 1.5, seaweed: 0.3, rope: 0.4, stone: 2, iron: 3,
   feathers: 0.05, hide: 1.5, seeds: 0.02, arrows: 0.1, bowl: 0.4, waterBowl: 1.2,
-  clay: 1.5, grain: 0.02, flowerSeeds: 0.02, flowers: 0.05, pot: 0.8, waterPot: 1.6,
+  clay: 1.5, flint: 0.3, grain: 0.02, flowerSeeds: 0.02, flowers: 0.05, pot: 0.8, waterPot: 1.6,
   torch: 0.4, berries: 0.1, rawFish: 0.6, cookedFish: 0.5, rawMeat: 0.8, cookedMeat: 0.7,
 };
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

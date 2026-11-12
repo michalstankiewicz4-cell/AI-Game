@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.29.0 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.30.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -18,7 +18,7 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Dziki:** szarżują na postacie, które podejdą za blisko. Z włócznią albo mieczem postacie walczą i polują, tarcza osłabia ciosy, a bez broni uciekają.
 - **Plecak:** limit 30 rzeczy i 25 kg; ciężar spowalnia, nadmiar trafia do składzików albo do zbitej z desek skrzyni (ta trzyma też jedzenie), z których postacie potem biorą.
 - **Klimat umiarkowany:** temperatura zmienia się w ciągu doby i z dnia na dzień. To, że ogień i dach grzeją, postacie odkrywają same.
-- **Rzemiosło:** drzewo → kłody, gałęzie i liście; kłoda → deski (toporkiem); wodorosty → lina; dalej wędka, włócznia, ognisko (wypala się i trzeba je podsycać), ruszt, namiot, szałas, stół rzemieślniczy, łóżko, żelazne narzędzia, nóż kamienny, motyka, drewniana miska, łuk ze strzałami, ubranie ze skóry, gliniana doniczka i łopata. Niektóre receptury wychodzą tylko przy ogniu albo przy stole.
+- **Rzemiosło:** drzewo → kłody, gałęzie i liście; kłoda → deski (toporkiem); wodorosty → lina; dalej wędka, włócznia, ognisko z krzemieniem z plaży (wypala się i trzeba je podsycać), ruszt, namiot, szałas, stół rzemieślniczy, łóżko, żelazne narzędzia, nóż kamienny, motyka, drewniana miska, łuk ze strzałami, ubranie ze skóry, gliniana doniczka i łopata. Niektóre receptury wychodzą tylko przy ogniu albo przy stole.
 - **Budowanie z desek:** deski kładzione pojedynczo jako podłoga, ściana albo skos, przyciągane do siatki, z nazwami, do zdjęcia i przeniesienia. Model językowy dostaje analizę kształtu budowy (same liczby) i może wydawać polecenia. Bez nich postacie budują metodą prób i błędów; dom (przykryte, obudowane pola grzeją) wychodzi sam albo wcale.
 - **Noc i pochodnie:** w nocy postać widzi na ok. 1/4 dziennego zasięgu, z pochodnią w ręku na połowę. Pochodnię odkrywa się i zapala przy ognisku. Postać ma dwie ręce: w prawej narzędzie albo broń, w lewej pochodnię albo tarczę.
 - **Uprawa i łowy:** nasiona z jagód, ziarno dzikiego żyta i nasiona kwiatów sieje się na grządkach przygotowanych motyką albo w doniczkach z gliny i miskach z ziemią; rośliny trzeba podlewać; miska i doniczka noszą wodę; kwiaty cieszą postacie; dzika skóruje się nożem (mięso i skóra), ptaki dają mięso i pióra na strzały do łuku.
@@ -28,12 +28,13 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Wiedza postaci (menu):** „🧪 Odkrywa sam” albo „📚 Wie wszystko”. W pierwszym trybie AI nie znają mapy, receptur ani jadalności. Z ciekawości badają nowe zasoby, eksperymentują łącząc materiały i tak odkrywają receptury; uczą się, co jest jadalne (surowe może zaszkodzić) i że morskiej wody nie da się pić. W drugim znają wszystko od startu (receptury, jedzenie, mapę, zjawiska) i od razu zbierają oraz budują.
 - **Percepcja i pamięć:** stożek widzenia (im dalej, tym węższy), pamięć tego, co widział; trzeba się rozejrzeć, by odświeżyć wiedzę. Tryb „👁️ Oczami AI” pokazuje stożek i mgłę niewiedzy.
 - **Rozmowy:** agenci spotykają się, wymieniają wiedzą o mapie, recepturami, doświadczeniem (umiejętności rosną z praktyką) i przedmiotami.
+- **Reakcje i stosunki:** postacie zauważają zmiany w świecie i to, co inni robią z ich rzeczami (branie ze skrzyni, spanie w ich łóżku, zbieranie ich plonów, podlewanie), i reagują albo nie, zależnie od humoru, zdrowia i priorytetów. Z tych zdarzeń same powstają sympatie i antypatie (kolega, przyjaciel, nielubiany, wróg), które zmieniają rozmowy, prezenty i zaufanie. Podpatrują też u innych, z czego zrobione są rzeczy. Karta postaci ma zakładki Stan, Priorytety, Reakcje, Plecak i Wiedza.
 - **Komentarze na żywo:** gdy model działa, postacie mówią jego słowami (🤖), a nad myślącą postacią widać „💭 …”. Gdy model się ładuje albo nie działa, mówi za nie skrypt (dymek kursywą, 📜). Narrator komentuje sytuację.
 - **Mózg postaci (menu):** model językowy decyduje, co postać robi, i układa jej wypowiedzi. Do wyboru darmowy model z Hugging Face w przeglądarce (WebLLM na WebGPU: od Qwen2.5 0.5B po Qwen3.5 4B i Gemmę 4 E2B, z opcjonalnym trybem myślenia Qwen3.5; pobiera się raz, potem z pamięci przeglądarki, a pobrane mają na liście ✅; liczy w osobnym wątku, żeby nie przycinać gry; po przeciążeniu karty gra sama schodzi na lżejszy model) albo Claude API. LM Studio jest zapowiedziane (wyszarzone w menu). Chodzenie, zbieranie i odruchy przy krytycznych potrzebach wykonuje kod gry, więc postacie żyją także, gdy model się ładuje.
 - **Pełna swoboda (przełącznik w menu):** model dostaje tylko to, co postać czuje, widzi, pamięta i ma, i sam wymyśla zamiar, który gra tłumaczy na działanie.
 - **Grafika:** zasoby rysowane przez instancjonowanie, przełącznik jakości 🎨 (cienie, rozdzielczość) i licznik FPS w górnym pasku.
 - **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli; „📋 Kopiuj wszystko” kopiuje je z wersją gry i nazwą karty graficznej.
-- **Wiki w grze (📖, klawisz K):** receptury, budowle, materiały, jedzenie, narzędzia, obiekty świata i doświadczenia w kategoriach. Widać wszystko, a to, co odkryła któraś postać, ma znaczek ✓. Postacie wiki nie widzą.
+- **Wiki w grze (📖, klawisz K):** receptury, budowle, materiały, jedzenie, narzędzia, obiekty świata, doświadczenia i zachowanie postaci (na co reagują, stosunki, priorytety) w kategoriach. Widać wszystko, a to, co odkryła któraś postać, ma znaczek ✓. Postacie wiki nie widzą.
 - **Pomiar wydajności (⏱️, klawisz P):** ile czasu klatki zajmuje świat, AI, rysowanie (procesor i karta graficzna) i interfejs, liczba przycięć i ich najczęstsza przyczyna, raport do skopiowania.
 - **Okienka:** „Postacie” (klik przenosi kamerę do postaci) i karta postaci dają się przesuwać za nagłówek.
 

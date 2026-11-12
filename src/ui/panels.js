@@ -78,7 +78,24 @@ export function renderDetail(state) {
     <div style="margin-top:4px;color:#9fb2c8">Najwyższa ocena wygrywa. Ocena rośnie z potrzebą (głód, pragnienie, zmęczenie, zimno), z wiedzą postaci i z jej wnioskami${a.llmDriven ? ', a model językowy może wybrać inną opcję z listy' : ''}.</div>
     <h4>Wnioski</h4><div style="color:#e6d3a3">${a.conclusions && a.conclusions.length ? a.conclusions.map((c) => '🤔 ' + esc(c)).join('<br>') : '<span style="opacity:.6">jeszcze żadnych</span>'}</div>
     ${sus.length ? `<div style="margin-top:4px">🕵️ Podejrzewa: ${sus.join(', ')}</div>` : ''}
-    ${f ? `<h4>Czy odpowie, gdy ktoś coś powie? ${pct(f.chance)}</h4><div class="grid">
+    ${sus.length ? '' : ''}`;
+    })(),
+    react: (() => {
+      const f = a.reactFactors ? a.reactFactors() : null;
+      const now = state.world.time;
+      const log = (a.reactLog || []).slice().reverse().map((e) => `<div class="rlog"><span class="rt">${Math.round(now - e.t)} s</span> ${e.icon} ${esc(e.what)}<br><span class="${e.said ? 'said' : 'quiet'}">${e.said === true || e.said === e.what ? '🗣️ mówi to na głos' : e.said ? '🗣️ „' + esc(e.said) + '”' : '🤐 przemilczał' + (a.f ? a.f('', 'a') : '(a)')}</span></div>`).join('');
+      const others = state.agents.filter((o) => o !== a);
+      const rel = others.map((o) => {
+        const v = a.likeOf ? a.likeOf(o.id) : 0, why = (a.relWhy && a.relWhy.get(o.id)) || [];
+        const col = v >= 20 ? '#7fd17f' : v <= -20 ? '#e07a6a' : '#9fb2c8';
+        return `<div class="rel"><span>${esc(o.name)}${o.alive ? '' : ' †'}</span><b style="color:${col}">${esc(a.relWord ? a.relWord(o.id) : '')} (${v > 0 ? '+' : ''}${Math.round(v)})</b>
+          <div class="b"><i style="left:${v < 0 ? 50 + v / 2 : 50}%;width:${Math.abs(v) / 2}%;background:${col}"></i></div>${why.length ? `<small>${why.map(esc).join(' · ')}</small>` : ''}</div>`;
+      }).join('');
+      return `
+    ${others.length ? `<h4>Stosunki z innymi</h4>${rel}<div style="margin-top:2px;color:#9fb2c8">Rosną z rozmów, prezentów, nauki i pomocy, spadają, gdy ktoś bierze cudze rzeczy, śpi w cudzym łóżku albo zbiera cudze plony.</div>` : ''}
+    <h4>Ostatnie reakcje</h4>${log || '<span style="opacity:.6">jeszcze nic nie zauważył(a)</span>'}
+    <div style="margin-top:4px;color:#9fb2c8">👀 widzi, jak ktoś rusza ${a.f ? a.f('jego', 'jej') : 'jej'} rzeczy · 👂 słyszy innych · 🔎 zauważa zmiany w świecie · 💡 podpatruje · 🤔 czegoś brakuje</div>
+    ${f ? `<h4>Czy zareaguje? ${pct(f.chance)}</h4><div class="grid">
       <span>😊 Humor</span><b>×${f.mood.toFixed(2)}</b><span>❤️ Zdrowie</span><b>×${f.health.toFixed(2)}</b>
       <span>⚡ Zmęczenie</span><b>×${f.energy.toFixed(2)}</b><span>🚨 Pilne sprawy (głód, pragnienie, ucieczka)</span><b>×${f.busy.toFixed(2)}</b></div>
       <div style="margin-top:4px;color:#9fb2c8">Gdy ktoś mówi o ${a.f ? a.f('nim', 'niej') : 'niej'} po imieniu, szansa ×0,75. Po odpowiedzi postać przez 15 s się nie odzywa.</div>` : ''}
@@ -87,7 +104,7 @@ export function renderDetail(state) {
   };
   el.querySelector('.dbody').innerHTML = parts[detailTab] || parts.state;
 }
-const TABS = [['state', '🧍 Stan'], ['prio', '⚖️ Priorytety'], ['pack', '🎒 Plecak'], ['know', '🧠 Wiedza']];
+const TABS = [['state', '🧍 Stan'], ['prio', '⚖️ Priorytety'], ['react', '💬 Reakcje'], ['pack', '🎒 Plecak'], ['know', '🧠 Wiedza']];
 let detailTab = 'state';
 
 let detailTick = 0;

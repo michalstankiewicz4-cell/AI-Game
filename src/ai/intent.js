@@ -37,6 +37,7 @@ const KEYWORDS = [
   ['Ścinać drzewo', ['scin', 'scia', 'drzew', 'drewn', 'rab', 'klod', 'siekier']],
   ['Ciosać deski', ['desk', 'cios']],
   ['Skręcić linę', ['lin', 'skrec', 'sznur']],
+  ['Zbierać krzemień', ['krzemi', 'iskr', 'krzes']],
   ['Zbierać kamienie', ['kamien', 'kamyk', 'skal']],
   ['Zrobić nóż', ['noz', 'ostrz', 'kamienny noz']],
   ['Zrobić motykę', ['motyk', 'narzedzi do ziemi']],
@@ -75,7 +76,7 @@ const KEYWORDS = [
   ['Rozejrzeć się', ['rozejrz', 'rozgl', 'obejrz', 'popatrz']],
   ['Porozmawiać', ['rozmaw', 'pogad', 'powiedz', 'zapyt', 'spotk', 'podejs do']],
   ['Pospacerować', ['spacer', 'przejs', 'przejd']],
-  ['Zbadać', ['zbada', 'sprawdz', 'obejrz', 'drzew', 'skal', 'krzak', 'palm', 'wodorost', 'kopal', 'zyt', 'kwiat']],
+  ['Zbadać', ['zbada', 'sprawdz', 'obejrz', 'drzew', 'skal', 'krzak', 'palm', 'wodorost', 'kopal', 'zyt', 'kwiat', 'krzemi']],
 ];
 
 const norm = (t) => (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
@@ -86,7 +87,7 @@ export function mapIntent(intent, labels) {
   let best = null;
   labels.forEach((label, rank) => {
     const plain = label.replace(/^[^\p{L}]+/u, ''); // bez emoji
-    const entry = KEYWORDS.find(([name]) => plain === name || (name === 'Zbadać' && plain.startsWith('Zbadać ') && plain !== 'Zbadać okolicę'));
+    const entry = KEYWORDS.find(([name]) => plain === name || (name === 'Wyrwać pień' && plain.startsWith(name)) || (name === 'Zbadać' && plain.startsWith('Zbadać ') && plain !== 'Zbadać okolicę'));
     if (!entry) return;
     let score = 0;
     for (const k of entry[1]) if (t.includes(k)) score++;
@@ -97,7 +98,7 @@ export function mapIntent(intent, labels) {
 
 const feel = (v, words) => (v < 15 ? words[0] : v < 35 ? words[1] : v < 60 ? words[2] : null);
 const DIR = ['na północy', 'na północnym wschodzie', 'na wschodzie', 'na południowym wschodzie', 'na południu', 'na południowym zachodzie', 'na zachodzie', 'na północnym zachodzie'];
-const KIND = { tree: 'drzewa', palm: 'palmy', rock: 'skały', bush: 'krzaki', seaweed: 'wodorosty', mine: 'wejście do jakiejś kopalni', rye: 'kępy dzikiego żyta', flower: 'kwiaty' };
+const KIND = { tree: 'drzewa', palm: 'palmy', rock: 'skały', bush: 'krzaki', seaweed: 'wodorosty', mine: 'wejście do jakiejś kopalni', rye: 'kępy dzikiego żyta', flower: 'kwiaty', flint: 'ciemne, ostre kamyki na piasku' };
 const CROP_N = { berry: 'jagody', rye: 'żyto', flower: 'kwiaty' };
 
 export const FREE_SYSTEM = 'Jesteś rozbitkiem na bezludnej wyspie i chcesz przeżyć. Nikt nie mówi ci, co robić: sam(a) decydujesz na podstawie tego, co czujesz i widzisz. '
@@ -157,6 +158,7 @@ export function describeFree(a) {
   if (people.length) lines.push(`Niedaleko jest: ${people.join(', ')}.`);
   if (a.heard && a.heard.length && w.time - (a.heardT || 0) < 40) lines.push(`Słyszysz: ${a.heard.join(' | ')}`);
   if (a.conclusions && a.conclusions.length) lines.push(`Twoje wnioski z tego, co się stało: ${a.conclusions.join(' ')}`);
+  { const r = a.relSummary ? a.relSummary() : ''; if (r) lines.push(`Twój stosunek do innych: ${r}`); }
   const inv = Object.entries(a.inv).filter(([, v]) => v > 0).map(([k, v]) => `${ITEM_LABELS[k].replace(/^[^\p{L}]+/u, '').toLowerCase()} ×${v}`);
   lines.push(`Masz przy sobie: ${[...Object.entries(a.tools).filter(([, v]) => v).map(([k]) => TOOL_LABELS[k].replace(/^[^\p{L}]+/u, '').toLowerCase()), ...inv].join(', ') || 'nic'}.`);
   const recipes = [...a.known].filter((r) => RECIPE_NAMES[r]).map((r) => RECIPE_NAMES[r]);

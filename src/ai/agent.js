@@ -6,7 +6,7 @@ import { llm } from './llm.js';
 import { mapIntent } from './intent.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
-  SPEED, ROAD_SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp, TORCH,
+  SPEED, ROAD_SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp, TORCH, STORES,
 } from './data.js';
 import { perceptionMethods } from './perception.js';
 import { knowledgeMethods } from './knowledge.js';
@@ -36,7 +36,7 @@ export class Agent {
     this.hunger = 85; this.thirst = 80; this.energy = 90; this.health = 100;
     this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
     this.mood = 60; this.joy = 0; this.lastTalk = -999; // samopoczucie 0-100, chwilowa radość, ostatnia rozmowa
-    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0, feathers: 0, hide: 0, seeds: 0, arrows: 0, bowl: 0, waterBowl: 0, clay: 0, grain: 0, flowerSeeds: 0, flowers: 0, pot: 0, waterPot: 0 };
+    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0, feathers: 0, hide: 0, seeds: 0, arrows: 0, bowl: 0, waterBowl: 0, clay: 0, flint: 0, grain: 0, flowerSeeds: 0, flowers: 0, pot: 0, waterPot: 0 };
     this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false, knife: false, hoe: false, bow: false, leather: false, shovel: false };
     this.task = null;
     this.alive = true;
@@ -64,6 +64,9 @@ export class Agent {
     this.known = new Set();      // odkryte receptury (+ 'bridge', 'cook')
     this.edible = new Map();     // rodzaj jedzenia -> true/false
     this.tried = new Set();      // wypróbowane kombinacje materiałów
+    this.ideas = new Map();      // podpatrzone rzeczy: receptura -> { t, by } (widział(a) ją u kogoś)
+    this.failStreak = 0;         // ile prób z rzędu nic nie dało (zniechęca do ślepych eksperymentów)
+    this.matFirst = new Map();   // materiał -> kiedy pierwszy raz go miał(a) (nowa rzecz = nowe pomysły)
     this.triedKinds = new Set(); // rodzaje zasobów, które już badał
     this.saltKnown = false;      // wie, że morska woda nie gasi pragnienia
     this.buildQueue = [];         // polecenia budowy z desek od modelu językowego
@@ -79,12 +82,17 @@ export class Agent {
   dropSurplus() {
     let best = null;
     // za dużo rzeczy: odłóż tego, czego ma najwięcej sztuk; za ciężko: tego, co najwięcej waży
-    const byCount = this.invTotal() >= INV_CAP;
+    const byCount = this.invTotal() > INV_CAP;
     const val = (k) => (byCount ? this.inv[k] : this.inv[k] * WEIGHT[k]);
     for (const k of MATS) if (this.inv[k] > 0 && (!best || val(k) > val(best))) best = k;
     if (!best) return;
-    const n = Math.max(1, Math.floor(this.inv[best] / 2));
+    // odkłada tylko to, co ponad miarę
+    const over = byCount ? this.invTotal() - INV_CAP : Math.ceil((this.invWeight() - MAX_WEIGHT) / (WEIGHT[best] || 0.5));
+    const n = clamp(over, 1, this.inv[best]);
     this.inv[best] -= n;
+    // jedna-dwie drobne rzeczy z dala od składziku po prostu zostawia (nie robi kupki z jednego patyka)
+    const close = this.world.structures.some((s) => STORES.has(s.kind) && Math.hypot(s.x - this.x, s.z - this.z) < 2.6);
+    if (n <= 2 && !close) return;
     const st = this.stashHere();
     if (st) { st.items[best] = (st.items[best] || 0) + n; this.rememberStruct(st); this.expectStore(st); }
     if (Math.random() < 0.3) this.speak(`Za dużo dźwigam, odkładam ${MAT_NAMES[best]}.`);
@@ -92,7 +100,7 @@ export class Agent {
   // składzik w zasięgu ręki albo nowa kupka obok
   stashHere() {
     const w = this.world;
-    const close = (s) => Math.hypot(s.x - this.x, s.z - this.z) < 1.8;
+    const close = (s) => Math.hypot(s.x - this.x, s.z - this.z) < (s.kind === 'stash' ? 2.6 : 1.8); // do kupki obok dorzuca, zamiast zaczynać nową
     const near = w.structures.find((s) => s.kind === 'chest' && close(s)) || w.structures.find((s) => s.kind === 'stash' && close(s));
     if (near) return near;
     const free = (i, j) => w.walkable(i, j) && w.type[idx(i, j)] !== T.BRIDGE && !w.res[idx(i, j)] && !w.structures.some((s) => s.i === i && s.j === j);
@@ -115,7 +123,9 @@ export class Agent {
       this.say('przekonuje się na własnej skórze, że dziki są groźne 🐗🧠', 'learn');
       this.speak('Au! Ten dzik mnie zaatakował!', true);
     }
-    if (!this.tools.sword && !this.tools.spear && !(this.tools.bow && this.inv.arrows > 0) && !(this.task && this.task.flee)) { this.task = this.taskFlee(b); this.speak('Uciekam!', true); }
+    const armed = this.tools.sword || this.tools.spear || (this.tools.bow && this.inv.arrows > 0);
+    // bez broni albo ciężko ranna postać nie walczy, tylko ucieka
+    if ((!armed || this.health < 30) && !(this.task && this.task.flee)) { this.fightBoar = null; this.task = this.taskFlee(b); this.speak(armed ? 'Jestem ranny, nie dam rady! Uciekam!'.replace('ranny', this.f('ranny', 'ranna')) : 'Uciekam!', true); }
   }
 
   boarKilled(b) {
@@ -128,7 +138,16 @@ export class Agent {
   }
 
   rememberStruct(s) { this.knownStructs.add(s.id); }
-  practice(k) { this.skill[k] = Math.min(1, this.skill[k] + 0.05 * (1 - this.skill[k])); }
+  practice(k) {
+    this.skill[k] = Math.min(1, this.skill[k] + 0.05 * (1 - this.skill[k]));
+    // ciężka praca bywa niebezpieczna: niewprawna albo zmęczona postać może się skaleczyć
+    if ((k === 'chop' || k === 'mine') && Math.random() < 0.07 * (1.2 - this.skill[k]) * (this.energy < 30 ? 2 : 1)) {
+      const dmg = 5 + Math.round(Math.random() * 8);
+      this.health = clamp(this.health - dmg, 0, 100);
+      this.mood = Math.max(0, this.mood - 3);
+      this.speak(k === 'chop' ? `Au! Siekiera mi się omsknęła, skaleczył${this.f('em', 'am')} się.` : `Au! Odłamek skały mnie zranił.`, true);
+    }
+  }
 
   // dymek nad głową + wpis w czacie komentarzy
   // Mówi tylko model językowy. Teksty z szablonów nie trafiają do dymków:
@@ -180,16 +199,30 @@ export class Agent {
     if (text.includes(this.name)) {
       // ktoś mówi o mnie: tłumaczy się, jeśli to o branie rzeczy
       const took = w.structures.some((s) => (s.lastTaker && s.lastTaker.id === this.id) || (s.harvestedBy && s.harvestedBy.id === this.id && s.owner === a.id));
-      if (/wzi|zabra|zebra|nie ma|pusto/.test(lower)) line = took ? `Słyszę cię, ${a.name}. Tak, to ja wziął${this.f('em', 'am')}, potrzebował${this.f('em', 'am')} tego. Wybacz!` : `Hej, ${a.name}, to nie ja!`;
-      else line = `Słyszę, że o mnie mówisz, ${a.name}?`;
+      if (/dzięki|miło/.test(lower)) line = pick(['Nie ma sprawy!', `Proszę bardzo, ${a.name}.`, 'Drobiazg!']);
+      else if (/łóżku/.test(lower)) line = pick([`Przepraszam, ${a.name}, nie wiedział${this.f('em', 'am')}, że to twoje.`, 'Oj, już się wynoszę...', 'Tylko się zdrzemnę, zaraz zwolnię!']);
+      else if (/grzebiesz|czego tam szukasz|zostaw/.test(lower)) line = pick([`Potrzebował${this.f('em', 'am')} tylko trochę, ${a.name}. Oddam!`, 'Myślał' + this.f('em', 'am') + ', że zapasy są wspólne.', 'Już, już, nic nie ruszam.']);
+      else if (/plony/.test(lower)) line = pick([`Wybacz, ${a.name}, byłem głodny.`.replace('byłem', 'był' + this.f('em', 'am')), 'Myślał' + this.f('em', 'am') + ', że to niczyje. Posadzę nowe!']);
+      else if (/objadł|ściął|zerwał|wyrwał|odłupał|zebrał kłosy/.test(lower)) {
+        // zasoby: postać wie, co sama ostatnio robiła
+        const mine = w.res.some((r) => r && r.lastBy === this.id && w.time - (r.lastByT || 0) < 300);
+        line = mine ? `To pewnie ja, ${a.name}. Potrzebował${this.f('em', 'am')} tego.` : 'To nie ja, ja tu nic nie ruszał' + this.f('em', 'am') + '.';
+      }
+      else if (/majsterkuje/.test(lower)) line = Math.random() < 0.5 ? 'Zaraz skończę, tylko coś sprawdzam.' : null;
+      else if (/wzi|zabra|zebra|nie ma|pusto/.test(lower)) line = took ? `Słyszę cię, ${a.name}. Tak, to ja wziął${this.f('em', 'am')}, potrzebował${this.f('em', 'am')} tego. Wybacz!` : `Hej, ${a.name}, to nie ja!`;
+      else line = Math.random() < 0.3 ? `Słyszę, że o mnie mówisz, ${a.name}?` : null;
     } else if (/nie ma|pusto|ginę|giną|zginęł/.test(lower) && Math.random() < 0.5) line = pick([`Co ci zginęło, ${a.name}?`, 'Też mi się zdaje, że rzeczy tu znikają.', 'Ja nic nie ruszał' + this.f('em', 'am') + '!']);
     else if (/odkry|wiem już|da się|💡|trzeba/.test(lower) && Math.random() < 0.35) line = pick([`Dobrze wiedzieć, ${a.name}!`, 'O, zapamiętam to.', 'Ciekawe, sprawdzę to.']);
     else if (/pomoc|ratunk|uciekam|au!/.test(lower) && Math.random() < 0.6) line = pick([`${a.name}, trzymaj się!`, 'Uważaj!', 'Biegnę, uważaj na siebie!']);
     if (!line) return;
     // jak człowiek: może odpowiedzieć, ale nie musi (zajęta, zmęczona, w złym humorze albo po prostu nie ma ochoty)
-    const chance = (text.includes(this.name) ? 0.75 : 1) * this.reactFactors().chance;
+    // chętniej odpowiada komuś, kogo lubi
+    const lk = this.likeOf(a.id);
+    const chance = (text.includes(this.name) ? 0.75 : 1) * (lk >= 20 ? 1.25 : lk <= -20 ? 0.7 : 1) * this.reactFactors().chance;
     this.reactCd = w.time + 8;
-    if (Math.random() > chance) return;
+    if (Math.random() > chance) { this.logReact('👂', `${a.name}: „${text}”`, null, 'heard'); return; }
+    this.logReact('👂', `${a.name}: „${text}”`, line, 'heard');
+    if (/trzymaj się|uważaj|biegnę/i.test(line)) a.like(this.id, 3, 'martwi się o mnie');
     this.reactCd = w.time + 15;
     this.speakCd = 0;
     this.speak(line, true, true);
@@ -257,7 +290,7 @@ export class Agent {
     const hotMul = this.bodyT > 37.5 ? 1 + (this.bodyT - 37.5) * 0.8 : 1; // gorąco: szybciej chce się pić
     // spadek potrzeb
     const workMul = this.working ? 1.35 : 1;
-    this.hunger = clamp(this.hunger - 0.26 * dt * workMul * coldMul, 0, 100);
+    this.hunger = clamp(this.hunger - 0.3 * dt * workMul * coldMul, 0, 100);
     this.thirst = clamp(this.thirst - 0.36 * dt * workMul * hotMul, 0, 100);
     if (this.asleep) {
       const shelter = this.nearStructure('shelter', 1.5);
@@ -273,7 +306,8 @@ export class Agent {
       }
       this.hunger = clamp(this.hunger + 0.1 * dt, 0, 100); // sen spowalnia głód
       this.thirst = clamp(this.thirst + 0.12 * dt, 0, 100);
-      if (shelter) this.health = clamp(this.health + 0.2 * dt, 0, 100);
+      // sen leczy: najlepiej pod dachem i w łóżku, ale każde schronienie pomaga
+      this.health = clamp(this.health + (0.05 + (shelter ? 0.12 : tentS ? 0.08 : 0) + (bed ? 0.08 : 0)) * dt, 0, 100);
     } else {
       this.energy = clamp(this.energy - 0.2 * dt * workMul, 0, 100);
     }
@@ -299,7 +333,7 @@ export class Agent {
     if (this.bodyT < 35) dmg += 0.2 + (35 - this.bodyT) * 0.6; // wychłodzenie
     if (this.bodyT > 39) dmg += (this.bodyT - 39) * 0.8;       // przegrzanie
     if (dmg > 0) this.health -= dmg * dt;
-    else if (this.hunger > 40 && this.thirst > 40 && this.energy > 25 && this.bodyT > 35.5) this.health = clamp(this.health + 0.15 * dt, 0, 100);
+    else if (this.hunger > 40 && this.thirst > 40 && this.energy > 25 && this.bodyT > 35.5) this.health = clamp(this.health + (this.task && this.task.rest ? 0.12 : 0.03) * dt, 0, 100); // rany goją się powoli, w spoczynku szybciej
     if (this.health <= 0) {
       this.health = 0; this.alive = false; this.task = null; this.asleep = false;
       const cause = this.lastHit && w.time - this.lastHit.t < 5 ? 'od ran zadanych przez dzika' : this.thirst <= 0 ? 'z pragnienia' : this.hunger <= 0 ? 'z głodu' : this.bodyT < 35 ? 'z wychłodzenia' : this.bodyT > 39 ? 'z przegrzania' : 'z wycieńczenia';
@@ -313,7 +347,7 @@ export class Agent {
     // walka z dzikiem: uzbrojona postać stoi i zadaje ciosy, zamiast robić cokolwiek innego
     const fb = this.fightBoar;
     if (fb && (fb.dead || Math.hypot(fb.x - this.x, fb.z - this.z) > 2.2 || (fb.target !== this && fb.state !== 'roam'))) this.fightBoar = null;
-    else if (fb && (this.tools.sword || this.tools.spear || (this.tools.bow && this.inv.arrows > 0))) {
+    else if (fb && this.health >= 30 && (this.tools.sword || this.tools.spear || (this.tools.bow && this.inv.arrows > 0))) {
       this.facing = Math.atan2(fb.x - this.x, fb.z - this.z);
       this.working = true;
       this.strikeT = (this.strikeT || 0) - dt;
@@ -340,7 +374,7 @@ export class Agent {
         this.speak(urgent('cold'), true);
       }
     }
-    if (this.invTotal() >= INV_CAP || this.invWeight() > MAX_WEIGHT) this.dropSurplus();
+    if (this.invTotal() > INV_CAP || this.invWeight() > MAX_WEIGHT) this.dropSurplus(); // dopiero ponad miarę (pełny plecak to jeszcze nie powód, by coś rzucić)
     if (!this.task) this.decide();
     if (this.task) this.runTask(dt);
     // tryb Claude: co jakiś czas postać pyta model, nawet w trakcie długiego zadania

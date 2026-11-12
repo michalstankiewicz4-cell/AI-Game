@@ -12,7 +12,7 @@ export const modelsMethods = {
       skin: M(0xf0c8a0), dark: M(0x222222), stone: M(0x777777), flame: new THREE.MeshBasicMaterial({ color: 0xffa030 }),
       fish: M(0xff8a3d), bird: M(0xf4f4f4), birdWing: M(0xdadada), beak: M(0xf0a020), ghost: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.18 }),
       dead: M(0x777777), weed: M(0x2f6b2a), thatch: M(0xc9a35a), iron: M(0xb0603a),
-      rye: M(0xc9a948), ryeGreen: M(0x7fa046), stem: M(0x4f8a3a), clay: M(0xb5623a),
+      rye: M(0xc9a948), flint: M(0x3a3f4a, { roughness: 0.35 }), ryeGreen: M(0x7fa046), stem: M(0x4f8a3a), clay: M(0xb5623a),
       petals: [M(0xf2d230), M(0xe0566e), M(0xf4f0ff)], petalMid: M(0xf0a020),
     };
     this.geo = {
@@ -80,6 +80,13 @@ export const modelsMethods = {
         add(G.stalk, m.rye, x, 0.3 * h, z, 1, h, 1);
         add(G.ear, m.rye, x, 0.62 * h, z).name = 'ear' + (k % 3) + '_' + k;
       }
+    } else if (r.kind === 'flint') {
+      // krzemienie: ciemne, błyszczące, ostro łupane kamyki na piasku (każda para to jedna sztuka)
+      for (let k = 0; k < 4; k++) {
+        const a = k * 1.7 + r.id, rr = 0.12 + (k % 2) * 0.14;
+        const o = add(G.rock, m.flint, Math.cos(a) * rr, 0.04, Math.sin(a) * rr, 0.22, 0.14, 0.18);
+        o.rotation.set(k * 0.7, a, k * 0.4); o.name = 'flint' + (k % 2) + '_' + k;
+      }
     } else if (r.kind === 'flower') {
       // kwiaty na łodyżkach w jednym z trzech kolorów
       const pm = m.petals[(r.hue || 0) % 3];
@@ -133,6 +140,8 @@ export const modelsMethods = {
       for (const o of g.children) if (o.name && /^(ear|fl|fm)\d/.test(o.name)) o.visible = Number(o.name.match(/\d/)[0]) < left;
     } else if (r.kind === 'seaweed') {
       for (let k = 0; k < 5; k++) g.getObjectByName('weed' + k).visible = k < 2 + r.amount;
+    } else if (r.kind === 'flint') {
+      for (const o of g.children) if (o.name && o.name.startsWith('flint')) o.visible = Number(o.name[5]) < r.amount;
     } else if (r.kind === 'rock') {
       const s = 0.55 + Math.min(r.stone, 6) * 0.1;
       g.getObjectByName('main').scale.set(1.2 * s, 0.8 * s, s);
