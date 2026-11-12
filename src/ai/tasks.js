@@ -4,7 +4,7 @@ import { thought, urgent, eventLine } from './commentary.js';
 import {
   FIRE_FUEL,
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
-  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
+  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, WEIGHT, clamp,
 } from './data.js';
 
 const BUILD = {
@@ -46,6 +46,7 @@ export const tasksMethods = {
           this.event('stomach');
         } else {
           this.hunger = clamp(this.hunger + FOOD[k].val, 0, 100);
+          if (k === 'cookedFish' || k === 'cookedMeat') this.joy = Math.min(30, this.joy + 6); // ciepły posiłek cieszy
           if (first) this.event('tasteGood', { food: FOOD[k].name });
         }
         if (first) { this.edible.set(k, true); this.say(`odkrywa, że ${FOOD[k].name} ${raw ? 'da się zjeść (ale lepiej upiec)' : 'jest jadalne'} 🧠`, 'learn'); }
@@ -59,7 +60,7 @@ export const tasksMethods = {
     return {
       targetId: bush.id, path: this.pathTo(bush.i, bush.j), face: bush,
       act: (dt, t) => {
-        if (bush.removed || bush.berries <= 0 || this.invTotal() >= INV_CAP) return 'done';
+        if (bush.removed || bush.berries <= 0 || this.full()) return 'done';
         if (t.elapsed > 1.3) {
           t.elapsed = 0; bush.berries--; this.inv.berries++; this.stats.berries++;
           this.world.changed.add(bush);
@@ -84,7 +85,7 @@ export const tasksMethods = {
             this.inv.rawFish++; this.stats.fish++; t.caught = true; this.practice('fish');
             if (this.stats.fish === 1) { this.say('złowił(a) pierwszą rybę! 🐟'); this.event('firstFish'); }
             else if (Math.random() < 0.4) this.event('fish');
-            if (this.inv.rawFish >= 3 || this.invTotal() >= INV_CAP) return 'done';
+            if (this.inv.rawFish >= 3 || this.full()) return 'done';
           }
         }
         if (t.elapsed > 14) {
@@ -186,6 +187,39 @@ export const tasksMethods = {
     };
   },
 
+  // weź ze składziku to, czego brakuje do celów
+  taskTakeStash(st, want) {
+    return {
+      path: this.pathTo(st.i, st.j) || [], label: '📦 Bierze z zapasów',
+      act: (dt, t) => {
+        if (t.elapsed < 1.5) return null;
+        const s = st.s; let got = 0;
+        for (const k in want) {
+          while (this.inv[k] < want[k] && s.items[k] > 0 && this.roomFor(1, WEIGHT[k])) { s.items[k]--; this.inv[k]++; got++; }
+        }
+        return got ? 'done' : 'fail';
+      },
+    };
+  },
+
+  // odłóż to, czego teraz nie potrzebuje: do znanego składziku albo na nową kupkę przy ognisku lub dachu
+  taskStore(target, want) {
+    return {
+      path: target ? this.pathTo(target.i, target.j) || [] : [], label: '📦 Odkłada zapasy',
+      act: (dt, t) => {
+        if (t.elapsed < 1.5) return null;
+        const s = this.stashHere();
+        if (!s) return 'fail';
+        this.rememberStruct(s);
+        for (const k of MATS) {
+          const n = Math.max(0, this.inv[k] - (want[k] || 0));
+          if (n > 0) { this.inv[k] -= n; s.items[k] = (s.items[k] || 0) + n; }
+        }
+        return 'done';
+      },
+    };
+  },
+
   taskWarm(fire) {
     const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
     return {
@@ -213,9 +247,9 @@ export const tasksMethods = {
   },
 
   taskCraft(tool, cost, msg, announce, produce) {
-    const names = { rod: 'wędka', spear: 'włócznia' };
+    const names = { rod: 'wędka', spear: 'włócznia', clothes: 'ubranie' };
     return {
-      path: [], label: tool ? '🔨 Majsterkuje' : produce.planks ? '🪚 Ciosa deski' : '🪢 Skręca linę',
+      path: [], label: tool === 'clothes' ? '👕 Szyje ubranie' : tool ? '🔨 Majsterkuje' : produce.planks ? '🪚 Ciosa deski' : '🪢 Skręca linę',
       act: (dt, t) => {
         if (t.elapsed < (tool ? 4 : 2.5)) return null;
         t.elapsed = 0;
@@ -265,6 +299,7 @@ export const tasksMethods = {
         for (const k in cost) this.inv[k] -= cost[k];
         this.rememberStruct(w.addStructure(kind, spot.i, spot.j, this.id));
         this.say(BUILD[kind][1], 'big');
+        this.joy = Math.min(30, this.joy + 10);
         this.event(kind);
         return 'done';
       },
@@ -293,7 +328,7 @@ export const tasksMethods = {
     return {
       targetId: r.id, path: this.pathTo(r.stand.i, r.stand.j), face: r, label: '🌿 Zbiera wodorosty',
       act: (dt, t) => {
-        if (r.amount <= 0 || this.invTotal() >= INV_CAP) return t.got ? 'done' : 'fail';
+        if (r.amount <= 0 || this.full()) return t.got ? 'done' : 'fail';
         if (t.elapsed < 1.6) return null;
         t.elapsed = 0; r.amount--; this.inv.seaweed++; t.got = true;
         this.world.changed.add(r);
@@ -313,7 +348,7 @@ export const tasksMethods = {
         rock.stone--; this.inv.stone++;
         this.world.changed.add(rock);
         if (rock.stone <= 0) { this.world.removeResource(rock); return 'done'; }
-        return (t.got = (t.got || 0) + 1) >= 3 || this.invTotal() >= INV_CAP ? 'done' : null;
+        return (t.got = (t.got || 0) + 1) >= 3 || this.full() ? 'done' : null;
       },
     };
   },
@@ -334,7 +369,7 @@ export const tasksMethods = {
           if (this.stats.iron === 1) { this.say('znalazł(a) rudę żelaza! ⛏️', 'big'); this.event('iron'); }
         }
         this.world.changed.add(m);
-        return (t.got = (t.got || 0) + 1) >= 4 || this.invTotal() >= INV_CAP ? 'done' : null;
+        return (t.got = (t.got || 0) + 1) >= 4 || this.full() ? 'done' : null;
       },
     };
   },

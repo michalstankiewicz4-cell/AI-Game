@@ -166,6 +166,7 @@ export class Renderer {
     }
     const fires = [];
     for (const [s, g] of this.structMeshes) {
+      if (s.kind === 'stash') { g.visible = !!s.items && Object.values(s.items).some((v) => v > 0); continue; } // pusta kupka znika
       if (s.kind !== 'campfire') continue;
       const fl = g.getObjectByName('flame'), fl2 = g.getObjectByName('flame2');
       // ruszt dokłada się, gdy postać go zrobi

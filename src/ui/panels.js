@@ -3,7 +3,7 @@ import { $, esc, hex } from './dom.js';
 import { W, H } from '../world/world.js';
 import { ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES, FOOD } from '../ai/data.js';
 
-const NEEDS = [['hunger', '🍖', '#e8a33d'], ['thirst', '💧', '#3fa7d6'], ['energy', '⚡', '#c9d64f'], ['health', '❤️', '#e05a5a']];
+const NEEDS = [['hunger', '🍖', '#e8a33d'], ['thirst', '💧', '#3fa7d6'], ['energy', '⚡', '#c9d64f'], ['health', '❤️', '#e05a5a'], ['mood', '😊', '#e07ad0']];
 function barsHtml(a) {
   return `<div class="bars">${NEEDS.map(([k, ic, c]) => `<span>${ic}</span><div class="b"><i data-k="${k}" style="width:${a[k]}%;background:${c}"></i></div>`).join('')}</div>`;
 }
@@ -54,7 +54,7 @@ export function renderDetail(state) {
     ${a.bubble ? `<div style="margin-top:4px;color:#cfe3f2">💬 „${esc(a.bubble.text)}”</div>` : ''}
     <h4>Wiedza</h4><div>🗺️ Zna ${(a.seenCount / (W * H) * 100).toFixed(0)}% mapy · 🧠 pamięta ${a.mem.size} miejsc z zasobami${a.memBirds.size ? ` · 🐦 ${a.memBirds.size} ptaków` : ''}</div>
     <h4>Rozważane decyzje (użyteczność)</h4><div class="util">${util}</div>
-    <h4>Ekwipunek</h4><div class="grid">${inv}</div>
+    <h4>Plecak · ${a.invTotal()}/30 rzeczy · ${a.invWeight().toFixed(1)}/25 kg</h4><div class="bars"><span>🎒</span><div class="b"><i style="width:${Math.min(100, a.invWeight() / 25 * 100)}%;background:${a.invWeight() > 17.5 ? '#e0904a' : '#8fb0c8'}"></i></div></div><div class="grid">${inv}</div>
     <h4>Odkryte receptury (${[...a.known].filter((r) => RECIPE_NAMES[r]).length}/${Object.keys(RECIPE_NAMES).length})</h4><div class="tools">${Object.keys(RECIPE_NAMES).map((r) => `<span class="${a.known.has(r) ? '' : 'no'}">${a.known.has(r) ? RECIPE_NAMES[r] : '???'}</span>`).join('')}</div>
     <div style="margin-top:4px;color:#9fb2c8">Próby: ${a.tried.size} · jadalne: ${[...a.edible].filter(([, v]) => v).map(([k]) => FOOD[k].name).join(', ') || '—'}${a.saltKnown ? ' · 🧂 wie, że morska woda jest słona' : ''}</div>
     <h4>Doświadczenie</h4><div class="grid">${[['fish', '🎣 Łowienie'], ['hunt', '🔱 Polowanie'], ['chop', '🪓 Ścinanie'], ['mine', '⛏️ Górnictwo']].map(([k, n]) => `<span>${n}</span><b>${Math.round(a.skill[k] * 100)}%</b>`).join('')}</div>

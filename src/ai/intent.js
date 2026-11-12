@@ -20,6 +20,9 @@ const KEYWORDS = [
   ['Zrobić ruszt', ['ruszt', 'grill', 'smaz', 'ruszcie']],
   ['Rozbić namiot', ['namiot', 'rozbi', 'schron']],
   ['Zrobić stół rzemieślniczy', ['stol', 'warsztat', 'blat', 'zbij']],
+  ['Uszyć ubranie', ['ubra', 'ubior', 'szyc', 'uszy', 'odziez', 'ciuch', 'okryc']],
+  ['Odłożyć zapasy', ['odloz', 'zostaw', 'schowa', 'magazyn', 'skladzi', 'ciezk', 'za duzo']],
+  ['Wziąć z zapasów', ['wziac', 'zabra', 'zapas', 'skladzi', 'magazyn']],
   ['Zrobić łóżko', ['lozk', 'posla', 'legow', 'wyspac']],
   ['Eksperymentować przy stole', ['eksperym', 'sprob', 'polacz', 'stol', 'warsztat', 'kombin']],
   ['Rozpalić ognisko', ['ognisk', 'ogien', 'ognia', 'rozpal']],
@@ -79,6 +82,8 @@ export function describeFree(a) {
     feel(a.thirst, ['zasycha ci w gardle, musisz natychmiast się napić', 'bardzo chce ci się pić', 'chce ci się pić']),
     feel(a.energy, ['padasz z nóg', 'jesteś bardzo zmęczony(a)', 'czujesz zmęczenie']),
     feel(a.health, ['czujesz, że umierasz', 'jest ci bardzo źle', 'nie czujesz się najlepiej']),
+    a.mood < 25 ? 'jesteś przygnębiony(a) i nic ci się nie chce' : a.mood < 45 ? 'masz kiepski nastrój' : a.mood > 80 ? 'masz świetny humor' : null,
+    a.invWeight() > 20 ? 'plecak ciąży ci na plecach' : null,
     a.bodyT < 35.3 ? 'trzęsiesz się z zimna i drętwieją ci ręce' : a.bodyT < 36.1 ? 'jest ci zimno' : a.bodyT > 38.3 ? 'jest ci bardzo gorąco, kręci ci się w głowie' : a.bodyT > 37.5 ? 'jest ci gorąco' : null,
   ].filter(Boolean);
   lines.push(`Na zewnątrz jest ${w.weatherWord(w.airTemp(a.i, a.j))}.`);

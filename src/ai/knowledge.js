@@ -75,6 +75,7 @@ export const knowledgeMethods = {
   learn(r, from) {
     if (this.known.has(r)) return false;
     this.known.add(r);
+    this.joy = Math.min(30, this.joy + (from ? 5 : 15)); // odkrycie cieszy
     if (r === 'campfire') this.known.add('cook');
     const parts = Object.keys(RECIPES[r] || {}).map((k) => MAT_NAMES[k]).join(' + ');
     if (from) this.say(`uczy się od ${from.name}: ${parts} = ${RECIPE_NAMES[r]} 📖`, 'learn');

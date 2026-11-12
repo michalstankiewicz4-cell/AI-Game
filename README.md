@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.13.0 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.14.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -14,7 +14,8 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 ## Co jest w grze
 - **Tryby:** 1–4 AI × 1–4 wysp (dowolna kombinacja, domyślnie 1 × 1), ziarno świata.
 - **Świat:** ocean, duże wyspy low-poly, drzewa (odrastają), palmy, skały, krzaki z jagodami, wodorosty, stawy ze słodką wodą, kopalnia z rudą żelaza, ptaki, ryby, cykl dnia i nocy.
-- **Potrzeby:** głód, pragnienie, energia, zdrowie i temperatura ciała.
+- **Potrzeby:** głód, pragnienie, energia, zdrowie, samopoczucie i temperatura ciała.
+- **Plecak:** limit 30 rzeczy i 25 kg; ciężar spowalnia, nadmiar trafia do składzików, z których postacie potem biorą.
 - **Klimat umiarkowany:** temperatura zmienia się w ciągu doby i z dnia na dzień. To, że ogień i dach grzeją, postacie odkrywają same.
 - **Rzemiosło:** drzewo → kłody, gałęzie i liście; kłoda → deski (toporkiem); wodorosty → lina; dalej wędka, włócznia, ognisko (wypala się i trzeba je podsycać), ruszt, namiot, szałas, stół rzemieślniczy, łóżko i żelazne narzędzia. Niektóre receptury wychodzą tylko przy ogniu albo przy stole.
 - **Mosty:** budowane segment po segmencie (2 deski + 1 lina), od obu brzegów.
