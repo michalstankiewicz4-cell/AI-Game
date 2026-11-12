@@ -3,6 +3,7 @@
 //  - darmowy model z Hugging Face uruchamiany w przeglądarce (WebLLM + WebGPU).
 import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES } from './data.js';
 import { FREE_SYSTEM, describeFree } from './intent.js';
+import { reportError } from '../ui/errors.js';
 
 export const MODELS = {
   'claude-opus-5-5': { name: 'Claude Opus 5.5', inp: 4, out: 20 },
@@ -74,6 +75,7 @@ class LLM {
       W.engine = engine; W.id = id; W.progress = 1; W.text = 'Model gotowy';
     } catch (e) {
       W.loading = false;
+      reportError('Ładowanie modelu', e.message || e);
       if (!this.webLost(e)) W.error = 'Nie udało się uruchomić modelu: ' + String(e.message || e).slice(0, 200);
     } finally { W.loading = false; }
   }
@@ -144,7 +146,7 @@ class LLM {
         else if (decide) { const n = Math.round(+j.wybor); if (n >= 1 && n <= labels.length) label = labels[n - 1]; }
         agent.onLLM({ label, thought, intent, at: started });
       })
-      .catch((e) => { this.usage.errors++; this.lastError = String(e.message || e).slice(0, 160); })
+      .catch((e) => { this.usage.errors++; this.lastError = String(e.message || e).slice(0, 160); reportError(this.provider === 'web' ? 'Model w przeglądarce' : 'Claude API', e.message || e); })
       .finally(() => { this.inflight--; agent.llmBusy = false; });
     return true;
   }
@@ -156,15 +158,26 @@ class LLM {
   async callWeb(system, user, maxTokens) {
     const engine = this.web.engine;
     if (!engine) throw new Error('Model nie jest załadowany');
+    // WebLLM wymaga schematu jako tekstu; bez niego pada „grammar matcher … non-string to std::string”
+    const schema = JSON.stringify(system.includes('"zamiar"')
+      ? { type: 'object', properties: { mysl: { type: 'string' }, zamiar: { type: 'string' } }, required: ['mysl', 'zamiar'] }
+      : { type: 'object', properties: { wybor: { type: 'integer' }, mysl: { type: 'string' } }, required: ['wybor', 'mysl'] });
+    const req = (fmt) => engine.chat.completions.create({
+      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      max_tokens: maxTokens,
+      temperature: 0.7,
+      ...(fmt ? { response_format: { type: 'json_object', schema } } : {}),
+    });
     let r;
     try {
-      r = await engine.chat.completions.create({
-        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-        max_tokens: maxTokens,
-        temperature: 0.7,
-        response_format: { type: 'json_object' },
-      });
-    } catch (e) { this.webLost(e); throw e; }
+      r = await req(!this.web.noGrammar);
+    } catch (e) {
+      if (/grammar|response.?format|schema/i.test(String(e.message || e)) && !this.web.noGrammar) {
+        this.web.noGrammar = true; // ta wersja/model nie radzi sobie z wymuszonym JSON-em: dalej bez niego
+        reportError('Model', 'Wymuszony JSON nie działa, przechodzę na zwykły tekst: ' + (e.message || e));
+        r = await req(false);
+      } else { this.webLost(e); throw e; }
+    }
     const u = r.usage || {};
     this.usage.input += u.prompt_tokens || 0; this.usage.output += u.completion_tokens || 0; this.usage.calls++;
     return r.choices?.[0]?.message?.content || '';

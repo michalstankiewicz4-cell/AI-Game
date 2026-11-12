@@ -3,6 +3,12 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.8.0] - 2026-11-12
+### Dodane
+- Zakładka „⚠️ Błędy” obok dziennika: zbiera błędy modelu, strony i konsoli (także ostrzeżenia WebLLM). Przycisk „📋 Kopiuj wszystko” kopiuje je razem z wersją gry, przeglądarką i nazwą karty graficznej (WebGL i WebGPU).
+### Naprawione
+- Model w przeglądarce: „Failed to initialize the grammar matcher for response format json_object”. Schemat JSON jest teraz przekazywany jako tekst, a gdy wymuszony JSON mimo to nie działa, gra przechodzi na zwykły tekst zamiast zgłaszać błąd przy każdym zapytaniu.
+
 ## [0.7.1] - 2026-11-12
 ### Naprawione
 - Brak dymków, gdy model się ładuje albo nie działa: wtedy za postacie mówi skrypt (dymek kursywą, w czacie 📜). Gdy model liczy odpowiedź, nad postacią jest „💭 …”.
@@ -70,6 +76,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.8.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.8.0
 [0.7.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.7.1
 [0.7.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.7.0
 [0.6.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.6.0

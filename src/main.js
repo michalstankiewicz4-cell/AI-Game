@@ -8,6 +8,7 @@ import { initMenu, showMenu, rndSeed } from './ui/menu.js';
 import { initControls } from './ui/controls.js';
 import { buildAgentCards, renderDetail, updateHud } from './ui/panels.js';
 import { VERSION } from './version.js';
+import { initErrors } from './ui/errors.js';
 import { initLlmMenu, updateTokens, makeDraggable, prepareLlm } from './ui/llmPanel.js';
 
 const state = {
@@ -47,7 +48,7 @@ function toggleAiView() {
   $('aiViewBtn').classList.toggle('on', state.opts.aiView);
 }
 
-initFeed();
+initFeed(initErrors());
 $('verLbl').textContent = $('hudVer').textContent = 'v' + VERSION;
 document.title = `Wyspy AI v${VERSION} – symulacja przetrwania`;
 initMenu(state.cfg, startGame);

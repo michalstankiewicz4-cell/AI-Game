@@ -50,7 +50,8 @@ Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN
 
 - **Laptop z dwiema kartami:** Chrome bywa przypięty do słabszej karty zintegrowanej, a WebLLM nie może tego zmienić na Windows. Wejdź w Ustawienia › System › Ekran › Grafika i ustaw Chrome na „Wysoka wydajność” (np. NVIDIA RTX).
 - **Wymagania:** Chrome lub Edge na komputerze z WebGPU. Bez WebGPU gra pokazuje komunikat, a postacie działają na samym kodzie gry.
-- **Odpowiedź:** wymuszony JSON (`response_format: json_object`), okno kontekstu 1536 tokenów.
+- **Odpowiedź:** wymuszony JSON (`response_format: json_object` ze schematem przekazanym jako tekst), okno kontekstu 1536 tokenów. Jeśli wymuszony JSON nie działa, gra przechodzi na zwykły tekst.
+- **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli. „📋 Kopiuj wszystko” kopiuje je razem z wersją gry i nazwą karty graficznej.
 - **Utrata karty graficznej** (np. `DXGI_ERROR_DEVICE_HUNG` na Windows): gra przełącza się na lżejszy model i zapamiętuje go. Chrome po takim resecie blokuje WebGPU, dopóki strona się nie odświeży, więc gra prosi o F5.
 
 ## Claude API (płatne)

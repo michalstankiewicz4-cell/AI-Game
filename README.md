@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.7.1 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.8.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie

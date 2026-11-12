@@ -14,12 +14,16 @@ export function addFeed(world, target, html, cls = '') {
 
 export function clearFeed() { $('chat').innerHTML = ''; $('log').innerHTML = ''; }
 
-export function initFeed() {
+let renderErrors = null;
+export function initFeed(errorsRenderer) {
+  renderErrors = errorsRenderer;
   const tabs = document.querySelectorAll('#feed .tabs button[data-tab]');
   tabs.forEach((b) => b.onclick = () => {
     tabs.forEach((x) => x.classList.toggle('on', x === b));
     $('chat').classList.toggle('hidden', b.dataset.tab !== 'chat');
     $('log').classList.toggle('hidden', b.dataset.tab !== 'log');
+    $('errors').classList.toggle('hidden', b.dataset.tab !== 'errors');
+    if (b.dataset.tab === 'errors' && renderErrors) renderErrors();
     $('feed').classList.remove('min');
   });
   $('feedMin').onclick = () => $('feed').classList.toggle('min');
