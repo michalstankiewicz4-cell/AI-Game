@@ -35,7 +35,7 @@ Każda postać ma cztery paski w skali 0–100, gdzie 100 oznacza stan najlepszy
 |---|---|---|
 | 🍖 Głód | z czasem, szybciej przy pracy | jedzenie (pieczone daje więcej, surowe może zaszkodzić) |
 | 💧 Pragnienie | najszybciej | woda ze stawu |
-| ⚡ Energia | przy pracy | sen; szałas i ognisko przyspieszają |
+| ⚡ Energia | przy pracy | sen; szybciej w szałasie, namiocie, przy ognisku, a najszybciej w łóżku |
 | ❤️ Zdrowie | gdy któryś pasek spadnie do 0 | samo wraca, gdy potrzeby są zaspokojone; w szałasie szybciej |
 
 ### 🌡️ Temperatura ciała
@@ -56,14 +56,25 @@ Na starcie każda postać ma siekierę i kilof. Receptur nie zna, odkrywa je, ł
 
 | Co | Z czego | Uwagi |
 |---|---|---|
-| Kłody i gałęzie | ścięte drzewo | siekierą |
+| Kłody, gałęzie i liście | ścięte drzewo (drzewo: 2 + 2 + 3, palma: 1 + 1 + 2) | siekierą |
 | Deski | 1 kłoda → 2 deski | siekierą |
 | Lina | 2 wodorosty | |
 | Wędka | 2 gałęzie + lina | pozwala łowić ryby |
 | Włócznia | 2 gałęzie + kamień + lina | pozwala polować na ptaki |
-| Ognisko | 3 gałęzie + kłoda + 4 kamienie | pieczenie jedzenia, ciepło w nocy |
+| Ognisko | 3 gałęzie + kłoda + 4 kamienie | pieczenie jedzenia, ciepło; wypala się (patrz niżej) |
+| Ruszt | 3 gałęzie + 2 kamienie | odkrywany i zakładany przy palącym się ognisku; smażenie 2× szybciej, po dwie sztuki |
+| Namiot | 4 gałęzie + 6 liści | lekki dach: trochę cieplej i lepszy sen |
+| Stół rzemieślniczy | 2 kłody + 3 deski | przy nim postacie próbują nowych połączeń |
 | Szałas | 2 kłody + 4 deski + 2 liny | szybszy sen i leczenie |
 | Żelazne narzędzia | 2 rudy + gałąź | wykuwane przy ognisku; szybsze ścinanie i kopanie |
+| Łóżko | 3 deski + 2 gałęzie + 4 liście | odkrywane tylko przy stole rzemieślniczym; dużo szybszy sen |
+
+Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo przy ogniu, łóżko przy stole rzemieślniczym. Próba w złym miejscu kończy się wskazówką w myślach postaci.
+
+### Ognisko
+- Pali się ok. 200 s czasu gry, czyli nieco ponad dobę. Maksymalnie można je podsycić do 300 s.
+- Postać podsyca je kłodami (+60 s), gałęziami (+25 s) albo liśćmi (+8 s).
+- Wygasłe ognisko nie grzeje i nie piecze. Rozpala się je na nowo dwiema gałęziami.
 
 Plecak mieści 30 rzeczy (`INV_CAP`). Nadmiar postać odkłada.
 

@@ -136,6 +136,19 @@ export const modelsMethods = {
       roof.material = m.thatch.clone(); roof.material.side = THREE.DoubleSide;
       g.add(roof);
       const pole = new THREE.Mesh(this.geo.post, m.post); pole.position.y = 0.75; g.add(pole);
+    } else if (s.kind === 'tent') {
+      // namiot: niski daszek z liści na gałęziach
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(0.7, 0.85, 3, 1, true), m.weed.clone());
+      roof.material.side = THREE.DoubleSide; roof.position.y = 0.42; roof.castShadow = true; g.add(roof);
+      for (const sx of [-1, 1]) { const st = new THREE.Mesh(this.geo.post, m.post); st.scale.set(0.8, 0.8, 0.8); st.rotation.z = sx * 0.5; st.position.set(sx * 0.18, 0.45, 0); g.add(st); }
+    } else if (s.kind === 'workbench') {
+      const top = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 0.55), m.plank); top.position.y = 0.5; top.castShadow = true; g.add(top);
+      for (const [lx, lz] of [[-0.38, -0.2], [0.38, -0.2], [-0.38, 0.2], [0.38, 0.2]]) {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.48, 0.07), m.post); leg.position.set(lx, 0.24, lz); g.add(leg);
+      }
+    } else if (s.kind === 'bed') {
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.14, 0.95), m.plank); frame.position.y = 0.09; frame.castShadow = true; g.add(frame);
+      const mat = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.08, 0.86), m.weed); mat.position.y = 0.2; g.add(mat);
     }
     g.position.set(s.x, this.world.tileY(s.i, s.j), s.z);
     this.scene.add(g);

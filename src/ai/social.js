@@ -36,7 +36,15 @@ function news(a, b, world) {
   }
   for (const s of world.structures) {
     if (a.knownStructs.has(s.id) && !b.knownStructs.has(s.id)) {
-      out.push({ v: 3, text: s.kind === 'campfire' ? `Jest ognisko ${direction(b, s.x, s.z)}, można tam upiec jedzenie.` : `Stoi szałas ${direction(b, s.x, s.z)}, dobrze się w nim śpi.` });
+      const where = direction(b, s.x, s.z);
+      const txt = {
+        campfire: `Jest ognisko ${where}, można tam upiec jedzenie.`,
+        shelter: `Stoi szałas ${where}, dobrze się w nim śpi.`,
+        tent: `Rozbiłem namiot ${where}.`,
+        workbench: `Mam stół do pracy ${where}, przy nim wychodzą różne rzeczy.`,
+        bed: `${where[0].toUpperCase() + where.slice(1)} stoi łóżko.`,
+      }[s.kind];
+      if (txt) out.push({ v: 3, text: txt });
       break;
     }
   }

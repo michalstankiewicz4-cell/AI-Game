@@ -66,10 +66,12 @@ export const perceptionMethods = {
     return best;
   },
 
-  nearestStructure(bfs, kind) {
+  // wygasłe ognisko nie grzeje i nie piecze; any = true znajduje także wygasłe (do podsycenia)
+  nearestStructure(bfs, kind, any = false) {
     let best = null;
     for (const s of this.world.structures) {
       if (s.kind !== kind || !this.knownStructs.has(s.id)) continue;
+      if (kind === 'campfire' && !any && !(s.fuel > 0)) continue;
       const d = bfs.dist[idx(s.i, s.j)];
       if (d >= 0 && (!best || d < best.d)) best = { s, d, i: s.i, j: s.j };
     }
@@ -113,7 +115,7 @@ export const perceptionMethods = {
   },
 
   nearStructure(kind, r) {
-    return this.world.structures.find((s) => s.kind === kind && Math.hypot(s.x - this.x, s.z - this.z) <= r);
+    return this.world.structures.find((s) => s.kind === kind && (kind !== 'campfire' || s.fuel > 0) && Math.hypot(s.x - this.x, s.z - this.z) <= r);
   },
 
   freeTileNear(i, j, bfs) {

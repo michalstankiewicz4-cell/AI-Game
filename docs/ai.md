@@ -41,6 +41,12 @@ Postacie, które spotkają się bliżej niż 2,6 kafelka, mogą porozmawiać. Ta
 - uczą się nawzajem umiejętności,
 - oddają sobie przedmioty, np. jedzenie głodnemu.
 
+## Odkrywanie przez doświadczenie
+- **Łóżko:** postać, która je zrobi, z ciekawości kładzie się w nim spać. Po pierwszym śnie wie, że lepiej się w nim wysypia, i od tej pory wybiera je do spania.
+- **Stół rzemieślniczy:** przy stole postacie próbują jeszcze raz połączeń z co najmniej dwóch materiałów, bo niektóre receptury (np. łóżko) wychodzą tylko tam. Ma to osobną opcję „🧪 Eksperymentować przy stole”.
+- **Ogień:** próby z kamieniem albo rudą przy palącym się ogniu liczą się jako nowe, bo ruszt i żelazo powstają tylko nad ogniem.
+- **Wygasłe ognisko:** postać, która zna ognisko w pobliżu, podsyca je, gdy paliwa zostaje mało, a gdy wygaśnie, rozpala je na nowo.
+
 ## Ciepło z doświadczenia
 Postacie nie wiedzą z góry, że ogień i dach grzeją. Gdy zmarznięta postać (poniżej 36,4°C) spędzi kilka sekund przy ognisku albo pod dachem szałasu, sama to zauważa: w dzienniku pojawia się wpis „czuje, że przy ognisku robi się cieplej”, a model dostaje to jako jej własną notatkę. Dopiero wtedy:
 - **ogrzewanie się:** pojawia się opcja „🔥 Ogrzać się przy ognisku”, która przy wychłodzeniu staje się pilna,

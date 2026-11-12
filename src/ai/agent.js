@@ -29,7 +29,7 @@ export class Agent {
     this.facing = 0;
     this.hunger = 85; this.thirst = 80; this.energy = 90; this.health = 100;
     this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
-    this.inv = { logs: 0, sticks: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0 };
+    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0 };
     this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false };
     this.task = null;
     this.alive = true;
@@ -134,8 +134,9 @@ export class Agent {
     const isl = this.island;
     if (isl >= 0 && !this.visited.has(isl)) { this.visited.add(isl); this.event('newIsland'); this.say(`dociera na wyspę ${isl + 1}! 🏝️`, 'big'); }
     // temperatura: ciało dąży do stanu wynikającego z odczuwalnej temperatury otoczenia
-    const warmFire = this.nearStructure('campfire', 2.6), roof = this.nearStructure('shelter', 1.5);
-    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + (roof ? 7 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
+    const warmFire = this.nearStructure('campfire', 2.6), hut = this.nearStructure('shelter', 1.5), tent = !hut && this.nearStructure('tent', 1.3);
+    const roof = hut || tent;
+    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + (hut ? 7 : tent ? 5 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
     const targetT = clamp(36.8 + (this.feltT < 18 ? (this.feltT - 18) * 0.12 : (this.feltT - 18) * 0.06), 33, 39.5);
     this.bodyT += (targetT - this.bodyT) * Math.min(1, 0.03 * dt);
     // doświadczenie: zmarznięta postać sama zauważa, że przy ogniu albo pod dachem robi się cieplej
@@ -156,8 +157,16 @@ export class Agent {
     this.thirst = clamp(this.thirst - 0.36 * dt * workMul * hotMul, 0, 100);
     if (this.asleep) {
       const shelter = this.nearStructure('shelter', 1.5);
+      const tentS = !shelter && this.nearStructure('tent', 1.3);
       const fire = this.nearStructure('campfire', 3);
-      this.energy = clamp(this.energy + (1.1 + (shelter ? 0.9 : 0) + (fire ? 0.3 : 0)) * dt, 0, 100);
+      const bed = this.nearStructure('bed', 1.2);
+      this.energy = clamp(this.energy + (1.1 + (shelter ? 0.9 : tentS ? 0.5 : 0) + (fire ? 0.3 : 0) + (bed ? 1.0 : 0)) * dt, 0, 100);
+      // doświadczenie: po pierwszej nocy w łóżku postać wie, że tak lepiej się wysypia
+      if (bed && !this.known.has('bedRest') && (this.bedT = (this.bedT || 0) + dt) > 6) {
+        this.known.add('bedRest');
+        this.say('wysypia się w łóżku dużo lepiej niż na ziemi 🛏️🧠', 'learn');
+        this.speak('Ależ się wyspałem w tym łóżku!', true);
+      }
       this.hunger = clamp(this.hunger + 0.1 * dt, 0, 100); // sen spowalnia głód
       this.thirst = clamp(this.thirst + 0.12 * dt, 0, 100);
       if (shelter) this.health = clamp(this.health + 0.2 * dt, 0, 100);
