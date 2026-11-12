@@ -3,6 +3,10 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.30.1] - 2026-11-12
+### Zmienione
+- Trudniejsze przetrwanie. Głód i pragnienie rosną szybciej, dni i noce są o ok. 1°C chłodniejsze (średnia dnia 4–18°C, większe wahania w ciągu doby), jagody odrastają wolniej, przy ścinaniu i kopaniu łatwiej o skaleczenie, a rany goją się wolniej. W symulacjach 8 dni nikt nie ginie, ale zdrowie postaci potrafi już spaść do ok. 20–50 i ranna postać musi odpocząć.
+
 ## [0.30.0] - 2026-11-12
 ### Dodane
 - Krzemień: ciemne kamyki na plażach (morze co jakiś czas wyrzuca nowe). Ognisko robi się teraz z 3 gałęzi, kłody i krzemienia, a wygasłe rozpala się na nowo 2 gałęziami i krzemieniem, który czasem się przy tym kruszy. Postać, która zbadała krzemień, widzi, że iskrzy, i próbuje łączyć go z drewnem.
@@ -293,6 +297,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.30.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.30.1
 [0.30.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.30.0
 [0.29.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.29.0
 [0.28.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.28.0

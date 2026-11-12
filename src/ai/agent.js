@@ -141,7 +141,7 @@ export class Agent {
   practice(k) {
     this.skill[k] = Math.min(1, this.skill[k] + 0.05 * (1 - this.skill[k]));
     // ciężka praca bywa niebezpieczna: niewprawna albo zmęczona postać może się skaleczyć
-    if ((k === 'chop' || k === 'mine') && Math.random() < 0.07 * (1.2 - this.skill[k]) * (this.energy < 30 ? 2 : 1)) {
+    if ((k === 'chop' || k === 'mine') && Math.random() < 0.1 * (1.2 - this.skill[k]) * (this.energy < 30 ? 2 : 1)) {
       const dmg = 5 + Math.round(Math.random() * 8);
       this.health = clamp(this.health - dmg, 0, 100);
       this.mood = Math.max(0, this.mood - 3);
@@ -290,8 +290,8 @@ export class Agent {
     const hotMul = this.bodyT > 37.5 ? 1 + (this.bodyT - 37.5) * 0.8 : 1; // gorąco: szybciej chce się pić
     // spadek potrzeb
     const workMul = this.working ? 1.35 : 1;
-    this.hunger = clamp(this.hunger - 0.3 * dt * workMul * coldMul, 0, 100);
-    this.thirst = clamp(this.thirst - 0.36 * dt * workMul * hotMul, 0, 100);
+    this.hunger = clamp(this.hunger - 0.33 * dt * workMul * coldMul, 0, 100);
+    this.thirst = clamp(this.thirst - 0.4 * dt * workMul * hotMul, 0, 100);
     if (this.asleep) {
       const shelter = this.nearStructure('shelter', 1.5);
       const tentS = !shelter && this.nearStructure('tent', 1.3);
@@ -333,7 +333,7 @@ export class Agent {
     if (this.bodyT < 35) dmg += 0.2 + (35 - this.bodyT) * 0.6; // wychłodzenie
     if (this.bodyT > 39) dmg += (this.bodyT - 39) * 0.8;       // przegrzanie
     if (dmg > 0) this.health -= dmg * dt;
-    else if (this.hunger > 40 && this.thirst > 40 && this.energy > 25 && this.bodyT > 35.5) this.health = clamp(this.health + (this.task && this.task.rest ? 0.12 : 0.03) * dt, 0, 100); // rany goją się powoli, w spoczynku szybciej
+    else if (this.hunger > 40 && this.thirst > 40 && this.energy > 25 && this.bodyT > 35.5) this.health = clamp(this.health + (this.task && this.task.rest ? 0.1 : 0.02) * dt, 0, 100); // rany goją się powoli, w spoczynku szybciej
     if (this.health <= 0) {
       this.health = 0; this.alive = false; this.task = null; this.asleep = false;
       const cause = this.lastHit && w.time - this.lastHit.t < 5 ? 'od ran zadanych przez dzika' : this.thirst <= 0 ? 'z pragnienia' : this.hunger <= 0 ? 'z głodu' : this.bodyT < 35 ? 'z wychłodzenia' : this.bodyT > 39 ? 'z przegrzania' : 'z wycieńczenia';

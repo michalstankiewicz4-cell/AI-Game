@@ -35,7 +35,7 @@ Każda wyspa ma mniej więcej rozmiar ekranu. Przy kilku wyspach:
 - **Polowanie:** z bronią i przy zdrowiu powyżej 60 postać sama poluje na dziki, gdy potrzebuje jedzenia.
 - Cykl dnia i nocy: doba trwa 180 s czasu gry (`DAY_LENGTH`). W nocy postacie chętniej śpią.
 - Klimat umiarkowany (`world.airTemp`):
-  - średnia temperatura dnia to 7–21°C i zmienia się płynnie z dnia na dzień (cieplejsze i chłodniejsze dni),
+  - średnia temperatura dnia to 4–18°C i zmienia się płynnie z dnia na dzień (cieplejsze i chłodniejsze dni),
   - w ciągu doby temperatura waha się o ±3–6°C: najzimniej jest ok. 4:00, najcieplej ok. 15:00,
   - na wzgórzach jest chłodniej,
   - o świcie narrator podaje prognozę, a przed zimną nocą ostrzega.
