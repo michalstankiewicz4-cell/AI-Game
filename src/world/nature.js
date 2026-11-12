@@ -25,6 +25,7 @@ export const natureMethods = {
         this.changed.add(r);
       }
     }
+    this.updateBoars(dt);
     // ryby
     for (const f of this.fish) {
       f.dir += (this.rand() - 0.5) * dt * 1.5;

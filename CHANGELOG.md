@@ -3,6 +3,14 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.15.0] - 2026-11-12
+### Dodane
+- Dziki (`src/world/boars.js`): chodzą po swojej wyspie, przez pierwszą dobę są spokojne, potem czasem szarżują na postać, która podejdzie za blisko. Po ciosie często odpuszczają, ranne uciekają, a pokonane dają 3 mięsa i odradzają się po 300 s.
+- Walka i ucieczka: postać z włócznią albo mieczem staje do walki, a bez broni ucieka. Z bronią poluje na dziki, gdy potrzebuje jedzenia.
+- Nowe receptury: miecz (2 rudy + deska, wykuwany przy ogniu) i tarcza (3 deski + lina, odkrywana przy stole), która osłabia ciosy o 60%.
+- Postać dopiero po pierwszym ataku wie, że dziki są groźne, i wtedy chętniej robi broń.
+- Model 3D dzika, statystyka „Dziki” w karcie postaci, dzik w opisie dla modelu językowego.
+
 ## [0.14.0] - 2026-11-12
 ### Dodane
 - Plecak z limitem 30 rzeczy i 25 kg (wagi w `WEIGHT`). Powyżej 70% udźwigu postać chodzi wolniej.
@@ -131,6 +139,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.15.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.15.0
 [0.14.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.14.0
 [0.13.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.13.0
 [0.12.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.12.0

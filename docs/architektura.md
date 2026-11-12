@@ -15,7 +15,7 @@ src/
   main.js             punkt wejścia: pętla klatek, spina grę, render i UI
   game.js             createGame(cfg), stepGame(game) – symulacja bez DOM
   core/rng.js         losowość z ziarnem (mulberry32), szum fbm
-  world/              świat (kafelki, generowanie, mosty, przyroda)
+  world/              świat (kafelki, generowanie, mosty, przyroda, dziki w boars.js)
   ai/                 postacie (stan, decyzje, zadania, percepcja, wiedza, rozmowy, komentarze)
     llm.js            modele językowe: WebLLM i Claude API, limity zapytań, licznik tokenów
     llmWorker.js      Web Worker z silnikiem WebLLM

@@ -45,6 +45,7 @@ Postacie, które spotkają się bliżej niż 2,6 kafelka, mogą porozmawiać. Ta
 - **Łóżko:** postać, która je zrobi, z ciekawości kładzie się w nim spać. Po pierwszym śnie wie, że lepiej się w nim wysypia, i od tej pory wybiera je do spania.
 - **Stół rzemieślniczy:** przy stole postacie próbują jeszcze raz połączeń z co najmniej dwóch materiałów, bo niektóre receptury (np. łóżko) wychodzą tylko tam. Ma to osobną opcję „🧪 Eksperymentować przy stole”.
 - **Ogień:** próby z kamieniem albo rudą przy palącym się ogniu liczą się jako nowe, bo ruszt i żelazo powstają tylko nad ogniem.
+- **Dziki:** dopiero po pierwszym ataku postać wie, że dziki są groźne. Wtedy chętniej robi miecz i tarczę, a model dostaje w opisie „wiesz, że atakuje”. Walka i ucieczka to odruchy w `agent.update` i `hitByBoar`.
 - **Wygasłe ognisko:** postać, która zna ognisko w pobliżu, podsyca je, gdy paliwa zostaje mało, a gdy wygaśnie, rozpala je na nowo.
 
 ## Ciepło z doświadczenia

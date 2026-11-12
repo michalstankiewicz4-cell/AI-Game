@@ -3,6 +3,7 @@ import { mulberry32 } from '../core/rng.js';
 import { generateMethods } from './generate.js';
 import { bridgesMethods } from './bridges.js';
 import { natureMethods } from './nature.js';
+import { boarMethods } from './boars.js';
 
 export let W = 96;
 export let H = 64;
@@ -178,4 +179,4 @@ export function heightToY(h, t) {
   return 0.25 + h * 0.75;
 }
 
-Object.assign(World.prototype, generateMethods, bridgesMethods, natureMethods);
+Object.assign(World.prototype, generateMethods, bridgesMethods, natureMethods, boarMethods);
