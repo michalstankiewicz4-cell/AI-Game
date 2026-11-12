@@ -3,6 +3,10 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.8.1] - 2026-11-12
+### Zmienione
+- Dokumentacja (README, `docs/`) zaktualizowana do stanu gry: mowa skryptu 📜 i dymek 💭, pełna swoboda, jakość grafiki i FPS, zakładka błędów, nowe pliki (`intent.js`, `instances.js`, `errors.js`, `llmPanel.js`), workflowy i wskazówki do testów.
+
 ## [0.8.0] - 2026-11-12
 ### Dodane
 - Zakładka „⚠️ Błędy” obok dziennika: zbiera błędy modelu, strony i konsoli (także ostrzeżenia WebLLM). Przycisk „📋 Kopiuj wszystko” kopiuje je razem z wersją gry, przeglądarką i nazwą karty graficznej (WebGL i WebGPU).
@@ -76,6 +80,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.8.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.8.1
 [0.8.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.8.0
 [0.7.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.7.1
 [0.7.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.7.0

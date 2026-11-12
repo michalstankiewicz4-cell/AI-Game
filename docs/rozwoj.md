@@ -16,7 +16,11 @@ Gra nie ma frameworka testowego. Sprawdza się ją w przeglądarce bez okna (Pla
 - **Modele językowe:** podstaw odpowiedzi przez `page.route`:
   - dla Claude zwróć sztuczną odpowiedź z `usage` dla `https://api.anthropic.com/**`,
   - dla WebLLM zwróć mały moduł ESM z `CreateMLCEngine` dla `https://cdn.jsdelivr.net/**`,
-  - `navigator.gpu` ustaw przez `addInitScript`.
+  - `navigator.gpu` ustaw przez `addInitScript`,
+  - błąd gramatyki JSON sprawdzisz, rzucając w sztucznym `chat.completions.create` wyjątek przy `response_format`,
+  - pełną swobodę włączysz, zaznaczając `#optFree` przed startem.
+- **Wydajność:** `window.__renderer.renderer.info.render.calls` podaje liczbę wywołań rysowania w ostatniej klatce.
+- **Błędy:** zakładka „⚠️ Błędy” (`#feed .tabs button[data-tab=errors]`) powinna pokazywać „Brak błędów.”.
 
 ## Wersjonowanie
 Numeracja to [SemVer](https://semver.org/lang/pl/) `MAJOR.MINOR.PATCH`:
@@ -41,3 +45,4 @@ Dlaczego `?v=`: GitHub Pages pozwala przeglądarkom trzymać pliki w pamięci po
 - Teksty w grze i dokumentacja są po polsku. Kod ma polskie komentarze i angielskie nazwy.
 - Nowy moduł JS wymaga `python3 tools/version.py sync`, bo trafia do importmapy.
 - Klucze API nigdy nie trafiają do repozytorium.
+- Każda zmiana w zachowaniu lub interfejsie trafia też do `docs/` i `README.md`.
