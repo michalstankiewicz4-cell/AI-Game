@@ -31,6 +31,25 @@ const MAX_INFLIGHT = { claude: 2, web: 1 };    // model w przeglądarce liczy je
 function load(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : v; } catch { return def; } }
 function save(k, v) { try { if (v == null || v === '') localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* prywatne okno */ } }
 
+// które modele są już w pamięci przeglądarki (pamięć podręczna WebLLM „webllm/model”: tensor-cache.json + wszystkie pliki wag)
+export async function cachedWebModels() {
+  const got = new Set();
+  if (typeof caches === 'undefined') return got;
+  try {
+    if (!(await caches.has('webllm/model'))) return got;
+    const cache = await caches.open('webllm/model');
+    const urls = new Set((await cache.keys()).map((r) => r.url));
+    for (const id of Object.keys(WEB_MODELS)) {
+      const json = [...urls].find((u) => u.includes('/' + id + '/') && u.endsWith('/tensor-cache.json'));
+      if (!json) continue;
+      const res = await cache.match(json);
+      const recs = res ? ((await res.json()).records || []) : [];
+      if (recs.length && recs.every((r) => urls.has(new URL(r.dataPath, json).href))) got.add(id);
+    }
+  } catch { /* brak dostępu do pamięci podręcznej */ }
+  return got;
+}
+
 export const hasWebGPU = () => typeof navigator !== 'undefined' && !!navigator.gpu;
 
 class LLM {
