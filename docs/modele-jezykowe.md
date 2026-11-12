@@ -37,7 +37,7 @@ Model odpowiada `{"mysl": "...", "zamiar": "ściąć drzewo"}`. Gra (`src/ai/int
 - przy remisie wygrywa to, które wyżej ocenia skrypt,
 - zamiaru, którego nie da się wykonać (np. „zatańczyć” albo wędka bez liny), gra nie wykonuje, tylko pokazuje w karcie postaci jako „(nie da się teraz)” i przypomina modelowi przy następnym pytaniu.
 
-Krytyczne potrzeby nadal mają pierwszeństwo. Mały model częściej wymyśla rzeczy niewykonalne, więc lepiej sprawdza się Qwen2.5 1.5B albo Claude.
+Krytyczne potrzeby nadal mają pierwszeństwo. Mały model częściej wymyśla rzeczy niewykonalne, więc lepiej sprawdzają się Qwen3.5 2B lub 4B albo Claude.
 
 ## Model w przeglądarce (za darmo)
 Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN jsDelivr. Model liczy na karcie graficznej przez WebGPU, a pliki pobiera z Hugging Face. Po pierwszym pobraniu zostają w pamięci przeglądarki.
@@ -47,6 +47,15 @@ Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN
 | Qwen2.5 0.5B (domyślny) | ~0,4 GB | ~0,9 GB |
 | Llama 3.2 1B | ~0,7 GB | ~0,9 GB |
 | Qwen2.5 1.5B | ~1 GB | ~1,6 GB |
+| Qwen3.5 2B (polecany na mocną kartę) | ~1,3 GB | ~2,2 GB |
+| Llama 3.2 3B | ~1,8 GB | ~2,3 GB |
+| Gemma 4 E2B (dobry polski) | ~2,5 GB | ~3,4 GB |
+| Qwen3.5 4B (najmądrzejszy) | ~2,6 GB | ~3,9 GB |
+
+VRAM to wartości z WebLLM dla okna 4096 tokenów, a gra używa mniejszego (1536, przy Qwen3.5 2048), więc w praktyce zużycie jest niższe. Rozmiary pobrania są przybliżone. Cztery większe modele potrzebują mocniejszej karty, np. RTX z 4–6 GB. Na karcie zintegrowanej mogą zawiesić kartę, a wtedy gra schodzi na lżejszy model.
+
+- **Tryb myślenia** (Qwen3.5, przełącznik pod listą modeli, domyślnie wyłączony): model najpierw rozważa sytuację (`extra_body.enable_thinking`), a potem odpowiada. Dostaje wtedy 768 tokenów więcej i bez wymuszonego JSON-a, a tok myślenia (`<think>…</think>`) jest wycinany przed czytaniem odpowiedzi. Gdy przełącznik jest wyłączony, myślenie jest wyłączone jawnie.
+- **LM Studio:** w menu jest już wyszarzony przycisk „LM Studio (wkrótce)”. Model liczyłby się wtedy w programie na komputerze, np. na mocniejszej karcie, a gra rysowałaby się na drugiej.
 
 - **Laptop z dwiema kartami:** Chrome bywa przypięty do słabszej karty zintegrowanej, a WebLLM nie może tego zmienić na Windows. Wejdź w Ustawienia › System › Ekran › Grafika i ustaw Chrome na „Wysoka wydajność” (np. NVIDIA RTX).
 - **Wymagania:** Chrome lub Edge na komputerze z WebGPU. Bez WebGPU gra pokazuje komunikat, a postacie działają na samym kodzie gry i mówi za nie skrypt (📜).

@@ -3,6 +3,12 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.10.0] - 2026-11-12
+### Dodane
+- Większe modele w przeglądarce na mocniejszą kartę: Qwen3.5 2B, Llama 3.2 3B, Gemma 4 E2B i Qwen3.5 4B.
+- Przełącznik „Tryb myślenia” dla Qwen3.5 (domyślnie wyłączony): model najpierw rozważa sytuację, a tok myślenia nie trafia do dymka.
+- Wyszarzony przycisk „LM Studio (wkrótce)” w wyborze mózgu postaci.
+
 ## [0.9.0] - 2026-11-12
 ### Zmienione
 - Model w przeglądarce działa w osobnym wątku (Web Worker, `src/ai/llmWorker.js`), więc obsługa modelu nie przycina gry. Gdy wątek się nie uruchomi, model startuje jak dotąd w głównym wątku. W menu i w podpowiedzi licznika tokenów widać „osobny wątek”.
@@ -84,6 +90,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.10.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.10.0
 [0.9.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.9.0
 [0.8.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.8.1
 [0.8.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.8.0

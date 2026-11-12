@@ -13,7 +13,7 @@ export function initLlmMenu() {
     updateWebStatus();
   };
   seg.addEventListener('click', (e) => {
-    const b = e.target.closest('button'); if (!b) return;
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
     llm.provider = b.dataset.v; llm.paused = false; llm.persist(); sync();
   });
   const fr = $('optFree');
@@ -35,6 +35,9 @@ export function initLlmMenu() {
   const ws = $('webModel');
   ws.innerHTML = Object.entries(WEB_MODELS).map(([id, m]) => `<option value="${id}">${m.name} · pobranie ${m.size}, VRAM ${m.vram}</option>`).join('');
   ws.value = llm.webModel;
+  const th = $('webThink');
+  th.checked = llm.think;
+  th.onchange = () => { llm.think = th.checked; llm.persist(); };
   ws.onchange = () => { llm.webModel = ws.value; llm.persist(); updateWebStatus(); };
   $('webLoad').onclick = () => { llm.loadWeb(); updateWebStatus(); };
   $('tokBtn').onclick = () => { if (confirm('Wyzerować licznik tokenów i wznowić model?')) llm.resetUsage(); };
@@ -56,6 +59,7 @@ function updateWebStatus() {
   else if (W.note) txt = W.note;
   else txt = 'Model pobierze się po kliknięciu 📥 albo przy starcie gry. Do czasu załadowania za postacie mówi skrypt (📜).';
   if ($('webModel').value !== llm.webModel) $('webModel').value = llm.webModel;
+  $('webThinkRow').classList.toggle('hidden', !WEB_MODELS[llm.webModel].think);
   st.textContent = txt; st.classList.toggle('err', err);
   pr.classList.toggle('hidden', !W.loading && !llm.webReady);
   pr.firstElementChild.style.width = (llm.webReady ? 100 : W.progress * 100) + '%';

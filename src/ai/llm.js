@@ -14,7 +14,12 @@ export const WEB_MODELS = {
   // od najlżejszego; po utracie karty graficznej gra schodzi na lżejszy
   'Qwen2.5-0.5B-Instruct-q4f16_1-MLC': { name: 'Qwen2.5 0.5B (najlżejszy)', size: '~0,4 GB', vram: '0,9 GB' },
   'Llama-3.2-1B-Instruct-q4f16_1-MLC': { name: 'Llama 3.2 1B', size: '~0,7 GB', vram: '0,9 GB' },
-  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': { name: 'Qwen2.5 1.5B (najmądrzejszy)', size: '~1 GB', vram: '1,6 GB' },
+  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': { name: 'Qwen2.5 1.5B', size: '~1 GB', vram: '1,6 GB' },
+  // większe: wymagają mocniejszej karty (np. RTX z 4–6 GB)
+  'Qwen3.5-2B-q4f16_1-MLC': { name: 'Qwen3.5 2B (polecany na mocną kartę)', size: '~1,3 GB', vram: '2,2 GB', think: true },
+  'Llama-3.2-3B-Instruct-q4f16_1-MLC': { name: 'Llama 3.2 3B', size: '~1,8 GB', vram: '2,3 GB' },
+  'gemma-4-E2B-it-q4f16_1-MLC': { name: 'Gemma 4 E2B (dobry polski)', size: '~2,5 GB', vram: '3,4 GB' },
+  'Qwen3.5-4B-q4f16_1-MLC': { name: 'Qwen3.5 4B (najmądrzejszy)', size: '~2,6 GB', vram: '3,9 GB', think: true },
 };
 const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.86/+esm';
 const LS = 'wyspyai.llm';
@@ -38,6 +43,7 @@ class LLM {
     this.webModel = WEB_MODELS[s.webModel] ? s.webModel : 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
     this.budget = +s.budget > 0 ? +s.budget : 1;
     this.freedom = !!s.freedom; // „pełna swoboda”: model sam wymyśla zamiar
+    this.think = !!s.think;     // tryb myślenia modeli Qwen3.5 (wolniej, ale rozważniej)
     this.key = load(LS_KEY, '');
     this.web = { engine: null, id: null, loading: false, progress: 0, text: '', error: '', note: '', lost: 0, worker: null, inWorker: false };
     this.usage = { input: 0, output: 0, calls: 0, errors: 0, cost: 0 };
@@ -46,7 +52,7 @@ class LLM {
     this.lastError = '';
     this.paused = false; // wstrzymane po przekroczeniu budżetu lub błędzie klucza
   }
-  persist() { save(LS, JSON.stringify({ provider: this.provider, model: this.model, webModel: this.webModel, budget: this.budget, freedom: this.freedom })); }
+  persist() { save(LS, JSON.stringify({ provider: this.provider, model: this.model, webModel: this.webModel, budget: this.budget, freedom: this.freedom, think: this.think })); }
   setKey(k) { this.key = (k || '').trim(); save(LS_KEY, this.key); this.paused = false; this.lastError = ''; }
   get webReady() { return !!this.web.engine && this.web.id === this.webModel; }
   get active() {
@@ -71,7 +77,8 @@ class LLM {
       const webllm = await import(WEBLLM_URL);
       const id = this.webModel;
       const cfg = { initProgressCallback: (r) => { W.progress = r.progress || 0; W.text = r.text || ''; } };
-      const opts = { context_window_size: 1536 }; // mniejsza pamięć podręczna = mniej VRAM
+      // mniejsza pamięć podręczna = mniej VRAM; modele z myśleniem potrzebują trochę więcej miejsca
+      const opts = { context_window_size: WEB_MODELS[id].think ? 2048 : 1536 };
       let engine = null;
       // najpierw w osobnym wątku (Web Worker), żeby obsługa modelu nie przycinała gry
       if (typeof Worker !== 'undefined' && webllm.CreateWebWorkerMLCEngine) {
@@ -183,11 +190,15 @@ class LLM {
     const schema = JSON.stringify(system.includes('"zamiar"')
       ? { type: 'object', properties: { mysl: { type: 'string' }, zamiar: { type: 'string' } }, required: ['mysl', 'zamiar'] }
       : { type: 'object', properties: { wybor: { type: 'integer' }, mysl: { type: 'string' } }, required: ['wybor', 'mysl'] });
+    const m = WEB_MODELS[this.web.id] || {};
+    const thinking = !!(m.think && this.think);
     const req = (fmt) => engine.chat.completions.create({
       messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-      max_tokens: maxTokens,
+      max_tokens: thinking ? maxTokens + 768 : maxTokens, // myślenie zużywa dodatkowe tokeny
       temperature: 0.7,
-      ...(fmt ? { response_format: { type: 'json_object', schema } } : {}),
+      // wymuszony JSON nie zostawia miejsca na myślenie, więc przy myśleniu go nie ma
+      ...(fmt && !thinking ? { response_format: { type: 'json_object', schema } } : {}),
+      ...(m.think ? { extra_body: { enable_thinking: thinking } } : {}),
     });
     let r;
     try {
@@ -201,7 +212,8 @@ class LLM {
     }
     const u = r.usage || {};
     this.usage.input += u.prompt_tokens || 0; this.usage.output += u.completion_tokens || 0; this.usage.calls++;
-    return r.choices?.[0]?.message?.content || '';
+    // tok myślenia (<think>…</think>) nie jest wypowiedzią postaci
+    return (r.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trim();
   }
 
   async callClaude(system, user, maxTokens) {
