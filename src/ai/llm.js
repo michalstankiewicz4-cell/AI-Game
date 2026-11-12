@@ -1,5 +1,6 @@
-// Opcjonalny tryb LLM: postacie myślą i/lub mówią przez Claude API.
-// Klucz API wpisuje gracz; zostaje tylko w localStorage tej przeglądarki, nigdy w repo.
+// Opcjonalny „mózg” postaci z modelem językowym:
+//  - Claude API (klucz wpisuje gracz; zostaje tylko w localStorage tej przeglądarki, nigdy w repo),
+//  - darmowy model z Hugging Face uruchamiany w przeglądarce (WebLLM + WebGPU).
 import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES } from './data.js';
 
 export const MODELS = {
@@ -7,41 +8,80 @@ export const MODELS = {
   'claude-sonnet-5-5': { name: 'Claude Sonnet 5.5', inp: 2, out: 10 },
   'claude-haiku-5-5': { name: 'Claude Haiku 5.5', inp: 0.10, out: 0.50 },
 };
+export const WEB_MODELS = {
+  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': { name: 'Qwen2.5 1.5B', size: '~1 GB', vram: '1,6 GB' },
+  'Llama-3.2-1B-Instruct-q4f16_1-MLC': { name: 'Llama 3.2 1B', size: '~0,7 GB', vram: '0,9 GB' },
+  'Qwen2.5-0.5B-Instruct-q4f16_1-MLC': { name: 'Qwen2.5 0.5B (najlżejszy)', size: '~0,4 GB', vram: '0,9 GB' },
+};
+const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.86/+esm';
 const LS = 'wyspyai.llm';
 const LS_KEY = 'wyspyai.apiKey';
-const AGENT_CD = 25;      // s czasu gry między zapytaniami jednej postaci
-const GLOBAL_GAP = 2500;  // ms czasu rzeczywistego między dowolnymi zapytaniami
-const MAX_INFLIGHT = 2;
+const AGENT_CD = { claude: 25, web: 12 }; // s czasu gry między zapytaniami jednej postaci
+const GLOBAL_GAP = { claude: 2500, web: 400 }; // ms czasu rzeczywistego między dowolnymi zapytaniami
+const MAX_INFLIGHT = { claude: 2, web: 1 };    // model w przeglądarce liczy jedno zapytanie naraz
 
 function load(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : v; } catch { return def; } }
 function save(k, v) { try { if (v == null || v === '') localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* prywatne okno */ } }
+
+export const hasWebGPU = () => typeof navigator !== 'undefined' && !!navigator.gpu;
 
 class LLM {
   constructor() {
     let s = {};
     try { s = JSON.parse(load(LS, '{}')) || {}; } catch { s = {}; }
-    this.mode = ['off', 'talk', 'decide'].includes(s.mode) ? s.mode : 'off';
+    // zgodność ze starszym zapisem (mode: off/talk/decide)
+    this.provider = ['local', 'claude', 'web'].includes(s.provider) ? s.provider : (s.mode === 'talk' || s.mode === 'decide') ? 'claude' : 'local';
+    this.mode = s.mode === 'talk' ? 'talk' : 'decide';
     this.model = MODELS[s.model] ? s.model : 'claude-opus-5-5';
+    this.webModel = WEB_MODELS[s.webModel] ? s.webModel : 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
     this.budget = +s.budget > 0 ? +s.budget : 1;
     this.key = load(LS_KEY, '');
+    this.web = { engine: null, id: null, loading: false, progress: 0, text: '', error: '' };
     this.usage = { input: 0, output: 0, calls: 0, errors: 0, cost: 0 };
     this.inflight = 0;
     this.lastCall = -1e9;
     this.lastError = '';
     this.paused = false; // wstrzymane po przekroczeniu budżetu lub błędzie klucza
   }
-  persist() { save(LS, JSON.stringify({ mode: this.mode, model: this.model, budget: this.budget })); }
+  persist() { save(LS, JSON.stringify({ provider: this.provider, mode: this.mode, model: this.model, webModel: this.webModel, budget: this.budget })); }
   setKey(k) { this.key = (k || '').trim(); save(LS_KEY, this.key); this.paused = false; this.lastError = ''; }
-  get active() { return this.mode !== 'off' && !!this.key && !this.paused; }
+  get webReady() { return !!this.web.engine && this.web.id === this.webModel; }
+  get active() {
+    if (this.paused) return false;
+    if (this.provider === 'claude') return !!this.key;
+    if (this.provider === 'web') return this.webReady;
+    return false;
+  }
   get decides() { return this.active && this.mode === 'decide'; }
   resetUsage() { this.usage = { input: 0, output: 0, calls: 0, errors: 0, cost: 0 }; this.paused = false; this.lastError = ''; }
 
+  // pobranie i uruchomienie modelu w przeglądarce (za pierwszym razem pobiera pliki z Hugging Face, potem z pamięci podręcznej)
+  async loadWeb() {
+    const W = this.web;
+    if (this.webReady || W.loading) return;
+    W.error = '';
+    if (!hasWebGPU()) { W.error = 'Ta przeglądarka nie obsługuje WebGPU (spróbuj Chrome lub Edge na komputerze). Postacie używają lokalnego AI.'; return; }
+    W.loading = true; W.progress = 0; W.text = 'Ładowanie biblioteki WebLLM...';
+    try {
+      if (W.engine) { try { await W.engine.unload(); } catch { /* ignoruj */ } W.engine = null; W.id = null; }
+      const webllm = await import(WEBLLM_URL);
+      const id = this.webModel;
+      const engine = await webllm.CreateMLCEngine(id, {
+        initProgressCallback: (r) => { W.progress = r.progress || 0; W.text = r.text || ''; },
+      });
+      W.engine = engine; W.id = id; W.progress = 1; W.text = 'Model gotowy';
+    } catch (e) {
+      W.error = 'Nie udało się uruchomić modelu: ' + String(e.message || e).slice(0, 200);
+    } finally { W.loading = false; }
+  }
+
   // czy postać może teraz zapytać model
   canAsk(agent) {
-    if (!this.active || this.inflight >= MAX_INFLIGHT) return false;
-    if (performance.now() - this.lastCall < GLOBAL_GAP) return false;
+    const p = this.provider;
+    if (!this.active || this.inflight >= MAX_INFLIGHT[p]) return false;
+    if (performance.now() - this.lastCall < GLOBAL_GAP[p]) return false;
     if (agent.llmBusy || agent.world.time < (agent.llmNext || 0)) return false;
-    if (this.usage.cost >= this.budget) { this.paused = true; this.lastError = `Osiągnięto limit $${this.budget.toFixed(2)}`; return false; }
+    if (p === 'claude' && this.usage.cost >= this.budget) { this.paused = true; this.lastError = `Osiągnięto limit $${this.budget.toFixed(2)}`; return false; }
     return true;
   }
 
@@ -49,7 +89,7 @@ class LLM {
   ask(agent, labels) {
     if (!this.canAsk(agent)) return false;
     agent.llmBusy = true;
-    agent.llmNext = agent.world.time + AGENT_CD;
+    agent.llmNext = agent.world.time + AGENT_CD[this.provider];
     this.lastCall = performance.now();
     this.inflight++;
     const decide = this.mode === 'decide';
@@ -72,7 +112,25 @@ class LLM {
     return true;
   }
 
-  async call(system, user, maxTokens) {
+  call(system, user, maxTokens) {
+    return this.provider === 'web' ? this.callWeb(system, user, maxTokens) : this.callClaude(system, user, maxTokens);
+  }
+
+  async callWeb(system, user, maxTokens) {
+    const engine = this.web.engine;
+    if (!engine) throw new Error('Model nie jest załadowany');
+    const r = await engine.chat.completions.create({
+      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      max_tokens: maxTokens,
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    });
+    const u = r.usage || {};
+    this.usage.input += u.prompt_tokens || 0; this.usage.output += u.completion_tokens || 0; this.usage.calls++;
+    return r.choices?.[0]?.message?.content || '';
+  }
+
+  async callClaude(system, user, maxTokens) {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {

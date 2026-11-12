@@ -7,7 +7,7 @@ import { addFeed, clearFeed, initFeed } from './ui/feed.js';
 import { initMenu, showMenu, rndSeed } from './ui/menu.js';
 import { initControls } from './ui/controls.js';
 import { buildAgentCards, renderDetail, updateHud } from './ui/panels.js';
-import { initLlmMenu, updateTokens, makeDraggable } from './ui/llmPanel.js';
+import { initLlmMenu, updateTokens, makeDraggable, prepareLlm } from './ui/llmPanel.js';
 
 const state = {
   world: null, agents: [], narrator: null, social: null, speed: 1, paused: false, selected: null,
@@ -52,6 +52,7 @@ function startGame() {
   $('menu').classList.add('hidden');
   $('hud').classList.remove('hidden');
   if (state.opts.aiView) toggleAiView();
+  prepareLlm();
   const game = createGame(state.cfg);
   Object.assign(state, game, { selected: null, over: false });
   state.opts.follow = false;
