@@ -3,6 +3,12 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.5.2] - 2026-11-12
+### Zmienione
+- Karta postaci: nagłówek z imieniem stoi w miejscu, przewijają się tylko statystyki (pozycja przewinięcia nie skacze przy odświeżaniu).
+- Paski przewijania w stylu gry (cienkie, niebieskie, przezroczyste tło).
+- Zdarzenia gry w czacie (odkrycia, śmierć, nowa wyspa) mają znak 📜, żeby nie myliły się z wypowiedziami modelu (🤖).
+
 ## [0.5.1] - 2026-11-12
 ### Dodane
 - Automatyczne tagi `vX.Y.Z` i wydania na GitHub po każdej nowej wersji na `main` (workflow `release.yml`).
@@ -46,6 +52,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.5.2]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.5.2
 [0.5.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.5.1
 [0.5.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.5.0
 [0.4.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.4.1

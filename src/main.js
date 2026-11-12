@@ -43,7 +43,7 @@ $('verLbl').textContent = $('hudVer').textContent = 'v' + VERSION;
 document.title = `Wyspy AI v${VERSION} – symulacja przetrwania`;
 initMenu(state.cfg, startGame);
 initLlmMenu();
-makeDraggable($('detail'), 'h3');
+makeDraggable($('detail'), '.dhead');
 makeDraggable($('agentsWin'), '.win-h');
 $('agentsMin').onclick = (e) => { const w = $('agentsWin'); w.classList.toggle('min'); e.target.textContent = w.classList.contains('min') ? '+' : '–'; };
 const panCamera = initControls(state, renderer, { select, setSpeed, updatePause, toggleAiView });
@@ -94,7 +94,7 @@ function loop(now) {
       }
       for (const e of w.events) feed('log', e.text, e.kind);
       // ważne zdarzenia także w komentarzach
-      for (const e of w.events) if (e.kind === 'big' || e.kind === 'death' || e.kind === 'learn') feed('chat', e.text, e.kind);
+      for (const e of w.events) if (e.kind === 'big' || e.kind === 'death' || e.kind === 'learn') feed('chat', '📜 ' + e.text, e.kind); // zdarzenia gry (nie wypowiedzi)
       w.events.length = 0;
       if (state.agents.every((a) => !a.alive)) gameOver();
     }
