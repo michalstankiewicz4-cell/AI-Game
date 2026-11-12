@@ -29,13 +29,14 @@ Każda wyspa ma mniej więcej rozmiar ekranu. Przy kilku wyspach:
   - Temperaturę powietrza widać w górnym pasku.
 
 ## Potrzeby
-Każda postać ma cztery paski w skali 0–100, gdzie 100 oznacza stan najlepszy:
+Każda postać ma pięć pasków w skali 0–100, gdzie 100 oznacza stan najlepszy:
 
 | Potrzeba | Spada | Uzupełnia |
 |---|---|---|
 | 🍖 Głód | z czasem, szybciej przy pracy | jedzenie (pieczone daje więcej, surowe może zaszkodzić) |
 | 💧 Pragnienie | najszybciej | woda ze stawu |
 | ⚡ Energia | przy pracy | sen; szybciej w szałasie, namiocie, przy ognisku, a najszybciej w łóżku |
+| 😊 Samopoczucie | gdy brakuje czegokolwiek, przy zimnie, w samotności | zaspokojone potrzeby, dach, łóżko, ognisko w nocy, rozmowy, odkrycia, ciepły posiłek, budowa |
 | ❤️ Zdrowie | gdy któryś pasek spadnie do 0 | samo wraca, gdy potrzeby są zaspokojone; w szałasie szybciej |
 
 ### 🌡️ Temperatura ciała
@@ -48,6 +49,8 @@ Normalna temperatura ciała to 36,6°C. Ciało powoli dąży do temperatury odcz
 - **Zdrowie nie wraca,** gdy postać jest wychłodzona.
 
 Temperaturę ciała widać w okienku „Postacie” i w karcie postaci, razem z temperaturą odczuwalną.
+
+Samopoczucie wpływa na tempo pracy: poniżej 30 postać pracuje o 20% wolniej, a powyżej 75 o 10% szybciej. Model językowy dostaje nastrój opisany słowami.
 
 Postać ginie, gdy zdrowie spadnie do zera. Gra kończy się, gdy zginą wszyscy.
 
@@ -76,7 +79,15 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - Postać podsyca je kłodami (+60 s), gałęziami (+25 s) albo liśćmi (+8 s).
 - Wygasłe ognisko nie grzeje i nie piecze. Rozpala się je na nowo dwiema gałęziami.
 
-Plecak mieści 30 rzeczy (`INV_CAP`). Nadmiar postać odkłada.
+| Ubranie z liści | 6 liści + 2 liny | odkrywane tylko przy stole rzemieślniczym; +4°C odczuwalnej temperatury |
+
+### Plecak i składziki
+- **Limity:** plecak mieści 30 rzeczy (`INV_CAP`) i 25 kg (`MAX_WEIGHT`). Wagi są w `WEIGHT` w `src/ai/data.js`, np. kłoda 3 kg, kamień 2 kg, ruda 3 kg, deska 1,5 kg, gałąź 0,5 kg, liść 0,1 kg.
+- **Ciężar:** powyżej 70% udźwigu postać chodzi wolniej.
+- **Przeładowanie:** postać odkłada połowę najcięższego materiału na kupkę, czyli składzik, w miejscu, gdzie stoi.
+- **Odkładanie zapasów:** gdy plecak jest cięższy niż ok. 55%, postać odnosi to, czego teraz nie potrzebuje, do składziku przy ognisku albo pod dachem.
+- **Branie z zapasów:** gdy czegoś brakuje do planów, postać najpierw bierze to ze znanego składziku, zanim pójdzie zbierać.
+- **Wiedza o składzikach:** postacie mówią sobie o nich w rozmowach. Pusty składzik znika z mapy.
 
 ## Mosty
 - Gra wyznacza najkrótsze przesmyki między wyspami. Mosty tworzą minimalne drzewo rozpinające, więc każda wyspa jest osiągalna.

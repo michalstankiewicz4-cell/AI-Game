@@ -43,6 +43,7 @@ function news(a, b, world) {
         tent: `Rozbiłem namiot ${where}.`,
         workbench: `Mam stół do pracy ${where}, przy nim wychodzą różne rzeczy.`,
         bed: `${where[0].toUpperCase() + where.slice(1)} stoi łóżko.`,
+        stash: s.items && Object.values(s.items).some((v) => v > 0) ? `Zostawiłem zapasy ${where}, możesz z nich brać.` : null,
       }[s.kind];
       if (txt) out.push({ v: 3, text: txt });
       break;
@@ -155,6 +156,7 @@ export class Social {
       const key = Math.min(a.id, b.id) + ':' + Math.max(a.id, b.id);
       if ((this.cd.get(key) || -1e9) > w.time) continue;
       this.cd.set(key, w.time + PAIR_COOLDOWN);
+      a.lastTalk = b.lastTalk = w.time;
       this.talk(a, b);
       return;
     }

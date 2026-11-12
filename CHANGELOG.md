@@ -3,6 +3,16 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.14.0] - 2026-11-12
+### Dodane
+- Plecak z limitem 30 rzeczy i 25 kg (wagi w `WEIGHT`). Powyżej 70% udźwigu postać chodzi wolniej.
+- Składziki: nadmiar trafia na kupkę na ziemi, a postacie odnoszą zbędne rzeczy do składziku przy ognisku albo pod dachem i biorą z niego to, czego brakuje. Mówią sobie o nich w rozmowach.
+- Samopoczucie (nowy pasek 😊): zależy od potrzeb, ciepła, dachu, łóżka, towarzystwa, odkryć, ciepłych posiłków i budowy, a samo wpływa na tempo pracy. Model językowy dostaje je opisane słowami.
+- Ubranie z liści i liny: odkrywane tylko przy stole rzemieślniczym, dodaje +4°C odczuwalnej temperatury.
+- W karcie postaci jest pasek wagi plecaka.
+### Zmienione
+- Kopanie rudy uwzględnia zapasy w składzikach, żeby postacie nie kopały bez końca.
+
 ## [0.13.0] - 2026-11-12
 ### Dodane
 - Liście z drzew (z drzewa 3, z palmy 2).
@@ -121,6 +131,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.14.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.14.0
 [0.13.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.13.0
 [0.12.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.12.0
 [0.11.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.11.0

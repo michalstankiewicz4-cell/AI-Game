@@ -30,15 +30,16 @@ export const RECIPES = {
   workbench: { logs: 2, planks: 3 },          // stół rzemieślniczy
   grill: { sticks: 3, stone: 2 },             // ruszt (zakłada się na palące się ognisko)
   bed: { planks: 3, sticks: 2, leaves: 4 },   // łóżko (tylko przy stole rzemieślniczym)
+  clothes: { leaves: 6, rope: 2 },            // ubranie z liści (tylko przy stole)
 };
 // receptury, które da się odkryć i zrobić tylko w określonym miejscu
 export const FIRE_RECIPES = new Set(['ironTool', 'grill']);
-export const BENCH_RECIPES = new Set(['bed']);
+export const BENCH_RECIPES = new Set(['bed', 'clothes']);
 export const FIRE_FUEL = { max: 150, start: 100, burn: 0.5, logs: 60, sticks: 25, leaves: 8 }; // paliwo ogniska (s palenia)
 
 export const RECIPE_NAMES = {
   planks: 'deski', rope: 'lina', rod: 'wędka', spear: 'włócznia', campfire: 'ognisko', shelter: 'szałas', ironTool: 'żelazne narzędzia',
-  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko',
+  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko', clothes: 'ubranie z liści',
 };
 export const MATS = ['logs', 'sticks', 'leaves', 'planks', 'seaweed', 'rope', 'stone', 'iron'];
 export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', leaves: 'liście', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda' };
@@ -52,7 +53,7 @@ export const ITEM_LABELS = {
   berries: '🫐 Jagody', rawFish: '🐟 Ryba', cookedFish: '🍣 Piecz. ryba', rawMeat: '🍗 Mięso', cookedMeat: '🍖 Piecz. mięso',
 };
 export const TOOL_LABELS = {
-  axe: '🪓 Siekiera', pickaxe: '⛏️ Kilof', rod: '🎣 Wędka', spear: '🔱 Włócznia', ironAxe: '🪓 Żel. siekiera', ironPick: '⛏️ Żel. kilof',
+  axe: '🪓 Siekiera', pickaxe: '⛏️ Kilof', rod: '🎣 Wędka', spear: '🔱 Włócznia', ironAxe: '🪓 Żel. siekiera', ironPick: '⛏️ Żel. kilof', clothes: '👕 Ubranie z liści',
 };
 
 export const SPEED = 2.6; // kafelki / s
@@ -61,5 +62,11 @@ export const VIEW_RANGE = 18;
 export const VIEW_NEAR = 2.5; // tuż obok widzi dookoła
 export function viewHalfAngle(d) { return d <= VIEW_NEAR ? Math.PI : Math.max(0.12, 1.25 * (1 - d / VIEW_RANGE)); }
 export const wrapAng = (a) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
-export const INV_CAP = 30;
+export const INV_CAP = 30;    // ile rzeczy mieści plecak
+export const MAX_WEIGHT = 25; // ile kg da się nieść
+// waga jednej sztuki (kg)
+export const WEIGHT = {
+  logs: 3, sticks: 0.5, leaves: 0.1, planks: 1.5, seaweed: 0.3, rope: 0.4, stone: 2, iron: 3,
+  berries: 0.1, rawFish: 0.6, cookedFish: 0.5, rawMeat: 0.8, cookedMeat: 0.7,
+};
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

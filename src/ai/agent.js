@@ -6,7 +6,7 @@ import { llm } from './llm.js';
 import { mapIntent } from './intent.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
-  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
+  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp,
 } from './data.js';
 import { perceptionMethods } from './perception.js';
 import { knowledgeMethods } from './knowledge.js';
@@ -29,8 +29,9 @@ export class Agent {
     this.facing = 0;
     this.hunger = 85; this.thirst = 80; this.energy = 90; this.health = 100;
     this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
+    this.mood = 60; this.joy = 0; this.lastTalk = -999; // samopoczucie 0-100, chwilowa radość, ostatnia rozmowa
     this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0 };
-    this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false };
+    this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false };
     this.task = null;
     this.alive = true;
     this.asleep = false;
@@ -65,13 +66,29 @@ export class Agent {
     this.see(true, 9);
   }
 
+  // za ciężko albo za dużo: odłóż połowę najcięższego materiału na kupkę (składzik) w miejscu, gdzie stoi
   dropSurplus() {
-    // wyrzuć nadmiar najliczniejszego materiału
     let best = null;
-    for (const k of MATS) if (!best || this.inv[k] > this.inv[best]) best = k;
+    for (const k of MATS) if (this.inv[k] > 0 && (!best || this.inv[k] * WEIGHT[k] > this.inv[best] * WEIGHT[best])) best = k;
+    if (!best) return;
     const n = Math.max(1, Math.floor(this.inv[best] / 2));
     this.inv[best] -= n;
-    if (Math.random() < 0.3) this.speak(`Za dużo dźwigam, zostawiam ${MAT_NAMES[best]}.`);
+    const st = this.stashHere();
+    if (st) { st.items[best] = (st.items[best] || 0) + n; this.rememberStruct(st); }
+    if (Math.random() < 0.3) this.speak(`Za dużo dźwigam, odkładam ${MAT_NAMES[best]}.`);
+  }
+  // składzik w zasięgu ręki albo nowa kupka obok
+  stashHere() {
+    const w = this.world;
+    const near = w.structures.find((s) => s.kind === 'stash' && Math.hypot(s.x - this.x, s.z - this.z) < 1.8);
+    if (near) return near;
+    const free = (i, j) => w.walkable(i, j) && w.type[idx(i, j)] !== T.BRIDGE && !w.res[idx(i, j)] && !w.structures.some((s) => s.i === i && s.j === j);
+    let spot = free(this.i, this.j) ? { i: this.i, j: this.j } : null;
+    for (let r = 1; !spot && r < 3; r++) for (let dj = -r; dj <= r && !spot; dj++) for (let di = -r; di <= r && !spot; di++) if (free(this.i + di, this.j + dj)) spot = { i: this.i + di, j: this.j + dj };
+    if (!spot) return null;
+    const s = w.addStructure('stash', spot.i, spot.j, this.id);
+    s.items = {};
+    return s;
   }
 
   rememberStruct(s) { this.knownStructs.add(s.id); }
@@ -122,6 +139,10 @@ export class Agent {
   }
   rawCount() { return this.inv.rawFish + this.inv.rawMeat; }
   invTotal() { let s = 0; for (const k in this.inv) s += this.inv[k]; return s; }
+  invWeight() { let s = 0; for (const k in this.inv) s += this.inv[k] * (WEIGHT[k] || 0.5); return s; }
+  full() { return this.invTotal() >= INV_CAP || this.invWeight() >= MAX_WEIGHT; }
+  // czy zmieści jeszcze n rzeczy o wadze ok. kg
+  roomFor(n = 1, kg = 2 * n) { return this.invTotal() + n <= INV_CAP && this.invWeight() + kg <= MAX_WEIGHT; }
 
   say(text, kind) { this.world.log(`<b style="color:#${this.color.toString(16).padStart(6, '0')}">${this.name}</b>: ${text}`, kind); }
 
@@ -136,7 +157,7 @@ export class Agent {
     // temperatura: ciało dąży do stanu wynikającego z odczuwalnej temperatury otoczenia
     const warmFire = this.nearStructure('campfire', 2.6), hut = this.nearStructure('shelter', 1.5), tent = !hut && this.nearStructure('tent', 1.3);
     const roof = hut || tent;
-    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + (hut ? 7 : tent ? 5 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
+    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + (hut ? 7 : tent ? 5 : 0) + (this.tools.clothes ? 4 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
     const targetT = clamp(36.8 + (this.feltT < 18 ? (this.feltT - 18) * 0.12 : (this.feltT - 18) * 0.06), 33, 39.5);
     this.bodyT += (targetT - this.bodyT) * Math.min(1, 0.03 * dt);
     // doświadczenie: zmarznięta postać sama zauważa, że przy ogniu albo pod dachem robi się cieplej
@@ -173,6 +194,20 @@ export class Agent {
     } else {
       this.energy = clamp(this.energy - 0.2 * dt * workMul, 0, 100);
     }
+    // samopoczucie: potrzeby, ciepło, wygoda, towarzystwo i chwilowe radości (odkrycia, dobre jedzenie, budowa)
+    {
+      const avg = (this.hunger + this.thirst + this.energy + this.health) / 4;
+      const low = Math.min(this.hunger, this.thirst, this.energy, this.health);
+      let target = 0.55 * avg + 0.45 * low;
+      if (this.bodyT < 36) target -= (36 - this.bodyT) * 15;
+      else if (this.bodyT > 37.5) target -= (this.bodyT - 37.5) * 10;
+      if (roof || (this.asleep && this.nearStructure('bed', 1.2))) target += 6;
+      if (warmFire && w.isNight()) target += 5;
+      const others = w.agents.some((o) => o !== this && o.alive);
+      if (others) target += w.time - this.lastTalk < 90 ? 8 : w.time - this.lastTalk > 240 ? -8 : 0;
+      this.joy = Math.max(0, this.joy - dt * 0.15);
+      this.mood = clamp(this.mood + (clamp(target + this.joy, 0, 100) - this.mood) * Math.min(1, 0.02 * dt), 0, 100);
+    }
     // zdrowie
     let dmg = 0;
     if (this.hunger <= 0) dmg += 0.7;
@@ -204,7 +239,7 @@ export class Agent {
         this.speak(urgent('cold'), true);
       }
     }
-    if (this.invTotal() >= INV_CAP - 1) this.dropSurplus();
+    if (this.invTotal() >= INV_CAP || this.invWeight() > MAX_WEIGHT) this.dropSurplus();
     if (!this.task) this.decide();
     if (this.task) this.runTask(dt);
     // tryb Claude: co jakiś czas postać pyta model, nawet w trakcie długiego zadania
@@ -227,7 +262,9 @@ export class Agent {
       if (!this.world.walkable(next.i, next.j)) { this.task = null; return; }
       const p = toWorld(next.i, next.j);
       const dx = p.x - this.x, dz = p.z - this.z, d = Math.hypot(dx, dz);
-      const step = SPEED * dt * (this.energy < 15 ? 0.6 : 1);
+      // ciężki plecak spowalnia (od 70% udźwigu), zmęczenie też
+      const load = this.invWeight() / MAX_WEIGHT;
+      const step = SPEED * dt * (this.energy < 15 ? 0.6 : 1) * (load > 0.7 ? 1 - (load - 0.7) * 1.2 : 1);
       if (d <= step) {
         this.x = p.x; this.z = p.z; this.i = next.i; this.j = next.j;
         t.path.shift();
@@ -240,7 +277,8 @@ export class Agent {
       return;
     }
     if (t.face) this.facing = Math.atan2(t.face.x - this.x, t.face.z - this.z);
-    t.elapsed = (t.elapsed || 0) + dt;
+    // samopoczucie wpływa na tempo pracy: przygnębiony pracuje wolniej, zadowolony trochę szybciej
+    t.elapsed = (t.elapsed || 0) + dt * (this.mood < 30 ? 0.8 : this.mood > 75 ? 1.1 : 1);
     this.working = !t.rest;
     this.anim += dt;
     const r = t.act(dt, t);
