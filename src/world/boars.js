@@ -44,12 +44,20 @@ export const boarMethods = {
         if (b.timer <= 0) { b.dir += (this.rand() - 0.5) * 2.4; b.timer = 2 + this.rand() * 4; }
         this.moveBoar(b, Math.cos(b.dir), Math.sin(b.dir), BOAR.speed * dt);
         if (b.calm <= 0 && this.agents) {
-          const a = this.agents.find((o) => o.alive && !o.asleep && Math.hypot(o.x - b.x, o.z - b.z) < BOAR.sight);
+          const a = this.agents.find((o) => o.alive && !o.asleep && !(o.lvl > 0) && Math.hypot(o.x - b.x, o.z - b.z) < BOAR.sight);
           if (a && this.rand() < dt * 0.15) { b.state = 'charge'; b.target = a; b.chargeT = 6; this.log(`🐗 Dzik szarżuje na ${a.name}!`, 'big'); }
         }
       } else if (b.state === 'charge') {
         b.chargeT -= dt;
         if (!prey || b.chargeT <= 0) { this.calmBoar(b); continue; }
+        // na piętro dzik nie wejdzie: pokręci się pod schodami i odpuści
+        if (prey.lvl > 0) {
+          if (Math.hypot(prey.x - b.x, prey.z - b.z) < 2.5 || b.chargeT < 4) {
+            this.calmBoar(b);
+            if (prey.known && !prey.known.has('boarUp')) { prey.known.add('boarUp'); prey.say('przekonuje się, że na piętro dzik nie wejdzie 🐗🪜🧠', 'learn'); }
+            continue;
+          }
+        }
         const dx = prey.x - b.x, dz = prey.z - b.z, d = Math.hypot(dx, dz);
         if (d > 0.8) this.moveBoar(b, dx / d, dz / d, BOAR.charge * dt);
         else if (b.hitT <= 0) {

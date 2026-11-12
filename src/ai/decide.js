@@ -446,6 +446,12 @@ export const decideMethods = {
       }
       const explored = this.reachN ? this.reachSeen / this.reachN : 1;
       add(0.04 + unknownNeed * 0.6 + (1 - explored) * 0.2 + (w.day() <= 1 ? 0.05 : 0), '🧭 Zbadać okolicę', () => this.taskExplore(bfs));
+      // piętro: z ciekawości, a gdy już wie, że z góry widać dalej, także po to, by się rozejrzeć
+      if (w.pieces.length && !w.isNight() && w.time - (this.lastClimb || -1e9) > 150) {
+        const r = this.climbRoutes(bfs)[0];
+        if (r && r.d < 25) add(0.08 + (K('climbed') ? 0 : 0.12) + (K('lookout') ? unknownNeed * 0.5 + (1 - explored) * 0.15 : 0) + (this.mood > 60 ? 0.03 : 0) - r.d * 0.004,
+          '🪜 Wejść na piętro', () => { this.lastClimb = w.time; return this.taskClimb(r); });
+      }
     }
     // --- towarzystwo: odwiedź kogoś, by wymienić się wiedzą ---
     if (w.social && !w.isNight()) {

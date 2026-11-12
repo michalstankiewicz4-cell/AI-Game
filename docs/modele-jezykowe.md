@@ -75,7 +75,7 @@ Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN
 | Gemma 4 E2B (dobry polski) | ~2,5 GB | ~3,4 GB |
 | Qwen3.5 4B (najmądrzejszy) | ~2,6 GB | ~3,9 GB |
 
-VRAM to wartości z WebLLM dla okna 4096 tokenów, a gra używa mniejszego (1536, przy Qwen3.5 2048), więc w praktyce zużycie jest niższe. Rozmiary pobrania są przybliżone. Cztery większe modele potrzebują mocniejszej karty, np. RTX z 4–6 GB. Na karcie zintegrowanej mogą zawiesić kartę, a wtedy gra schodzi na lżejszy model.
+VRAM to wartości z WebLLM dla okna 4096 tokenów, a od wersji 0.32.0 gra używa właśnie takiego okna (wcześniej 1536 i 2048 tokenów nie mieściły dłuższych opisów postaci). Rozmiary pobrania są przybliżone. Cztery większe modele potrzebują mocniejszej karty, np. RTX z 4–6 GB. Na karcie zintegrowanej mogą zawiesić kartę, a wtedy gra schodzi na lżejszy model.
 
 - **Tryb myślenia** (Qwen3.5, przełącznik pod listą modeli, domyślnie wyłączony): model najpierw rozważa sytuację (`extra_body.enable_thinking`), a potem odpowiada. Dostaje wtedy 768 tokenów więcej i bez wymuszonego JSON-a, a tok myślenia (`<think>…</think>`) jest wycinany przed czytaniem odpowiedzi. Gdy przełącznik jest wyłączony, myślenie jest wyłączone jawnie.
 - **LM Studio:** w menu jest już wyszarzony przycisk „LM Studio (wkrótce)”. Model liczyłby się wtedy w programie na komputerze, np. na mocniejszej karcie, a gra rysowałaby się na drugiej.
@@ -86,7 +86,7 @@ VRAM to wartości z WebLLM dla okna 4096 tokenów, a gra używa mniejszego (1536
 - **Ładowanie:** w menu jest pasek postępu, a w grze, na dole ekranu, karta „Ładowanie modelu … %” z nazwą pobieranego pliku. Znika, gdy model jest gotowy.
 - **Osobny wątek:** model działa w Web Workerze (`src/ai/llmWorker.js`), więc obsługa modelu nie blokuje głównej pętli gry i nie powoduje przycięć. Karta graficzna jest nadal ta sama co dla grafiki. Gdy wątek się nie uruchomi, model startuje w głównym wątku, a powód trafia do zakładki „⚠️ Błędy”. W menu przy gotowym modelu widać „(osobny wątek)”.
 - **Dwie karty graficzne:** Chrome na Windows używa jednej karty dla całej strony (grafika i model) i ignoruje `powerPreference`, więc gra nie podzieli pracy między kartę zintegrowaną a mocniejszą.
-- **Odpowiedź:** wymuszony JSON (`response_format: json_object` ze schematem przekazanym jako tekst), okno kontekstu 1536 tokenów. Jeśli wymuszony JSON nie działa, gra przechodzi na zwykły tekst.
+- **Odpowiedź:** wymuszony JSON (`response_format: json_object` ze schematem przekazanym jako tekst), okno kontekstu 4096 tokenów. Gdy opis postaci byłby za długi, gra najpierw pomija mniej ważne linie (ostatnie zdarzenia, poprzednia wypowiedź, zasłyszane rozmowy, stosunki, wnioski), potem skraca długie linie; jeśli model mimo to zgłosi przekroczenie okna, gra skraca opis według podanej liczby tokenów i pyta jeszcze raz. Jeśli wymuszony JSON nie działa, gra przechodzi na zwykły tekst.
 - **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli. „📋 Kopiuj wszystko” kopiuje je razem z wersją gry i nazwą karty graficznej.
 - **Utrata karty graficznej** (np. `DXGI_ERROR_DEVICE_HUNG` na Windows): gra przełącza się na lżejszy model i zapamiętuje go. Chrome po takim resecie blokuje WebGPU, dopóki strona się nie odświeży, więc gra prosi o F5.
 

@@ -3,6 +3,14 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.32.0] - 2026-11-12
+### Dodane
+- Wchodzenie na piętro po schodach i drabinie. Postać podchodzi od strony wejścia, wspina się (po drabinie wolniej), chodzi po połączonych podłogach piętra i schodzi tą samą drogą. Gdy schody albo podłoga zniknie, zeskakuje i trochę się obija; pilna potrzeba sprowadza ją na dół.
+- Z piętra widać dalej (ściany parteru i pojedyncze drzewa nie zasłaniają), a dzik nie wejdzie na górę i odpuszcza pod schodami. Postacie odkrywają to same: wchodzą z ciekawości, a uciekając przed dzikiem czasem wybierają schody; gdy już wiedzą, że dzik tam nie sięga, uciekają na piętro zawsze, gdy schody są blisko.
+
+### Naprawione
+- Błąd „Prompt tokens exceed context window size” przy modelu w przeglądarce: okno kontekstu wynosi teraz 4096 tokenów (wcześniej 1536 albo 2048), a za długi opis postaci gra skraca, zanim trafi do modelu (najpierw pomija mniej ważne linie). Gdy model mimo to zgłosi przekroczenie, gra skraca opis według liczby tokenów z komunikatu i pyta jeszcze raz.
+
 ## [0.31.0] - 2026-11-12
 ### Dodane
 - Schody (2 deski, 4 stopnie poziom wyżej w wybraną stronę) i drabina (deska i 2 gałęzie, oparta o ścianę albo o podłogę piętro wyżej) jako nowe elementy budowy. Model językowy może je kłaść poleceniami „schody” i „drabina”, a postać budująca metodą prób dostaje je do wyboru, gdy budowa ma już piętro.
@@ -305,6 +313,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.32.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.32.0
 [0.31.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.31.0
 [0.30.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.30.1
 [0.30.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.30.0

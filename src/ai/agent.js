@@ -14,6 +14,7 @@ import { decideMethods } from './decide.js';
 import { tasksMethods } from './tasks.js';
 import { memoryMethods } from './memory.js';
 import { buildingMethods, BUILD_LABEL } from './building.js';
+import { climbMethods } from './climb.js';
 
 export { PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MAT_NAMES, KIND_NAMES, VIEW_RANGE, VIEW_NEAR, viewHalfAngle } from './data.js';
 export { ITEM_LABELS, TOOL_LABELS } from './data.js';
@@ -39,6 +40,7 @@ export class Agent {
     this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0, feathers: 0, hide: 0, seeds: 0, arrows: 0, bowl: 0, waterBowl: 0, clay: 0, flint: 0, grain: 0, flowerSeeds: 0, flowers: 0, pot: 0, waterPot: 0 };
     this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false, knife: false, hoe: false, bow: false, leather: false, shovel: false };
     this.task = null;
+    this.lvl = 0; this.floorY = null; this.climbRoute = null; // piętro (0 = parter) i wysokość podłogi pod stopami
     this.alive = true;
     this.asleep = false;
     this.scores = [];
@@ -375,6 +377,7 @@ export class Agent {
       }
     }
     if (this.invTotal() > INV_CAP || this.invWeight() > MAX_WEIGHT) this.dropSurplus(); // dopiero ponad miarę (pełny plecak to jeszcze nie powód, by coś rzucić)
+    this.keepLevel();
     if (!this.task) this.decide();
     if (this.task) this.runTask(dt);
     // tryb Claude: co jakiś czas postać pyta model, nawet w trakcie długiego zadania
@@ -433,7 +436,7 @@ export class Agent {
       // ścieżka mogła się zablokować
       if (!this.world.walkable(next.i, next.j) || (!t.path.loose && this.world.stepBlocked(this.i, this.j, next.i, next.j) && !(this.i === next.i && this.j === next.j))) { this.task = null; return; }
       // inne postacie: nie przechodzi przez nie. Stojącą omija; z idącą rozstępują się (czeka ta z wyższym numerem)
-      const other = (next.i !== this.i || next.j !== this.j) && this.world.agents.find((a) => a !== this && a.alive && a.i === next.i && a.j === next.j && (!(a.task && a.task.path && a.task.path.length) || a.id < this.id));
+      const other = (next.i !== this.i || next.j !== this.j) && this.world.agents.find((a) => a !== this && a.alive && (a.lvl || 0) === (this.lvl || 0) && a.i === next.i && a.j === next.j && (!(a.task && a.task.path && a.task.path.length) || a.id < this.id));
       if (other) {
         t.wait = (t.wait || 0) + dt;
         if (t.wait > 1.2) { this.avoidUntil = this.world.time + 4; this.task = null; } // wybierz inną drogę
@@ -493,4 +496,4 @@ export function computeShores(world) {
   }
 }
 
-Object.assign(Agent.prototype, perceptionMethods, knowledgeMethods, decideMethods, tasksMethods, buildingMethods, memoryMethods);
+Object.assign(Agent.prototype, perceptionMethods, knowledgeMethods, decideMethods, tasksMethods, buildingMethods, memoryMethods, climbMethods);

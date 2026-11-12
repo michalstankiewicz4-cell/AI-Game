@@ -306,7 +306,7 @@ export class Renderer {
       let g = this.agentMeshes.get(a);
       if (!g) { g = this.makeAgentMesh(a); this.agentMeshes.set(a, g); this.labels.set(a, this.makeLabel(a)); }
       const ap = lp(a), ax = ap.x, az = ap.z, af = la(a.facing, a._pf);
-      const gy = world.groundHeight(ax, az);
+      const gy = a.floorY != null ? a.floorY : world.groundHeight(ax, az); // na piętrze albo na schodach: wysokość podłogi
       const moving = a.task && a.task.path && a.task.path.length > 0;
       const bob = moving ? Math.abs(Math.sin(rt * 10 + a.id)) * 0.06 : 0;
       g.position.set(ax, gy + bob, az);

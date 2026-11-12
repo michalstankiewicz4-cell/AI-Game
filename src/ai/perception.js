@@ -1,6 +1,7 @@
 // Percepcja i pamięć: co agent widzi, co pamięta i jak szuka rzeczy w pamięci.
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
+import { PIECE_LH } from '../world/pieces.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp, TORCH,
@@ -26,7 +27,8 @@ export const perceptionMethods = {
     const w = this.world;
     const a = toTile(x0, z0), b = toTile(x1, z1);
     if (a.i === b.i && a.j === b.j) return true;
-    const eye = w.tileY(a.i, a.j) + 0.8, end = w.tileY(b.i, b.j) + 0.4;
+    const up = (this.lvl || 0) * PIECE_LH; // z piętra wzrok idzie ponad ścianami parteru
+    const eye = w.tileY(a.i, a.j) + 0.8 + up, end = w.tileY(b.i, b.j) + 0.4;
     const walls = w.wallBits();
     const n = Math.ceil(Math.hypot(x1 - x0, z1 - z0) * 2);
     let pi = a.i, pj = a.j, trees = 0;
@@ -36,14 +38,14 @@ export const perceptionMethods = {
       if (t.i === pi && t.j === pj) continue;
       // przejście przez krawędź ze ścianą (po przekątnej wystarczy jedna z dwóch dróg)
       const c = idx(pi, pj), di = t.i - pi, dj = t.j - pj;
-      if (Math.abs(di) + Math.abs(dj) === 1) { if (!w.edgeOpen(walls, c, di, dj)) return false; }
+      if (up) { /* ściany parteru nie zasłaniają */ } else if (Math.abs(di) + Math.abs(dj) === 1) { if (!w.edgeOpen(walls, c, di, dj)) return false; }
       else if (!((w.edgeOpen(walls, c, di, 0) && w.edgeOpen(walls, idx(pi + di, pj), 0, dj)) || (w.edgeOpen(walls, c, 0, dj) && w.edgeOpen(walls, idx(pi, pj + dj), di, 0)))) return false;
       pi = t.i; pj = t.j;
       if (pi === b.i && pj === b.j) break;
       const k = idx(pi, pj);
       if (w.tileY(pi, pj) > eye + (end - eye) * f + 0.15) return false; // wzgórze zasłania
       const r = w.res[k];
-      if (r && (r.kind === 'tree' || r.kind === 'palm') && r.growth >= 0.5 && ++trees >= 2) return false;
+      if (r && (r.kind === 'tree' || r.kind === 'palm') && r.growth >= 0.5 && ++trees >= (up ? 3 : 2)) return false;
     }
     return true;
   },

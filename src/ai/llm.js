@@ -24,6 +24,7 @@ export const WEB_MODELS = {
 };
 const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.86/+esm';
 const LS = 'wyspyai.llm';
+const WEB_CTX = 4096; // tokeny okna kontekstu modelu w przeglądarce
 const LS_KEY = 'wyspyai.apiKey';
 const AGENT_CD = { claude: 25, web: 20 }; // s czasu gry między zapytaniami jednej postaci
 const GLOBAL_GAP = { claude: 2500, web: 4000 }; // model w przeglądarce dzieli kartę z grafiką, więc daje jej oddech // ms czasu rzeczywistego między dowolnymi zapytaniami
@@ -97,8 +98,8 @@ class LLM {
       const webllm = await import(WEBLLM_URL);
       const id = this.webModel;
       const cfg = { initProgressCallback: (r) => { W.progress = r.progress || 0; W.text = r.text || ''; } };
-      // mniejsza pamięć podręczna = mniej VRAM; modele z myśleniem potrzebują trochę więcej miejsca
-      const opts = { context_window_size: WEB_MODELS[id].think ? 2048 : 1536 };
+      // okno kontekstu: opis postaci, opcje i budowa z desek mieszczą się z zapasem (prompt bywa > 2000 tokenów)
+      const opts = { context_window_size: WEB_CTX };
       let engine = null;
       // najpierw w osobnym wątku (Web Worker), żeby obsługa modelu nie przycinała gry
       if (typeof Worker !== 'undefined' && webllm.CreateWebWorkerMLCEngine) {
@@ -223,9 +224,13 @@ class LLM {
     const schema = JSON.stringify(base);
     const m = WEB_MODELS[this.web.id] || {};
     const thinking = !!(m.think && this.think);
+    const outTok = thinking ? maxTokens + 768 : maxTokens; // myślenie zużywa dodatkowe tokeny
+    const room = WEB_CTX - outTok - 48; // tyle tokenów może mieć prompt
+    // zgrubnie ~2,4 znaku polskiego tekstu na token: za długi opis skracamy, zanim trafi do modelu
+    if ((system.length + user.length) / 2.4 > room) user = fitPrompt(user, Math.floor(room * 2.4) - system.length);
     const req = (fmt) => engine.chat.completions.create({
       messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-      max_tokens: thinking ? maxTokens + 768 : maxTokens, // myślenie zużywa dodatkowe tokeny
+      max_tokens: outTok,
       temperature: 0.7,
       // wymuszony JSON nie zostawia miejsca na myślenie, więc przy myśleniu go nie ma
       ...(fmt && !thinking ? { response_format: { type: 'json_object', schema } } : {}),
@@ -239,6 +244,12 @@ class LLM {
         this.web.noGrammar = true; // ta wersja/model nie radzi sobie z wymuszonym JSON-em: dalej bez niego
         reportError('Model', 'Wymuszony JSON nie działa, przechodzę na zwykły tekst: ' + (e.message || e));
         r = await req(false);
+      } else if (/context window/i.test(String(e.message || e))) {
+        // szacunek był za mały: skracamy według liczby tokenów podanej przez model i próbujemy raz jeszcze
+        const n = +(/prompt tokens:\s*(\d+)/.exec(String(e.message)) || [])[1] || 0;
+        const keep = n ? room / n * 0.9 : 0.6;
+        user = fitPrompt(user, Math.floor((system.length + user.length) * keep) - system.length);
+        r = await req(!this.web.noGrammar);
       } else { this.webLost(e); throw e; }
     }
     const u = r.usage || {};
@@ -288,6 +299,21 @@ function parseJson(txt) {
   const m = /\{[\s\S]*\}/.exec(txt || '');
   if (!m) return null;
   try { return JSON.parse(m[0]); } catch { return null; }
+}
+
+// skraca opis postaci do max znaków: najpierw wyrzuca mniej ważne linie, potem skraca długie, na końcu tnie środek
+const OPTIONAL = ['Co się ostatnio działo', 'Twoja poprzednia wypowiedź', 'Słyszysz', 'Twój stosunek', 'Twoje wnioski', 'Jest ciemno', 'Temperatura powietrza'];
+export function fitPrompt(text, max) {
+  max = Math.max(400, max);
+  let lines = text.split('\n');
+  for (const pre of OPTIONAL) {
+    if (lines.join('\n').length <= max) break;
+    lines = lines.filter((l) => !l.startsWith(pre));
+  }
+  let out = lines.join('\n');
+  if (out.length > max) out = lines.map((l) => (l.length > 260 ? l.slice(0, 257) + '...' : l)).join('\n');
+  if (out.length > max) { const head = Math.floor(max * 0.3); out = out.slice(0, head) + '\n...\n' + out.slice(out.length - (max - head - 5)); }
+  return out;
 }
 
 function describe(a, labels, decide) {
