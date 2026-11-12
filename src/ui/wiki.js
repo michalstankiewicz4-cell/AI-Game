@@ -134,12 +134,13 @@ export function scanDiscoveries(world) {
   const f = world.wikiFound || (world.wikiFound = new Set());
   const add = (k) => f.add(k);
   for (const a of world.agents) {
-    for (const r of a.known) { add('recipe:' + r); if (EXPERIENCE.some((e) => e[0] === r)) add('exp:' + r); }
+    // w trybie „Wie wszystko” postać zna wszystko od startu: w wiki liczy się dopiero to, co naprawdę zrobi albo spotka
+    if (!a.omniscient) for (const r of a.known) { add('recipe:' + r); if (EXPERIENCE.some((e) => e[0] === r)) add('exp:' + r); }
     if (a.known.has('bridge')) add('world:bridge');
     for (const k in a.inv) if (a.inv[k] > 0) add((FOOD[k] ? 'food:' : 'item:') + k);
-    for (const [k, v] of a.edible) if (v) add('food:' + k);
+    if (!a.omniscient) for (const [k, v] of a.edible) if (v) add('food:' + k);
     for (const k in a.tools) if (a.tools[k]) add('tool:' + k);
-    for (const k of a.triedKinds) add('world:' + k);
+    if (!a.omniscient) for (const k of a.triedKinds) add('world:' + k);
     if (a.drankPond) add('world:pond');
     if (a.saltKnown) { add('world:sea'); add('exp:saltWater'); }
     if (a.stats.fish > 0) add('world:fish');
@@ -160,12 +161,13 @@ export function scanDiscoveries(world) {
   return f;
 }
 
-let tab = 'craft', open = false, getWorld = () => null, shown = '';
+let tab = 'craft', open = false, getWorld = () => null, shown = '', lastWorld = null, worldN = 0;
 function render(force) {
   const w = getWorld();
   const found = w ? scanDiscoveries(w) : new Set();
   // przerysuj tylko, gdy coś się zmieniło (inaczej klik w zakładkę trafia w znikający przycisk)
-  const sig = `${tab}|${found.size}|${w ? w.seed + ':' + w.agents.length : ''}`;
+  if (w !== lastWorld) { lastWorld = w; worldN++; } // nowa gra: wiki zaczyna od zera
+  const sig = `${tab}|${found.size}|${worldN}`;
   if (!force && sig === shown) return;
   shown = sig;
   const all = CATS.flatMap((c) => c.items), got = all.filter((e) => found.has(e.key)).length;

@@ -170,7 +170,7 @@ Postać, która zna deski, może kłaść je pojedynczo. Każda deska to osobny 
 ## Wiki w grze
 Przycisk „📖 Wiki” w górnym pasku (albo klawisz K) otwiera encyklopedię wysp. Jest podzielona na kategorie: crafting, budowle, materiały, jedzenie, narzędzia, świat (drzewa, skały, kopalnia, staw, morze, ryby, ptaki, dziki, mosty, składziki) i doświadczenia (np. że przy ogniu cieplej).
 
-Widać w niej wszystko, z kosztem receptur, miejscem, gdzie da się je odkryć (przy ognisku albo przy stole), wagą i sytością. Rzeczy, które odkryła choć jedna postać, mają zielony znaczek ✓ i zostają odkryte także po jej śmierci. Licznik „Odkryto X z Y” pokazuje postęp. Wiki jest tylko dla gracza: model językowy jej nie dostaje, więc w trybie „Odkrywa sam” postacie dalej uczą się wyłącznie na próbach. W trybie „Wie wszystko” prawie wszystko ma ✓ od startu.
+Widać w niej wszystko, z kosztem receptur, miejscem, gdzie da się je odkryć (przy ognisku albo przy stole), wagą i sytością. Rzeczy, które odkryła choć jedna postać, mają zielony znaczek ✓ i zostają odkryte także po jej śmierci. Licznik „Odkryto X z Y” pokazuje postęp. Wiki jest tylko dla gracza: model językowy jej nie dostaje, więc w trybie „Odkrywa sam” postacie dalej uczą się wyłącznie na próbach. Każda nowa gra zaczyna wiki od zera. W trybie „Wie wszystko” znaczek ✓ dostaje tylko to, co postacie naprawdę zrobią, zjedzą albo spotkają, a nie wiedza, z którą startują.
 
 Okienko „Postacie” i kartę postaci przesuwasz, chwytając za nagłówek.
 

@@ -14,6 +14,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 - Modele: kępy żyta, kwiaty, doniczka z gliny, miska z ziemią, żyto i kwiaty na grządkach. Nowe wpisy w wiki, słowa kluczowe pełnej swobody, fakty dla trybu „Wie wszystko”.
 ### Zmienione
 - Na grządce postać sieje tę roślinę, której nasiona ma, a której najmniej rośnie.
+- Wiki zaczyna od zera w każdej nowej grze, także w trybie „Wie wszystko”: liczy się tylko to, co postacie naprawdę zrobią albo spotkają, a nie wiedza, z którą startują.
 
 ## [0.23.1] - 2026-11-12
 ### Poprawione
