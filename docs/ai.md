@@ -41,6 +41,13 @@ Postacie, które spotkają się bliżej niż 2,6 kafelka, mogą porozmawiać. Ta
 - uczą się nawzajem umiejętności,
 - oddają sobie przedmioty, np. jedzenie głodnemu.
 
+## Ciepło z doświadczenia
+Postacie nie wiedzą z góry, że ogień i dach grzeją. Gdy zmarznięta postać (poniżej 36,4°C) spędzi kilka sekund przy ognisku albo pod dachem szałasu, sama to zauważa: w dzienniku pojawia się wpis „czuje, że przy ognisku robi się cieplej”, a model dostaje to jako jej własną notatkę. Dopiero wtedy:
+- **ogrzewanie się:** pojawia się opcja „🔥 Ogrzać się przy ognisku”, która przy wychłodzeniu staje się pilna,
+- **budowa:** zimno podnosi ocenę budowy ogniska albo szałasu.
+
+Do modelu trafia tylko temperatura powietrza i ciała. Tego, co grzeje, model nie dostaje wprost. Postacie przekazują sobie tę wiedzę w rozmowach, tak jak receptury.
+
 ## Komentarze (`src/ai/commentary.js`)
 - **Dymki:** myśli przy zmianie zajęcia, okrzyki przy krytycznych potrzebach, reakcje na zdarzenia.
 - **Narrator:** co ok. 30 s podsumowuje sytuację, np. kto jest w tarapatach albo jak idzie budowa mostu.

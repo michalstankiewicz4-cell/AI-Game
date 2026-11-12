@@ -13,7 +13,7 @@ import { initLlmMenu, updateTokens, makeDraggable, prepareLlm } from './ui/llmPa
 
 const state = {
   world: null, agents: [], narrator: null, social: null, speed: 1, paused: false, selected: null,
-  opts: { labels: true, bubbles: true, follow: false, aiView: false }, cfg: { agents: 3, islands: 2, seed: 0 }, acc: 0, over: false,
+  opts: { labels: true, bubbles: true, follow: false, aiView: false }, cfg: { agents: 1, islands: 1, seed: 0 }, acc: 0, over: false,
 };
 const renderer = new Renderer($('app'));
 let quality = 'high';

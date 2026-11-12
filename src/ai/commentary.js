@@ -10,6 +10,7 @@ const THOUGHTS = {
   '🫐 Zbierać jagody': ['Widzę krzak z jagodami, biorę!', 'Jagody to nie stek, ale zawsze coś.', 'Pozbieram trochę jagód na zapas.'],
   '🎣 Łowić ryby': ['Czas na ryby. Przy brzegu coś pływa!', 'Zarzucam wędkę, cierpliwość to klucz.', 'Ryba na kolację? Brzmi dobrze.'],
   '🔱 Polować na ptaka': ['Ptak wylądował... cicho, cichutko...', 'Mam włócznię i mam plan.', 'Ten ptak będzie moim obiadem.'],
+  '🔥 Ogrzać się przy ognisku': ['Brr, zimno. Posiedzę chwilę przy ogniu.', 'Ogień, ciepło... od razu lepiej.', 'Ręce mi grabieją, idę do ogniska.'],
   '😴 Spać': ['Padam z nóg, muszę się przespać.', 'Noc. Kładę się, jutro dalej.', 'Kilka godzin snu i będę jak nowy.'],
   '🔥 Upiec jedzenie': ['Upiekę to przy ognisku, surowe nie smakuje.', 'Pieczone daje dwa razy więcej sił!'],
   '🎣 Zrobić wędkę': ['Mam drewno, zrobię wędkę.', 'Z kijem i sznurkiem z łyka będzie wędka.'],
@@ -39,6 +40,7 @@ const URGENT = {
   thirst: ['Umieram z pragnienia!', 'Woda... natychmiast!'],
   hunger: ['Jeśli zaraz czegoś nie zjem, to po mnie...', 'Głód mnie wykańcza!'],
   energy: ['Nie dam rady dłużej... muszę spać.'],
+  cold: ['Trzęsę się z zimna, muszę się ogrzać!', 'Brr... nie czuję palców.'],
 };
 
 const EVENTS = {
@@ -85,8 +87,10 @@ export class Narrator {
     const night = w.isNight();
     if (night !== this.lastNight) {
       this.lastNight = night;
-      emit(night ? `🌙 Zapada noc ${w.day()}. dnia. ${alive.length} ${alive.length === 1 ? 'ocalały szuka' : 'ocalałych szuka'} schronienia.` :
-        `☀️ Świt ${w.day()}. dnia! Wyspa budzi się do życia.`);
+      const c = w.dayClimate(w.day() - 1);
+      const lo = Math.round(c.mean - c.amp), hi = Math.round(c.mean + c.amp);
+      emit(night ? `🌙 Zapada noc ${w.day()}. dnia. ${alive.length} ${alive.length === 1 ? 'ocalały szuka' : 'ocalałych szuka'} schronienia.${lo < 8 ? ` 🥶 Noc będzie zimna, do ${lo}°C.` : ''}` :
+        `☀️ Świt ${w.day()}. dnia! Wyspa budzi się do życia. 🌡️ Dziś ${w.weatherWord((lo + hi) / 2)}: od ${lo} do ${hi}°C.`);
       const a = pick(alive);
       a.speak(eventLine(night ? 'night' : 'morning'));
     }

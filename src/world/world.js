@@ -71,6 +71,28 @@ export class World {
     return Math.max(0, Math.min(1, Math.sin((f - 0.22) / 0.58 * Math.PI) * 1.4));
   }
 
+  // ---------- klimat umiarkowany ----------
+  // średnia dnia 7–21°C zmienia się z dnia na dzień (ciepłe i chłodne dni), w ciągu doby ±3–6°C,
+  // najzimniej ok. 4:00, najcieplej ok. 15:00; wyżej jest chłodniej
+  dayClimate(k) {
+    const r = (n) => { const x = Math.sin((k + 1) * 127.1 + n * 311.7 + this.seed * 0.0137) * 43758.5453; return x - Math.floor(x); };
+    return { mean: 14 + (r(1) * 2 - 1) * 7, amp: 3 + r(2) * 3 };
+  }
+  airTemp(i, j) {
+    const t = this.time / DAY_LENGTH, k = Math.floor(t), f = t - k;
+    const a = this.dayClimate(k), b = this.dayClimate(k + 1);
+    const s = f * f * (3 - 2 * f); // płynne przejście między dniami
+    const mean = a.mean + (b.mean - a.mean) * s, amp = a.amp + (b.amp - a.amp) * s;
+    // krzywa dobowa: minimum o 4:00, maksimum o 15:00 (szybsze ocieplanie rano, wolniejsze stygnięcie wieczorem)
+    const h = f * 24;
+    const curve = h >= 4 && h < 15 ? -Math.cos((h - 4) / 11 * Math.PI) : Math.cos(((h - 15 + 24) % 24) / 13 * Math.PI);
+    let T = mean + amp * curve;
+    if (i != null && this.inBounds(i, j)) T -= Math.max(0, this.height[idx(i, j)] - 1) * 0.8;
+    return T;
+  }
+  // krótki opis pogody na dziś (do dziennika i dla modelu)
+  weatherWord(T) { return T < 5 ? 'mróz w powietrzu' : T < 10 ? 'zimno' : T < 15 ? 'chłodno' : T < 22 ? 'przyjemnie' : T < 27 ? 'ciepło' : 'upał'; }
+
   inBounds(i, j) { return i >= 0 && j >= 0 && i < W && j < H; }
   walkable(i, j) {
     if (!this.inBounds(i, j)) return false;

@@ -161,3 +161,8 @@ h1 .ver { font-size: 14px; font-weight: 600; color: #8fd0f0; background: rgba(63
 #errMsg { color: #8fe0a8; font-size: 12px; }
 .feed-body .m.err { color: #ffb4b4; }
 .feed-body .m.err code { white-space: pre-wrap; word-break: break-word; font-size: 11.5px; color: #ffd0d0; }
+
+/* temperatura */
+.cold { color: #8fd0ff; }
+.hot { color: #ffae6b; }
+#detail .temp { margin-top: 4px; color: #cfe3f2; }

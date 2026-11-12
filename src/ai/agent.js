@@ -28,6 +28,7 @@ export class Agent {
     this.x = p.x; this.z = p.z; this.i = i; this.j = j;
     this.facing = 0;
     this.hunger = 85; this.thirst = 80; this.energy = 90; this.health = 100;
+    this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
     this.inv = { logs: 0, sticks: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0 };
     this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false };
     this.task = null;
@@ -132,10 +133,27 @@ export class Agent {
     if (this.bubble && (this.bubble.t -= dt) <= 0) this.bubble = null;
     const isl = this.island;
     if (isl >= 0 && !this.visited.has(isl)) { this.visited.add(isl); this.event('newIsland'); this.say(`dociera na wyspę ${isl + 1}! 🏝️`, 'big'); }
+    // temperatura: ciało dąży do stanu wynikającego z odczuwalnej temperatury otoczenia
+    const warmFire = this.nearStructure('campfire', 2.6), roof = this.nearStructure('shelter', 1.5);
+    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + (roof ? 7 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
+    const targetT = clamp(36.8 + (this.feltT < 18 ? (this.feltT - 18) * 0.12 : (this.feltT - 18) * 0.06), 33, 39.5);
+    this.bodyT += (targetT - this.bodyT) * Math.min(1, 0.03 * dt);
+    // doświadczenie: zmarznięta postać sama zauważa, że przy ogniu albo pod dachem robi się cieplej
+    this.warmT = (warmFire || roof) && this.bodyT < 36.4 ? (this.warmT || 0) + dt : 0;
+    if (this.warmT > 4) {
+      const k = warmFire ? 'warmFire' : 'warmRoof';
+      if (!this.known.has(k)) {
+        this.known.add(k);
+        this.say(warmFire ? 'czuje, że przy ognisku robi się cieplej 🔥🧠' : 'czuje, że pod dachem jest cieplej 🛖🧠', 'learn');
+        this.speak(warmFire ? 'O, przy ogniu od razu cieplej!' : 'Pod dachem jakoś cieplej...', true);
+      }
+    }
+    const coldMul = this.bodyT < 36 ? 1 + (36 - this.bodyT) * 0.35 : 1; // zimno: organizm spala więcej
+    const hotMul = this.bodyT > 37.5 ? 1 + (this.bodyT - 37.5) * 0.8 : 1; // gorąco: szybciej chce się pić
     // spadek potrzeb
     const workMul = this.working ? 1.35 : 1;
-    this.hunger = clamp(this.hunger - 0.26 * dt * workMul, 0, 100);
-    this.thirst = clamp(this.thirst - 0.36 * dt * workMul, 0, 100);
+    this.hunger = clamp(this.hunger - 0.26 * dt * workMul * coldMul, 0, 100);
+    this.thirst = clamp(this.thirst - 0.36 * dt * workMul * hotMul, 0, 100);
     if (this.asleep) {
       const shelter = this.nearStructure('shelter', 1.5);
       const fire = this.nearStructure('campfire', 3);
@@ -151,11 +169,13 @@ export class Agent {
     if (this.hunger <= 0) dmg += 0.7;
     if (this.thirst <= 0) dmg += 1.0;
     if (this.energy <= 0) dmg += 0.3;
+    if (this.bodyT < 35) dmg += 0.2 + (35 - this.bodyT) * 0.6; // wychłodzenie
+    if (this.bodyT > 39) dmg += (this.bodyT - 39) * 0.8;       // przegrzanie
     if (dmg > 0) this.health -= dmg * dt;
-    else if (this.hunger > 40 && this.thirst > 40 && this.energy > 25) this.health = clamp(this.health + 0.15 * dt, 0, 100);
+    else if (this.hunger > 40 && this.thirst > 40 && this.energy > 25 && this.bodyT > 35.5) this.health = clamp(this.health + 0.15 * dt, 0, 100);
     if (this.health <= 0) {
       this.health = 0; this.alive = false; this.task = null; this.asleep = false;
-      const cause = this.thirst <= 0 ? 'z pragnienia' : this.hunger <= 0 ? 'z głodu' : 'z wycieńczenia';
+      const cause = this.thirst <= 0 ? 'z pragnienia' : this.hunger <= 0 ? 'z głodu' : this.bodyT < 35 ? 'z wychłodzenia' : this.bodyT > 39 ? 'z przegrzania' : 'z wycieńczenia';
       this.say(`💀 umiera ${cause} (dzień ${w.day()})`, 'death');
       this.bubble = { text: '...', t: 3 };
       const other = w.agents.find((a) => a.alive);
@@ -170,6 +190,9 @@ export class Agent {
       if (!this.task.urgent && (this.thirst < 18 || this.hunger < 15 || this.energy < 8)) {
         this.task = null;
         this.speak(urgent(this.thirst < 18 ? 'thirst' : this.hunger < 15 ? 'hunger' : 'energy'), true);
+      } else if (!this.task.urgent && !this.task.warm && this.bodyT < 35.2 && !this.nearStructure('campfire', 2.6)) {
+        this.task = null;
+        this.speak(urgent('cold'), true);
       }
     }
     if (this.invTotal() >= INV_CAP - 1) this.dropSurplus();
