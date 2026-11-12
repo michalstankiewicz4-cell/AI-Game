@@ -25,6 +25,8 @@ button { font: inherit; cursor: pointer; }
 .seg { display: flex; gap: 6px; }
 .seg button { flex: 1; padding: 10px 0; border-radius: 10px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: #eef3f8; font-size: 17px; font-weight: 600; }
 .seg button.on { background: #3fa7d6; border-color: #3fa7d6; color: #fff; }
+.seg button:disabled { opacity: .4; cursor: not-allowed; }
+.seg button small { display: block; font-size: 11px; font-weight: 500; opacity: .8; }
 .seed-row { display: flex; gap: 6px; }
 .seed-row input { flex: 1; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15); background: rgba(0,0,0,.25); color: #fff; font-size: 16px; }
 .seed-row button { padding: 0 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); font-size: 18px; }
