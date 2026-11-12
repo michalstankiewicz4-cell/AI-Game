@@ -145,8 +145,10 @@ export const tasksMethods = {
     let bed = null;
     if (this.known.has('bedRest') || !this.bedTried) {
       const taken = (s) => this.world.agents.some((a) => a !== this && a.alive && ((a.task && a.task.bedId === s.id) || (a.asleep && a.i === s.i && a.j === s.j)));
+      // ma własne łóżko w zasięgu: śpi tylko w nim (cudze bierze tylko, gdy swojego nie ma)
+      const own = this.world.structures.some((s) => s.kind === 'bed' && s.owner === this.id && this.knownStructs.has(s.id) && bfs.dist[idx(s.i, s.j)] >= 0 && bfs.dist[idx(s.i, s.j)] < 30 && !taken(s));
       for (const s of this.world.structures) {
-        if (s.kind !== 'bed' || !this.knownStructs.has(s.id) || taken(s)) continue;
+        if (s.kind !== 'bed' || !this.knownStructs.has(s.id) || taken(s) || (own && s.owner !== this.id)) continue;
         const d = bfs.dist[idx(s.i, s.j)] - (s.owner === this.id ? 10 : 0);
         if (bfs.dist[idx(s.i, s.j)] >= 0 && (!bed || d < bed.dd)) bed = { s, i: s.i, j: s.j, d: bfs.dist[idx(s.i, s.j)], dd: d };
       }
@@ -191,9 +193,10 @@ export const tasksMethods = {
       act: (dt, t) => {
         if (t.elapsed < 2) return null;
         const out = !(s.fuel > 0);
-        if (out) { // rozpałka: dwie gałęzie
-          if (this.inv.sticks < 2) return 'fail';
+        if (out) { // rozpałka: dwie gałęzie i iskra z krzemienia
+          if (this.inv.sticks < 2 || !(this.inv.flint > 0)) return 'fail';
           this.inv.sticks -= 2; s.fuel = 15; s.lastFedBy = this.id;
+          if (Math.random() < 0.25) { this.inv.flint--; this.say('krzemień kruszy się od krzesania 🔸'); }
           this.world.structuresChanged = true;
           this.say('rozpala wygasłe ognisko 🔥', 'info');
         }
@@ -204,6 +207,7 @@ export const tasksMethods = {
           else break;
         }
         s.fuel = Math.min(FIRE_FUEL.max, s.fuel);
+        this.beSeenDoing(s, 'fire');
         return 'done';
       },
     };
@@ -259,7 +263,7 @@ export const tasksMethods = {
         for (const k in want) {
           while (this.inv[k] < want[k] && s.items[k] > 0 && this.roomFor(2, WEIGHT[k] + 1)) { s.items[k]--; this.inv[k]++; got++; }
         }
-        if (got) { s.lastTaker = { id: this.id, t: this.world.time }; if (this.expect.has(s.id)) this.expectStore(s); }
+        if (got) { s.lastTaker = { id: this.id, t: this.world.time }; if (this.expect.has(s.id)) this.expectStore(s); this.beSeenDoing(s, 'take'); }
         return got ? 'done' : 'fail';
       },
     };
@@ -284,6 +288,7 @@ export const tasksMethods = {
           if (n > 0) { this.inv[k] -= n; s.items[k] = (s.items[k] || 0) + n; }
         }
         this.expectStore(s); // zapamiętuje, co tu zostawił(a)
+        this.beSeenDoing(s, 'store');
         return 'done';
       },
     };
@@ -574,7 +579,9 @@ export const tasksMethods = {
   },
 
   taskRest() {
-    return { path: [], rest: true, label: '🪑 Odpoczywa', act: (dt, t) => { this.energy = clamp(this.energy + 0.25 * dt, 0, 100); return t.elapsed > 6 ? 'done' : null; } };
+    // ranna postać odpoczywa dłużej (w spoczynku rany goją się szybciej)
+    const heal = this.health < 60;
+    return { path: [], rest: true, label: heal ? '🩹 Dochodzi do siebie' : '🪑 Odpoczywa', act: (dt, t) => { this.energy = clamp(this.energy + 0.25 * dt, 0, 100); return t.elapsed > (heal ? 20 : 6) || (heal && this.health >= 80) ? 'done' : null; } };
   },
 
   // ---------- rolnictwo, miska, skórowanie ----------
@@ -648,6 +655,7 @@ export const tasksMethods = {
         if (got.berries) this.stats.berries += got.berries;
         f.berries = 0; f.stage = f.kind === 'planter' ? 'empty' : 'tilled'; f.growth = 0;
         f.harvestedBy = { id: this.id, t: this.world.time };
+        this.beSeenDoing(f, 'harvest');
         this.joy = Math.min(30, this.joy + (got.flowers ? 12 : 8));
         if (!this.known.has('farm')) {
           this.known.add('farm');
@@ -675,6 +683,7 @@ export const tasksMethods = {
         if (!v || f.stage !== 'planted') return 'fail';
         this.inv[v[1]]--; this.inv[v[0]]++;
         f.water = 1; f.watered = true; f.wateredBy = this.id;
+        this.beSeenDoing(f, 'water');
         if (!this.known.has('watering') && !t.said) this.speak(f.kind === 'planter' ? 'Ziemia w doniczce całkiem sucha. Dam jej trochę wody.' : 'Ta ziemia jest sucha. Może roślinie przyda się woda?', true);
         else if (Math.random() < 0.3) this.say(`podlewa ${f.kind === 'planter' ? 'doniczkę 🪴💧' : 'grządkę 💧'}`);
         return 'done';
@@ -826,6 +835,21 @@ export const tasksMethods = {
     };
   },
   // kwiaty: cieszą, a czasem zostają z nich nasiona
+  // krzemień z plaży: podnosi po kamyku (najwyżej 4 przy sobie)
+  taskFlint(r) {
+    return {
+      targetId: r.id, path: this.pathTo(r.i, r.j), face: r, label: '🔸 Zbiera krzemień',
+      act: (dt, t) => {
+        if (r.removed || r.amount <= 0 || this.inv.flint >= 4) return 'done';
+        if (t.elapsed > 1) {
+          t.elapsed = 0; r.amount--; r.lastBy = this.id; r.lastByT = this.world.time; this.inv.flint++;
+          this.world.changed.add(r);
+          if (!t.said) { t.said = true; this.say('podnosi z piasku krzemień 🔸'); }
+        }
+        return null;
+      },
+    };
+  },
   taskFlowers(r) {
     return {
       targetId: r.id, path: this.pathTo(r.i, r.j), face: r, label: '🌼 Zrywa kwiaty',

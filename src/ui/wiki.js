@@ -6,7 +6,7 @@ import { $, esc } from './dom.js';
 const ICON = {
   planks: '🟫', rope: '🪢', rod: '🎣', spear: '🔱', campfire: '🔥', shelter: '🛖', ironTool: '⚒️', tent: '⛺', workbench: '🛠️',
   grill: '♨️', bed: '🛏️', chest: '📦', torch: '🔥', clothes: '👕', sword: '🗡️', shield: '🛡️',
-  logs: '🪵', sticks: '🥢', leaves: '🍃', seaweed: '🌿', stone: '🪨', iron: '⛏️',
+  logs: '🪵', sticks: '🥢', flint: '🔸', leaves: '🍃', seaweed: '🌿', stone: '🪨', iron: '⛏️',
   knife: '🔪', hoe: '🌾', bowl: '🥣', bow: '🏹', arrows: '🏹', leather: '🧥', feathers: '🪶', hide: '🟤', seeds: '🌱', clay: '🧱', pot: '🏺', shovel: '🪏', grain: '🌾', flowers: '🌼', flowerSeeds: '🌱',
   berries: '🫐', rawFish: '🐟', cookedFish: '🍣', rawMeat: '🍗', cookedMeat: '🍖',
 };
@@ -16,7 +16,7 @@ const RECIPE_DESC = {
   rope: 'Skręcona z wodorostów. Wiąże wędkę, włócznię, szałas, mosty i ubranie.',
   rod: 'Bez wędki nie da się łowić ryb.',
   spear: 'Pozwala polować na ptaki i lepiej walczyć z dzikiem.',
-  campfire: 'Grzeje, piecze jedzenie i pozwala wykuwać żelazo. Pali się, póki ma paliwo: kłoda, gałęzie albo liście podtrzymują ogień. Wygasłe trzeba rozpalić na nowo (2 gałęzie).',
+  campfire: 'Grzeje, piecze jedzenie i pozwala wykuwać żelazo. Pali się, póki ma paliwo: kłoda, gałęzie albo liście podtrzymują ogień. Wygasłe trzeba rozpalić na nowo (2 gałęzie i krzemień).',
   shelter: 'Solidny dach nad głową: najcieplejsze miejsce do spania.',
   ironTool: 'Wykuwany w ogniu. Żelazna siekiera i kilof pracują szybciej.',
   tent: 'Lekki dach z gałęzi i liści. Trochę cieplej niż pod gołym niebem i lepiej się śpi.',
@@ -46,7 +46,8 @@ const MAT_DESC = {
   planks: 'Deski z kłód. Na mosty i budowle.',
   seaweed: 'Wodorosty z płycizn. Skręca się z nich linę.',
   rope: 'Lina z wodorostów.',
-  stone: 'Kamień ze skał i kopalni. Na ognisko, włócznię i ruszt.',
+  stone: 'Kamień ze skał i kopalni. Na włócznię, nóż, motykę, łopatę, strzały i ruszt.',
+  flint: 'Krzemień z plaży. Uderzony o kamień krzesze iskrę: bez niego nie rozpali się ogniska ani nie rozpali na nowo wygasłego (krzemień czasem się przy tym kruszy).',
   iron: 'Ruda żelaza z kopalni. Z niej narzędzia i miecz.',
   feathers: 'Pióra z upolowanych ptaków. Lotki do strzał.',
   hide: 'Skóra z dzika oskórowanego nożem. Na ubranie ze skóry.',
@@ -69,6 +70,7 @@ const WORLD = [
   ['tree', '🌳', 'Drzewo', 'Daje kłody, gałęzie i liście. Ścięte odrasta po czasie.'],
   ['palm', '🌴', 'Palma', 'Rośnie przy plażach. Daje kłodę i gałąź.'],
   ['rock', '🪨', 'Skała', 'Kilofem można z niej wybić kamień.'],
+  ['flint', '🔸', 'Krzemienie', 'Ciemne, ostre kamyki wyrzucone przez morze na plaże. Morze co jakiś czas wyrzuca nowe.'],
   ['bush', '🫐', 'Krzak', 'Rosną na nim jagody, które odrastają.'],
   ['seaweed', '🌿', 'Wodorosty', 'Na płyciznach przy brzegu.'],
   ['mine', '⛰️', 'Kopalnia', 'Kamień i czasem ruda żelaza.'],
@@ -103,6 +105,27 @@ const EXPERIENCE = [
   ['boarDanger', '🐗', 'Dziki są groźne', 'Po pierwszym zderzeniu z dzikiem postać wie, że trzeba uważać.'],
 ];
 
+// zachowanie postaci: na co reagują, jak powstają stosunki, co decyduje o wyborach
+const MIND = [
+  ['prio', '⚖️', 'Priorytety', 'Każde działanie dostaje ocenę: rośnie z potrzebą (głód, pragnienie, zmęczenie, zimno, rany), z wiedzą postaci, z jej wnioskami i nastrojem. Wygrywa najwyższa ocena. Pilna potrzeba przerywa każde zajęcie. Podgląd: karta postaci, zakładka ⚖️ Priorytety.'],
+  ['chance', '🎲', 'Czy zareaguje?', 'Postać reaguje jak człowiek: może, ale nie musi. Szansa zależy od humoru, zdrowia, zmęczenia i tego, czy ma właśnie coś pilnego; chętniej odpowiada komuś, kogo lubi. Przykrych rzeczy trudniej nie skomentować niż miłych.'],
+  ['take', '😠', 'Ktoś bierze z mojej skrzyni', 'Właściciel, który to widzi, zapamiętuje, kto brał, i może zwrócić uwagę. Przyjacielowi albo komuś, kto się przyznał, pozwala brać. Kto bierze wielokrotnie, traci zaufanie i nie dostaje prezentów.'],
+  ['store', '🙂', 'Ktoś dokłada do moich zapasów', 'Postać dziękuje i bardziej lubi tego, kto dokłada.'],
+  ['bed', '😠', 'Ktoś śpi w moim łóżku', 'Właściciel się złości, chyba że to przyjaciel. Kto ma własne łóżko, śpi tylko w nim.'],
+  ['harvest', '😠', 'Ktoś zbiera moje plony', 'Zebranie cudzej grządki albo doniczki to jedna z najgorszych rzeczy: mocno psuje stosunki.'],
+  ['water', '🙂', 'Ktoś podlewa moje rośliny', 'Postać dziękuje, przestaje podejrzewać tę osobę i bardziej ją lubi.'],
+  ['fire', '🙂', 'Ktoś dokłada do mojego ognia', 'Miły gest: trochę poprawia stosunki.'],
+  ['bench', '👀', 'Ktoś majsterkuje przy moim stole', 'Postać zauważa to z ciekawością.'],
+  ['heard', '👂', 'Słyszy innych', 'Słyszy wszystko, co ktoś powie w pobliżu. Reaguje na swoje imię (tłumaczy się, przeprasza, dziękuje), na wołanie o pomoc, na odkrycia i na skargi, że coś zginęło.'],
+  ['change', '🔎', 'Zmiany w świecie', 'Po powrocie zauważa, co się zmieniło: ścięte albo odrośnięte drzewa, objedzone krzaki, nowe budowle, zgasłe ognisko, rozbite skały. Nie komentuje tego, co sama zrobiła albo widziała przed chwilą.'],
+  ['plant', '🌱', 'Rośliny', 'Zauważa, że roślina dojrzała, że ziemia wyschła (wtedy chętniej podlewa) albo że ktoś ją podlał.'],
+  ['missing', '🤔', 'Czegoś brakuje', 'Pamięta, co gdzie zostawiła i posadziła. Gdy czegoś nie ma, zastanawia się, kto to wziął, wyciąga wnioski (np. „na kupce rzeczy giną: trzeba skrzyni”) i przy rozmowie pyta wprost.'],
+  ['idea', '💡', 'Podpatrywanie', 'Widząc u kogoś rzecz, której nie umie zrobić, przygląda się, z czego jest zrobiona, zbiera te materiały i próbuje tak samo. Ślepe próby nudzą się po serii porażek.'],
+  ['rel', '💚', 'Stosunki', 'Każda postać ma do każdej swój stosunek (−100 do +100): kolega, przyjaciel, nielubiany, wróg. Rośnie z rozmów, prezentów, nauki, pomocy i przyznania się do winy; spada, gdy ktoś bierze cudze rzeczy, śpi w cudzym łóżku albo zbiera cudze plony. Przyjaciele częściej rozmawiają i się obdarowują, nielubiani się unikają.'],
+  ['hurt', '🩹', 'Rany i odpoczynek', 'Rany goją się powoli, kilka razy szybciej w spoczynku i we śnie pod dachem albo w łóżku. Ranna postać się oszczędza (mniej ciężkiej pracy), a ciężko ranna ucieka przed dzikiem, nawet z bronią. Nieostrożna albo zmęczona postać może się skaleczyć przy ścinaniu i kopaniu.'],
+  ['mood', '😊', 'Nastrój', 'Smutna postać szuka towarzystwa, ciepła ogniska i kwiatów, pracuje wolniej i rzadziej reaguje. Zadowolona chętniej buduje, tworzy i odkrywa.'],
+];
+
 const cost = (r) => Object.entries(RECIPES[r]).map(([k, n]) => `${n}× ${MAT_NAMES[k] || k}`).join(' + ');
 const where = (r) => FIRE_RECIPES.has(r) ? 'przy ognisku' : BENCH_RECIPES.has(r) ? 'przy stole rzemieślniczym' : '';
 
@@ -128,6 +151,7 @@ function catalog() {
       ],
     },
     { id: 'world', name: '🌍 Świat', items: WORLD.map(([k, icon, name, desc]) => ({ key: 'world:' + k, icon, name, desc })) },
+    { id: 'mind', name: '🧍 Zachowanie', items: MIND.map(([k, icon, name, desc]) => ({ key: 'mind:' + k, icon, name, desc })) },
     { id: 'exp', name: '🧠 Doświadczenia', items: EXPERIENCE.map(([k, icon, name, desc]) => ({ key: 'exp:' + k, icon, name, desc })) },
   ];
 }
@@ -152,6 +176,12 @@ export function scanDiscoveries(world) {
     if (a.inv.waterBowl > 0) { add('recipe:bowl'); add('item:waterBowl'); }
     if (a.inv.waterPot > 0) { add('recipe:pot'); add('item:waterBowl'); }
     if (a.stats.boars > 0 || a.memBoars.size || a.known.has('boarDanger')) add('world:boar');
+    // zachowanie: odkryte, gdy któraś postać tak zareagowała
+    add('mind:prio'); add('mind:chance');
+    for (const k of a.reactKinds || []) add('mind:' + k);
+    if (a.rel && [...a.rel.values()].some((v) => Math.abs(v) >= 20)) add('mind:rel');
+    if (a.health < 70) add('mind:hurt');
+    if (a.mood < 40 || a.mood > 75) add('mind:mood');
   }
   for (const s of world.structures) {
     if (s.kind === 'stash') add('world:stash');

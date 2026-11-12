@@ -77,7 +77,7 @@ Na starcie każda postać ma siekierę i kilof. Receptur nie zna, odkrywa je, ł
 | Lina | 2 wodorosty | |
 | Wędka | 2 gałęzie + lina | pozwala łowić ryby |
 | Włócznia | 2 gałęzie + kamień + lina | pozwala polować na ptaki |
-| Ognisko | 3 gałęzie + kłoda + 4 kamienie | pieczenie jedzenia, ciepło; wypala się (patrz niżej) |
+| Ognisko | 3 gałęzie + kłoda + krzemień | pieczenie jedzenia, ciepło; wypala się (patrz niżej), wygasłe rozpala się 2 gałęziami i krzemieniem |
 | Ruszt | 3 gałęzie + 2 kamienie | odkrywany i zakładany przy palącym się ognisku; smażenie 2× szybciej, po dwie sztuki |
 | Namiot | 4 gałęzie + 6 liści | lekki dach: trochę cieplej i lepszy sen |
 | Stół rzemieślniczy | 2 kłody + 3 deski | przy nim postacie próbują nowych połączeń |
@@ -135,6 +135,14 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Zmiany w świecie:** postać zauważa, co się zmieniło od jej ostatniej wizyty: ścięte albo odrośnięte drzewo, wyrwany pień, objedzony albo znów pełny krzak, zebrane żyto i kwiaty, rozbitą skałę, świeżo postawioną budowlę, zgasłe ognisko, wyschniętą, podlaną albo dojrzałą roślinę. Mówi o tym (i o tym, kto to zrobił, jeśli to widać) zależnie od humoru, zdrowia, zmęczenia i pilnych spraw, najwyżej raz na 20 s. Zauważona sucha ziemia sprawia, że postać chętniej podlewa.
 - **Wzrok:** widok zasłaniają wzgórza, ściany z desek na parterze i drzewa (dwa drzewa na linii wzroku zasłaniają całkiem). Pola tuż obok postać widzi zawsze.
 - **Słuch:** postacie słyszą się w promieniu ok. 7 pól i mogą zareagować (np. „Słyszę cię, to ja wziąłem…”), ale nie muszą. To zależy od humoru, zdrowia, zmęczenia i tego, czy mają coś pilnego. Wnioski widać na karcie postaci.
+
+## Reakcje, stosunki i priorytety
+- **Cudze ręce przy moich rzeczach:** postać, która widzi, jak ktoś bierze z jej skrzyni albo kupki, dokłada do jej zapasów, śpi w jej łóżku, zbiera jej plony, podlewa jej rośliny, dokłada do jej ogniska albo majsterkuje przy jej stole, zapamiętuje to i może zareagować (zwrócić uwagę, podziękować). Tamten może odpowiedzieć.
+- **Czy zareaguje:** zależy od humoru, zdrowia, zmęczenia i pilnych spraw; komuś, kogo lubi, odpowiada chętniej. Przykre rzeczy trudniej przemilczeć niż miłe.
+- **Stosunki** (od −100 do +100) rosną z rozmów, prezentów, nauki, troski i przyznania się do winy, spadają przez branie cudzych rzeczy, spanie w cudzym łóżku i zbieranie cudzych plonów. Przyjaciele (od +50) częściej rozmawiają, obdarowują się i mogą brać ze swoich zapasów, nielubiani (od −20) się unikają.
+- **Podpatrywanie:** rzecz widziana u kogoś (budowla albo przedmiot w rękach) zdradza, z czego jest zrobiona: postać zbiera te materiały i próbuje tak samo.
+- **Zdrowie i nastrój:** ranna postać odpoczywa, żeby wydobrzeć, i unika ciężkiej pracy, ciężko ranna ucieka przed dzikiem. Przy ścinaniu i kopaniu można się skaleczyć. Smutna szuka towarzystwa i ognia, zadowolona chętniej tworzy.
+- Wszystko to widać w karcie postaci w zakładce 💬 Reakcje i w wiki w kategorii 🧍 Zachowanie.
 
 ## Kolizje
 - **Duże obiekty:** drzewa (pnie już nie), skały, krzaki, ogniska, stoły rzemieślnicze i skrzynie zajmują pole. Postać nie przechodzi przez nie, tylko obchodzi, a żeby coś z nimi zrobić, staje obok.

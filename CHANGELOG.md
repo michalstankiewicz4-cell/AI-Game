@@ -3,6 +3,29 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.30.0] - 2026-11-12
+### Dodane
+- Krzemień: ciemne kamyki na plażach (morze co jakiś czas wyrzuca nowe). Ognisko robi się teraz z 3 gałęzi, kłody i krzemienia, a wygasłe rozpala się na nowo 2 gałęziami i krzemieniem, który czasem się przy tym kruszy. Postać, która zbadała krzemień, widzi, że iskrzy, i próbuje łączyć go z drewnem.
+- Reakcje na to, co inni robią z rzeczami postaci, gdy to widzi: branie z jej skrzyni albo kupki, dokładanie do jej zapasów, spanie w jej łóżku, zbieranie jej plonów, podlewanie jej roślin, dokładanie do jej ogniska, majsterkowanie przy jej stole. To, co widzi, zapamiętuje zawsze. Czy coś powie, zależy od humoru, zdrowia, zmęczenia i pilnych spraw (przykre rzeczy trudniej przemilczeć). Ten, o kim mowa, może odpowiedzieć: przeprosić, wytłumaczyć się albo podziękować.
+- Stosunki między postaciami (od −100 do +100: kolega, przyjaciel, nielubiany, wróg). Powstają same z tego, co postacie sobie robią: rozmowy, prezenty, nauka, troska i przyznanie się do winy zbliżają, a branie cudzych rzeczy, spanie w cudzym łóżku i zbieranie cudzych plonów oddalają. Przyjaciele częściej rozmawiają, chętniej się obdarowują i mogą brać ze swoich zapasów. Nielubiani się unikają i nie dostają prezentów. Model językowy wie, kogo postać lubi, a kogo nie.
+- Podpatrywanie: gdy postać widzi u kogoś rzecz, której nie umie zrobić (budowlę albo przedmiot w rękach), przygląda się, z czego jest zrobiona, zbiera te materiały i próbuje tak samo.
+- Zdrowie jako priorytet. Rana postać odpoczywa, żeby wydobrzeć, mniej chętnie bierze się do ciężkiej pracy, a ciężko ranna ucieka przed dzikiem nawet z bronią. Przy ścinaniu i kopaniu można się skaleczyć (częściej, gdy postać jest zmęczona albo niewprawna).
+- Nastrój jako priorytet. Smutna postać szuka towarzystwa i ciepła ogniska, a zadowolona chętniej buduje, tworzy i odkrywa.
+- Karta postaci ma zakładkę 💬 Reakcje: stosunki z innymi (z powodami), dziennik ostatnich reakcji (co postać zauważyła i czy coś powiedziała, czy przemilczała) oraz szansę reakcji.
+- W wiki jest nowa kategoria 🧍 Zachowanie: na co reagują postacie, jak działają priorytety, stosunki, podpatrywanie, rany i nastrój.
+
+### Zmienione
+- Świat jest trochę trudniejszy. Noce są chłodniejsze, jagody odrastają wolniej, głód rośnie szybciej. Rany goją się powoli: szybciej w spoczynku i we śnie, a teraz także w namiocie i łóżku, nie tylko w szałasie.
+- Mniej ślepych eksperymentów. Postać zniechęca się po serii nieudanych prób, chętniej próbuje rzeczy z niedawno zdobytymi materiałami, a podpatrzone rzeczy idą pierwsze. Na próby zostawia sobie jedną kłodę. W trybie „Odkrywa sam” eksperymenty zajmują ok. 15% czasu zamiast 25–30%.
+- Zwiedzanie liczy się względem własnej wyspy, więc postać nie łazi bez celu po zbadanej okolicy.
+- Kto ma własne łóżko, śpi tylko w nim.
+
+### Poprawione
+- Postać z pełnym plecakiem nie rzuca połowy rzeczy na nową kupkę. Odkłada tylko nadmiar, a jedną czy dwie drobne rzeczy daleko od składziku po prostu zostawia. Wcześniej po kilku dniach zostawało ok. 17 kupek, teraz 1–3.
+- Postać, która zna staw, ale nie ma miski, nie idzie pić morskiej wody i nie wyrusza na zwiad z pragnienia.
+- Trzy różne działania „Wyrwać pień” mają teraz osobne nazwy (z drogi, w obozie, na drewno), więc model językowy wybiera właściwe.
+- Odmiana zależna od płci w kilku kwestiach („ulepiłem(am)”, „miał(a)”).
+
 ## [0.29.0] - 2026-11-12
 ### Dodane
 - Sucha i podlana ziemia wyraźnie się różnią. Sucha jest jasna i spękana, a rośliny na niej więdną. Świeżo podlana jest ciemna i ma kałuże, a w miarę wysychania jaśnieje.
@@ -270,6 +293,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.30.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.30.0
 [0.29.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.29.0
 [0.28.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.28.0
 [0.27.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.27.0

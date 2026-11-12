@@ -308,6 +308,7 @@ function describe(a, labels, decide) {
     + ([...a.memBoars.values()].some((m) => !m.b.dead && w.time - m.t < 30 && Math.hypot(m.i - a.i, m.j - a.j) < 12) ? `W pobliżu kręci się dzik${a.known.has('boarDanger') ? ' (wiesz, że atakuje)' : ''}.\n` : '');
   if (a.heard && a.heard.length && a.world.time - (a.heardT || 0) < 40) s += `Słyszysz, co mówią inni w pobliżu: ${a.heard.join(' | ')}\n`;
   if (a.conclusions && a.conclusions.length) s += `Twoje wnioski z tego, co się stało: ${a.conclusions.join(' ')}\n`;
+  { const r = a.relSummary ? a.relSummary() : ''; if (r) s += `Twój stosunek do innych: ${r}\n`; }
   if (a.notes && a.notes.length) s += `Co się ostatnio działo w twojej głowie i wokół (opisz to własnymi słowami, nie cytuj): ${a.notes.join(' | ')}\n`;
   if (a.lastSaid) s += `Twoja poprzednia wypowiedź (nie powtarzaj jej): ${a.lastSaid}\n`;
   if (decide) s += `Możliwe działania (lokalna ocena od najlepszego):\n${labels.map((l, n) => `${n + 1}. ${l}`).join('\n')}\nWybierz jedno działanie, dbając o przeżycie, i powiedz, co myślisz.`;

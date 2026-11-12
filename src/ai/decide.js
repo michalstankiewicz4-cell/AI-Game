@@ -35,7 +35,7 @@ export const decideMethods = {
       if (spot) add(needCurve(this.thirst) * 1.35 + crit(this.thirst, 25) - spot.d * 0.002, '💧 Pić wodę', () => this.taskDrink(spot));
       // woda w misce: przydaje się z dala od stawu
       if (this.waterVessel() && (!spot || spot.d > 12)) add(needCurve(this.thirst) * 1.4 + crit(this.thirst, 25) + 0.05, '🥣 Napić się z miski', () => this.taskDrinkBowl());
-      else {
+      else if (!spot) {
         unknownNeed = Math.max(unknownNeed, needCurve(this.thirst) * 1.4 + 0.25);
         if (!this.saltKnown && this.thirst < 60) {
           const sea = this.nearestTile(bfs, w.seaShore);
@@ -149,7 +149,7 @@ export const decideMethods = {
     const myBench = bench && bench.d < 30;
     const bedN = this.nearestStructure(bfs, 'bed');
     // --- ognisko się wypala: podsycić albo rozpalić na nowo ---
-    if (myFire && anyFire.s.fuel < 50 && (inv.logs > 0 || inv.sticks > (anyFire.s.fuel > 0 ? 1 : 1) || inv.leaves > 0) && (anyFire.s.fuel > 0 || inv.sticks >= 2)) {
+    if (myFire && anyFire.s.fuel < 50 && (inv.logs > 0 || inv.sticks > 1 || inv.leaves > 0) && (anyFire.s.fuel > 0 || (inv.sticks >= 2 && inv.flint > 0))) {
       const out = !(anyFire.s.fuel > 0);
       add(0.3 + (out ? 0.15 : 0.1 * (1 - anyFire.s.fuel / 50)) + (w.isNight() ? 0.15 : 0) + (K('warmFire') ? cold * 0.6 : 0) + (this.rawCount() ? 0.08 : 0) - anyFire.d * 0.004,
         out ? '🔥 Rozpalić ognisko na nowo' : '🪵 Podsycić ognisko', () => this.taskFeedFire(anyFire));
@@ -227,11 +227,11 @@ export const decideMethods = {
       if (tools.shovel && !w.isNight()) {
         const rs = this.roadSpot(camp.s || camp);
         if (rs) add(0.24 + 0.06 * this.w.build + Math.min(0.1, rs.s * 0.004) + (K('road') ? 0.06 : 0) - (taken.has('r' + idx(rs.i, rs.j)) ? 1 : 0),
-          rs.stump ? '🪵 Wyrwać pień' : '🛤️ Budować drogę', () => (rs.stump ? this.taskUproot(rs.stump) : this.taskRoad(rs)));
+          rs.stump ? '🪵 Wyrwać pień z drogi' : '🛤️ Budować drogę', () => (rs.stump ? this.taskUproot(rs.stump) : this.taskRoad(rs)));
       }
       // pnie w samym obozie przeszkadzają: wyrwać (kilofem albo łopatą)
       const st = this.nearestRes(bfs, (m) => (m.kind === 'tree' || m.kind === 'palm') && this.isStump(m.r) && Math.hypot(m.i - camp.i, m.j - camp.j) <= 3, taken);
-      if (st && this.roomFor(2, 3)) add(0.22 - st.d * 0.004, '🪵 Wyrwać pień', () => this.taskUproot(st.r));
+      if (st && this.roomFor(2, 3)) add(0.22 - st.d * 0.004, '🪵 Wyrwać pień w obozie', () => this.taskUproot(st.r));
     }
     // dzikie żyto: ziarno do siewu
     if (inv.grain < 6 && (tools.hoe || K('hoe') || K('farm'))) {
@@ -251,7 +251,7 @@ export const decideMethods = {
     }
     // lista życzeń: czego potrzebuję do celów
     const bridgesLeft = K('bridge') && w.bridges.some((br) => !br.complete);
-    const want = { logs: 0, sticks: 0, leaves: 0, planks: 0, rope: 0, stone: 1, seaweed: 0, clay: 0 };
+    const want = { logs: 0, sticks: 0, leaves: 0, planks: 0, rope: 0, stone: 1, seaweed: 0, clay: 0, flint: 0 };
     const wish = (cost, mul = 1) => { for (const k in cost) if (k in want) want[k] += cost[k] * mul; };
     if (!tools.rod && K('rod')) wish(RECIPES.rod);
     if (!tools.spear && K('spear')) wish(RECIPES.spear);
@@ -277,7 +277,7 @@ export const decideMethods = {
     if (tools.knife && K('bowl') && inv.bowl + inv.waterBowl < 1) wish(RECIPES.bowl);
     if (tools.bow && K('arrows') && inv.arrows < 4 && inv.feathers > 0) wish(RECIPES.arrows);
     if (!tools.leather && K('leather') && myBench && inv.hide >= 2) wish(RECIPES.leather);
-    if (myFire) want.sticks += 2; // zapas na podsycanie ogniska
+    if (myFire) { want.sticks += 2; want.flint = Math.max(want.flint, 1); } // zapas na podsycanie i krzemień, gdyby zgasło
     if (K('pot') && pots < 3) want.clay = RECIPES.pot.clay; // glina na doniczkę: nie odkładać
     // zapas do eksperymentów, dopóki są nieodkryte receptury
     if (Object.keys(RECIPES).some((r) => !K(r))) {
@@ -286,11 +286,16 @@ export const decideMethods = {
       if (K('rope')) want.rope = Math.max(want.rope, 1);
       if (K('planks')) want.planks = Math.max(want.planks, 1);
       if (this.triedKinds.has('seaweed') && !K('rope')) want.seaweed = Math.max(want.seaweed, 1);
+      if (this.triedKinds.has('flint')) want.flint = Math.max(want.flint, 1);
     }
+    // podpatrzone rzeczy: zebrać po sztuce każdego materiału, żeby spróbować zrobić tak samo
+    for (const r of this.openIdeas()) for (const k of Object.keys(RECIPES[r])) if (k in want) want[k] = Math.max(want[k], 1);
     // deski robi się z kłód, linę z wodorostów
     const missPlanks = Math.max(0, want.planks - inv.planks);
     const missRope = Math.max(0, want.rope - inv.rope);
     if (K('planks')) want.logs += Math.ceil(missPlanks / 2);
+    // krzemień iskrzy: póki nie zna ognia, trzyma przy sobie drewno do prób
+    if (this.triedKinds.has('flint') && !K('campfire')) { want.logs = Math.max(want.logs, 1); want.sticks = Math.max(want.sticks, 2); want.flint = Math.max(want.flint, 1); }
     if (K('rope')) want.seaweed += missRope * 2;
     const room = this.roomFor(2, 3); // miejsce na kłodę albo kilka drobnych rzeczy
     // --- składziki: weź to, czego brakuje, albo odłóż nadmiar ---
@@ -325,7 +330,9 @@ export const decideMethods = {
         if (spare >= 3) add(0.2 + Math.min(0.12, spare * 0.02), '📦 Odłożyć zapasy', () => this.taskStore(chestN, want));
       }
     }
-    if (missPlanks > 0 && K('planks') && inv.logs >= 1 && tools.axe) add(0.46, '🪚 Ciosać deski', () => this.taskCraft(null, RECIPES.planks, null, false, { planks: 2 }));
+    // jedną kłodę zostawia na próby, dopóki są nieodkryte receptury (np. ognisko z krzemieniem)
+    const keepLog = !this.omniscient && Object.keys(RECIPES).some((r) => !K(r)) ? 1 : 0;
+    if (missPlanks > 0 && K('planks') && inv.logs >= 1 + keepLog && tools.axe) add(0.46, '🪚 Ciosać deski', () => this.taskCraft(null, RECIPES.planks, null, false, { planks: 2 }));
     if (missRope > 0 && K('rope') && inv.seaweed >= 2) add(0.46, '🪢 Skręcić linę', () => this.taskCraft(null, RECIPES.rope, null, false, { rope: 1 }));
     const shortLogs = want.logs - inv.logs, shortSticks = want.sticks - inv.sticks, shortLeaves = want.leaves - inv.leaves;
     if ((shortLogs > 0 || shortSticks > 0 || shortLeaves > 0) && room) {
@@ -336,7 +343,7 @@ export const decideMethods = {
       // brak drzew w pobliżu, a trzeba kłody: pień też da kawałek drewna
       if (shortLogs > 0 && (!tree || tree.d > 25)) {
         const st = this.nearestRes(bfs, (m) => (m.kind === 'tree' || m.kind === 'palm') && this.isStump(m.r), taken);
-        if (st && st.d < 20) add(0.26 - st.d * 0.004, '🪵 Wyrwać pień', () => this.taskUproot(st.r));
+        if (st && st.d < 20) add(0.26 - st.d * 0.004, '🪵 Wyrwać pień na drewno', () => this.taskUproot(st.r));
       }
     }
     if (want.seaweed > inv.seaweed && room) {
@@ -344,9 +351,14 @@ export const decideMethods = {
       if (sw) add(Math.min(0.48, 0.18 + (want.seaweed - inv.seaweed) * 0.04) - sw.d * 0.003, '🌿 Zbierać wodorosty', () => this.taskSeaweed(sw));
       else unknownNeed = Math.max(unknownNeed, 0.28);
     }
+    if (inv.flint < want.flint && this.roomFor(1, 1)) {
+      const fl = this.nearestRes(bfs, (m) => m.kind === 'flint' && (m.amount > 0 || m.age > 240), taken);
+      if (fl) add(Math.min(0.5, 0.22 + (want.flint - inv.flint) * 0.1) + (!myFire && K('campfire') ? 0.15 : 0) - fl.d * 0.003, '🔸 Zbierać krzemień', () => this.taskFlint(fl.r));
+      else unknownNeed = Math.max(unknownNeed, !myFire && K('campfire') ? 0.4 : 0.2);
+    }
     if (inv.stone < want.stone && room) {
       const rock = this.nearestRes(bfs, (r) => r.kind === 'rock', taken);
-      if (rock) add(Math.min(0.48, 0.15 + (want.stone - inv.stone) * 0.05) + (!myFire && K('campfire') ? 0.15 : 0) - rock.d * 0.003, '🪨 Zbierać kamienie', () => this.taskStone(rock.r));
+      if (rock) add(Math.min(0.48, 0.15 + (want.stone - inv.stone) * 0.05) - rock.d * 0.003, '🪨 Zbierać kamienie', () => this.taskStone(rock.r));
       else unknownNeed = Math.max(unknownNeed, 0.25);
     }
     // --- pomysł na most: zna deski i linę, widzi wodę między wyspami ---
@@ -403,19 +415,27 @@ export const decideMethods = {
     {
       const combo = this.omniscient ? null : this.nextExperiment();
       const unknown = Object.keys(RECIPES).filter((r) => !this.known.has(r)).length;
-      if (combo && unknown) add(0.26 + unknown * 0.02 + (this.hunger > 50 && this.thirst > 50 ? 0.08 : 0), '🧪 Eksperymentować', () => this.taskExperiment(combo));
+      // podpatrzona rzecz kusi najbardziej; ślepe próby nudzą się po serii porażek
+      const blind = Math.min(0.24, this.failStreak * 0.02);
+      if (combo && unknown) add(0.2 + unknown * 0.012 + (this.hunger > 50 && this.thirst > 50 ? 0.06 : 0) + (combo.idea ? 0.22 : -blind), '🧪 Eksperymentować', () => this.taskExperiment(combo));
       // przy stole rzemieślniczym wychodzą rzeczy, których nie da się zrobić na kolanach
       if (myBench && unknown && !this.nearStructure('workbench', 3)) {
         const at = this.omniscient ? null : this.nextExperiment({ fire: false, bench: true });
-        if (at && at.key.includes('@stół')) add(0.3 + unknown * 0.02, '🧪 Eksperymentować przy stole', () => this.taskExperiment(at, this.pathTo(bench.i, bench.j) || []));
+        if (at && at.key.includes('@stół')) add(0.24 + unknown * 0.012 + (at.idea ? 0.2 : -blind), '🧪 Eksperymentować przy stole', () => this.taskExperiment(at, this.pathTo(bench.i, bench.j) || []));
       }
     }
     // --- rozglądanie się i zwiad ---
     {
       const since = w.time - this.lastLook;
       if (since > 12) add(0.06 + Math.min(0.2, since / 600) + unknownNeed * 0.5, '👀 Rozejrzeć się', () => this.taskLook());
-      const explored = this.seenCount / (W * H);
-      add(0.08 + unknownNeed * 0.6 + (explored < 0.25 ? 0.12 : 0) + (w.day() <= 1 ? 0.05 : 0), '🧭 Zbadać okolicę', () => this.taskExplore(bfs));
+      // jaką część własnej wyspy już widział(a) (morze i inne wyspy się nie liczą)
+      if (this.island >= 0 && (!this.reachN || w.time - (this.reachT || 0) > 30)) {
+        let n = 0, seen = 0;
+        for (let k = 0; k < W * H; k++) if (w.island[k] === this.island) { n++; if (this.seen[k]) seen++; }
+        this.reachN = n; this.reachSeen = seen; this.reachT = w.time;
+      }
+      const explored = this.reachN ? this.reachSeen / this.reachN : 1;
+      add(0.04 + unknownNeed * 0.6 + (1 - explored) * 0.2 + (w.day() <= 1 ? 0.05 : 0), '🧭 Zbadać okolicę', () => this.taskExplore(bfs));
     }
     // --- towarzystwo: odwiedź kogoś, by wymienić się wiedzą ---
     if (w.social && !w.isNight()) {
@@ -427,13 +447,34 @@ export const decideMethods = {
         const d = distOf(m.i, m.j);
         if (d >= 0 && d < 30 && (!best || d < best.d)) best = { ...m, d };
       }
-      if (best) add(0.16 + (this.seenCount < best.a.seenCount ? 0.06 : 0) - best.d * 0.003, `💬 Porozmawiać`, () => ({
+      if (best && this.likeOf(best.a.id) > -20) add(0.16 + (this.seenCount < best.a.seenCount ? 0.06 : 0) + (this.mood < 40 ? 0.15 : 0) + clamp(this.likeOf(best.a.id), -20, 60) * 0.002 - best.d * 0.003, `💬 Porozmawiać`, () => ({
         path: this.pathTo(best.i, best.j), label: `💬 Idzie do ${best.a.name}`, act: (dt, t) => (t.elapsed > 2 ? 'done' : null),
       }));
     }
     // --- odpoczynek / spacer ---
     add(0.05, '🚶 Pospacerować', () => this.taskWander(bfs));
     add(this.energy < 60 ? 0.1 : 0.02, '🪑 Odpocząć', () => this.taskRest());
+    // --- zdrowie: ranna postać się oszczędza (w spoczynku rany goją się kilka razy szybciej) ---
+    if (this.health < 60 && this.hunger > 30 && this.thirst > 30) {
+      const hurt = 1 - this.health / 60; // 0 przy 60, 1 przy 0
+      add(0.25 + hurt * 0.6, '🩹 Odpocząć, żeby wydobrzeć', () => this.taskRest());
+    }
+    // --- nastrój: smutna postać szuka towarzystwa i ciepła ognia, zadowolona chętniej tworzy i odkrywa ---
+    if (this.mood < 40 && fire && fire.d < 25 && !this.nearStructure('campfire', 2.6) && !w.isNight()) {
+      add(0.16 + (40 - this.mood) * 0.008 - fire.d * 0.004, '🔥 Posiedzieć przy ognisku', () => ({ ...this.taskWarm(fire), label: '🔥 Siedzi przy ognisku', act: (dt, t) => (t.elapsed > 15 ? 'done' : null) }));
+    }
+    {
+      const moodK = this.mood > 70 ? 0.05 : this.mood < 35 ? -0.06 : 0;
+      const CREATIVE = /Eksperymentować|Zbadać|Budować|Zbudować|Zrobić|Wystrugać|Uszyć|Wykuć|Zasiać|Posadzić|^🔨/;
+      // zdrowie: przy ranach ciężka praca kusi mniej
+      const hurtK = this.health < 50 ? (50 - this.health) * 0.006 : 0;
+      const HEAVY = /Ścinać|Kopać|Zbierać kamienie|Budować most|Polować|Wyrwać pień|Budować drogę/;
+      for (const o of opts) {
+        const plain = o.label.replace(/^[^\p{L}]+/u, '');
+        if (moodK && CREATIVE.test(plain)) o.score += moodK;
+        if (hurtK && HEAVY.test(plain)) o.score -= hurtK;
+      }
+    }
 
     opts.sort((a, c) => c.score - a.score);
     this.scores = opts.slice(0, 6).map((o) => ({ label: o.label, score: o.score }));
