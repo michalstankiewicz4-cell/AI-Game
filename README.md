@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.30.1 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.31.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -19,7 +19,7 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Plecak:** limit 30 rzeczy i 25 kg; ciężar spowalnia, nadmiar trafia do składzików albo do zbitej z desek skrzyni (ta trzyma też jedzenie), z których postacie potem biorą.
 - **Klimat umiarkowany:** temperatura zmienia się w ciągu doby i z dnia na dzień. To, że ogień i dach grzeją, postacie odkrywają same.
 - **Rzemiosło:** drzewo → kłody, gałęzie i liście; kłoda → deski (toporkiem); wodorosty → lina; dalej wędka, włócznia, ognisko z krzemieniem z plaży (wypala się i trzeba je podsycać), ruszt, namiot, szałas, stół rzemieślniczy, łóżko, żelazne narzędzia, nóż kamienny, motyka, drewniana miska, łuk ze strzałami, ubranie ze skóry, gliniana doniczka i łopata. Niektóre receptury wychodzą tylko przy ogniu albo przy stole.
-- **Budowanie z desek:** deski kładzione pojedynczo jako podłoga, ściana albo skos, przyciągane do siatki, z nazwami, do zdjęcia i przeniesienia. Model językowy dostaje analizę kształtu budowy (same liczby) i może wydawać polecenia. Bez nich postacie budują metodą prób i błędów; dom (przykryte, obudowane pola grzeją) wychodzi sam albo wcale.
+- **Budowanie z desek:** deski kładzione pojedynczo jako podłoga, ściana, skos, schody albo drabina, przyciągane do siatki, z nazwami, do zdjęcia i przeniesienia. Model językowy dostaje analizę kształtu budowy (same liczby) i może wydawać polecenia. Bez nich postacie budują metodą prób i błędów; dom (przykryte, obudowane pola grzeją) wychodzi sam albo wcale.
 - **Noc i pochodnie:** w nocy postać widzi na ok. 1/4 dziennego zasięgu, z pochodnią w ręku na połowę. Pochodnię odkrywa się i zapala przy ognisku. Postać ma dwie ręce: w prawej narzędzie albo broń, w lewej pochodnię albo tarczę.
 - **Uprawa i łowy:** nasiona z jagód, ziarno dzikiego żyta i nasiona kwiatów sieje się na grządkach przygotowanych motyką albo w doniczkach z gliny i miskach z ziemią; rośliny trzeba podlewać; miska i doniczka noszą wodę; kwiaty cieszą postacie; dzika skóruje się nożem (mięso i skóra), ptaki dają mięso i pióra na strzały do łuku.
 - **Drogi:** łopatą ubija się drogi na wydeptanych ścieżkach przy obozie, a po drodze chodzi się o połowę szybciej. Pnie po ściętych drzewach można wyrwać kilofem albo łopatą (kłoda, ale drzewo nie odrośnie).

@@ -177,6 +177,16 @@ export const decideMethods = {
         if (plankOp && inv.planks >= 1) add(0.1 + 0.06 * this.w.build + Math.min(0.15, this.buildDrive() * 0.03) + (inv.planks >= 4 ? 0.04 : 0) + (myFire && myRoof ? 0.12 : 0) - (w.isNight() ? 0.08 : 0), BUILD_LABEL, () => this.taskPlank(plankOp));
       }
     }
+    // --- zamknięta w budowie (nie ma którędy wyjść): rozebrać najbliższą ścianę ---
+    if (bfs.loose && w.pieces.length) {
+      let wall = null;
+      for (const p of w.pieces) {
+        if (p.lvl !== 0 || (p.type !== 'wall' && p.type !== 'ladder' && p.type !== 'stairs' && p.type !== 'slope')) continue;
+        const d = Math.abs(p.i - this.i) + Math.abs(p.j - this.j);
+        if (d <= 2 && !w.removeProblem(p) && (!wall || d < wall.d)) wall = { p, d };
+      }
+      if (wall) add(0.85, '🔨 Rozebrać ścianę, żeby wyjść', () => this.taskPlank({ op: 'pick', id: wall.p.id, from: 'script' }));
+    }
     // --- pochodnie: zrobić zapas przy ognisku, po zmroku zapalić ---
     if (K('torch') && fire && fire.d < 30) {
       if (inv.torch < 2 && has(RECIPES.torch)) add(0.3 + (w.daylight() < 0.5 ? 0.12 : 0), '🔥 Zrobić pochodnię', () => this.taskMakeTorch(fire, RECIPES.torch, 2 - inv.torch));

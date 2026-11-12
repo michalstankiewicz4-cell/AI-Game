@@ -386,6 +386,7 @@ export class Renderer {
         floor: new THREE.BoxGeometry(0.98, 0.06, 0.98),
         wallX: new THREE.BoxGeometry(1.0, PIECE_LH, 0.07), wallZ: new THREE.BoxGeometry(0.07, PIECE_LH, 1.0),
         slopeZ: new THREE.BoxGeometry(1.02, 0.06, Math.hypot(1, 0.6)), slopeX: new THREE.BoxGeometry(Math.hypot(1, 0.6), 0.06, 1.02),
+        step: new THREE.BoxGeometry(0.9, 1, 0.25), rail: new THREE.BoxGeometry(0.06, PIECE_LH * 1.12, 0.06), rung: new THREE.BoxGeometry(0.6, 0.04, 0.05),
       };
     }
     const G = this.pieceGeo, A = Math.atan(0.6);
@@ -401,6 +402,37 @@ export class Renderer {
         const base = Math.max(land(p.i, p.j) ? world.tileY(p.i, p.j) : -9, land(ni, nj) ? world.tileY(ni, nj) : -9, 0);
         m = new THREE.Mesh(p.side === 'N' ? G.wallX : G.wallZ, this.mat.plank);
         m.position.set(p.side === 'W' ? c.x - 0.5 : c.x, base + p.lvl * PIECE_LH + PIECE_LH / 2, p.side === 'N' ? c.z - 0.5 : c.z);
+      } else if (p.type === 'stairs' || p.type === 'ladder') {
+        // schody: 4 stopnie w górę w stronę „side”; drabina: dwie belki i szczeble oparte o krawędź „side”
+        m = new THREE.Group();
+        const [dx, dz] = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] }[p.side];
+        const y0 = world.tileY(p.i, p.j) + p.lvl * PIECE_LH;
+        const rot = Math.atan2(dx, dz);
+        if (p.type === 'stairs') {
+          for (let n = 0; n < 4; n++) {
+            const st = new THREE.Mesh(G.step, this.mat.plank);
+            const f = (n + 0.5) / 4 - 0.5;
+            const hgt = (n + 1) * PIECE_LH / 4;
+            st.scale.y = hgt; st.position.set(dx * f, hgt / 2, dz * f); st.rotation.y = rot;
+            st.castShadow = true; st.receiveShadow = true; st.userData.piece = p; m.add(st);
+          }
+        } else {
+          const tilt = 0.33; // odchylenie od pionu
+          for (const sx of [-0.28, 0.28]) {
+            const rail = new THREE.Mesh(G.rail, this.mat.post);
+            rail.position.set(0, PIECE_LH / 2 + 0.02, 0);
+            const holder = new THREE.Group(); holder.rotation.y = rot; holder.add(rail);
+            rail.position.x = sx; rail.position.z = 0.2; rail.rotation.x = tilt;
+            rail.userData.piece = p; rail.castShadow = true; m.add(holder);
+          }
+          for (let n = 0; n < 5; n++) {
+            const rung = new THREE.Mesh(G.rung, this.mat.plank);
+            const hgt = 0.12 + n * (PIECE_LH * 1.05 / 5);
+            const holder = new THREE.Group(); holder.rotation.y = rot;
+            rung.position.set(0, hgt, 0.2 + Math.tan(tilt) * (hgt - PIECE_LH / 2 - 0.02)); rung.userData.piece = p; holder.add(rung); m.add(holder);
+          }
+        }
+        m.position.set(c.x, y0, c.z);
       } else {
         const alongZ = p.side === 'N' || p.side === 'S';
         m = new THREE.Mesh(alongZ ? G.slopeZ : G.slopeX, this.mat.post);
@@ -411,13 +443,14 @@ export class Renderer {
       m.castShadow = true; m.receiveShadow = true;
       m.userData.piece = p;
       g.add(m);
+      if (m.isGroup) m.traverse((o) => { o.userData.piece = p; });
     }
   }
   pickPiece(clientX, clientY) {
     if (!this.pieceGroup || !this.pieceGroup.children.length) return null;
     const m = new THREE.Vector2(clientX / window.innerWidth * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);
     this.raycaster.setFromCamera(m, this.camera);
-    const hits = this.raycaster.intersectObjects(this.pieceGroup.children, false);
+    const hits = this.raycaster.intersectObjects(this.pieceGroup.children, true);
     return hits.length ? hits[0].object.userData.piece : null;
   }
 

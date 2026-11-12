@@ -1,15 +1,17 @@
 // Budowanie z pojedynczych desek: postać kładzie, zdejmuje, przenosi i nazywa deski.
 // Model językowy może podać dokładne polecenia („deska” w odpowiedzi); bez nich postać majsterkuje sama.
 import { idx, toWorld } from '../world/world.js';
-import { PIECE_TYPES, SIDES } from '../world/pieces.js';
+import { PIECE_TYPES, PIECE_COST, SIDES } from '../world/pieces.js';
 
 export const BUILD_LABEL = '🪵 Budować z desek';
-const TYPE_WORD = { floor: 'podloga', wall: 'sciana', slope: 'skos' };
+const TYPE_WORD = { floor: 'podloga', wall: 'sciana', slope: 'skos', stairs: 'schody', ladder: 'drabina' };
 const DIR = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] };
 
 // zamiana polecenia modelu na wewnętrzną postać
 function parseType(v) {
   const t = String(v || '').toLowerCase();
+  if (/schod|stair/.test(t)) return 'stairs';
+  if (/drabin|ladder/.test(t)) return 'ladder';
   if (/pod|floor|pł|pl/.test(t)) return 'floor';
   if (/[sś]cian|wall/.test(t)) return 'wall';
   if (/skos|dach|slope|roof/.test(t)) return 'slope';
@@ -30,7 +32,7 @@ export function parseBuildOps(raw) {
   for (const o of arr.slice(0, 4)) {
     if (!o || typeof o !== 'object') continue;
     const a = String(o.akcja || o.action || o.op || '').toLowerCase();
-    const op = /podn|zdejm|zabier|pick/.test(a) ? 'pick' : /przen|przes|move/.test(a) ? 'move' : /nazw|zmien|rename/.test(a) ? 'rename' : /po[lł][oó]|k[lł]ad|dodaj|place|wstaw/.test(a) ? 'place' : null;
+    const op = /podn|zdejm|zabier|rozbi|rozebr|demont|pick|remove/.test(a) ? 'pick' : /przen|przes|move/.test(a) ? 'move' : /nazw|zmien|rename/.test(a) ? 'rename' : /po[lł][oó]|k[lł]ad|dodaj|place|wstaw/.test(a) ? 'place' : null;
     if (!op) continue;
     const num = (v) => (v == null || v === '' || !isFinite(+v) ? null : Math.round(+v));
     out.push({
@@ -78,19 +80,19 @@ export const buildingMethods = {
     const rel = (i, j) => `x${i - o.i} y${j - o.j}`;
     const slots = w.snapSlots(c.i, c.j, 6);
     this.buildSnap = { origin: o, slots, t: w.time };
-    const L = ['Budowanie z desek: każda deska to jeden element (podłoga, ściana albo skos), który przyciąga się do siatki pól. x rośnie na wschód, y na południe, poziom 0 to ziemia, strona N/E/S/W to krawędź pola.'];
+    const L = ['Budowanie z desek: każdy element (podłoga, ściana, skos: 1 deska; schody: 2 deski; drabina: deska i 2 gałęzie) przyciąga się do siatki pól. x rośnie na wschód, y na południe, poziom 0 to ziemia, strona N/E/S/W to krawędź pola (u schodów strona, w którą idą w górę, u drabiny strona, o którą jest oparta). Przez ściany, schody, drabiny i niskie skosy nie da się przejść; element można rozebrać i odzyskać materiał.'];
     if (site) {
       // same liczby, bez ocen typu „brakuje” albo „luka”
-      const cnt = { floor: 0, wall: 0, slope: 0 };
+      const cnt = { floor: 0, wall: 0, slope: 0, stairs: 0, ladder: 0 };
       for (const p of site.pieces) cnt[p.type]++;
-      L.push(`Twoja budowa: ${site.pieces.length} desek (podłoga ${cnt.floor}, ściana ${cnt.wall}, skos ${cnt.slope}). Największa spójna podłoga: ${site.floor.length} pól, obrys ${site.w}×${site.h}; `
+      L.push(`Twoja budowa: ${site.pieces.length} desek (podłoga ${cnt.floor}, ściana ${cnt.wall}, skos ${cnt.slope}${cnt.stairs ? ', schody ' + cnt.stairs : ''}${cnt.ladder ? ', drabina ' + cnt.ladder : ''}). Największa spójna podłoga: ${site.floor.length} pól, obrys ${site.w}×${site.h}; `
         + `jej krawędzie zewnętrzne ze ścianą: ${site.walls} z ${site.perim}; jej pola z deską nad głową: ${site.roofed} z ${site.floor.length}.`);
       L.push('Deski: ' + site.pieces.slice(0, 8).map((p) => `#${p.id} „${p.name}” ${PIECE_TYPES[p.type]} ${rel(p.i, p.j)} poziom ${p.lvl}${p.side ? ' strona ' + p.side : ''}`).join('; ') + (site.pieces.length > 8 ? '; …' : '') + '.');
     }
     if (slots.length) L.push('Wolne miejsca: ' + slots.map((s, n) => `${n + 1}) ${PIECE_TYPES[s.type]} ${rel(s.i, s.j)} poziom ${s.lvl}${s.side ? ' strona ' + s.side : ''}`).join('; ') + '.');
     const n = this.inv.planks, word = n === 1 ? 'deskę' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'deski' : 'desek';
     L.push(`Masz ${n} ${word}. Jeśli chcesz coś zrobić z deskami, dodaj do odpowiedzi "deska": lista do 4 poleceń, np. [{"akcja":"poloz","miejsce":1,"nazwa":"podłoga 1"}], `
-      + '{"akcja":"poloz","typ":"sciana","x":1,"y":0,"poziom":0,"strona":"E","nazwa":"ściana kuchni"}, {"akcja":"podnies","id":3}, {"akcja":"przenies","id":3,"miejsce":2}, {"akcja":"nazwij","id":3,"nazwa":"drzwi"}. Bez desek pomiń "deska".');
+      + '{"akcja":"poloz","typ":"sciana","x":1,"y":0,"poziom":0,"strona":"E","nazwa":"ściana kuchni"}, {"akcja":"rozbierz","id":3}, {"akcja":"przenies","id":3,"miejsce":2}, {"akcja":"nazwij","id":3,"nazwa":"drzwi"}. Bez desek pomiń "deska".');
     return L.join('\n');
   },
 
@@ -153,14 +155,17 @@ export const buildingMethods = {
     const finish = () => { if (this.buildQueue && this.buildQueue[0] === cmd) this.buildQueue.shift(); };
     if (!at) { finish(); return null; }
     // stanąć na polu albo obok niego
+    // przy schodach, drabinie i skosie staje obok (te elementy zajmują pole)
     let stand = null;
-    for (const [di, dj] of [[0, 0], ...Object.values(DIR)]) {
+    const bulky = ['stairs', 'ladder', 'slope'].includes((cmd.spec && cmd.spec.type) || (piece && piece.type));
+    const order = bulky ? [...Object.values(DIR), [0, 0]] : [[0, 0], ...Object.values(DIR)];
+    for (const [di, dj] of order) {
       const i = at.i + di, j = at.j + dj;
-      if (w.walkable(i, j) && bfs.dist[idx(i, j)] >= 0) { stand = { i, j }; break; }
+      if (w.walkable(i, j) && bfs.dist[idx(i, j)] >= 0 && (!bulky || !w.solid(idx(i, j)) || (di === 0 && dj === 0))) { stand = { i, j }; break; }
     }
     if (!stand) { finish(); return null; }
     const name = (cmd.spec && cmd.spec.name) || (piece && piece.name) || '';
-    const label = cmd.op === 'pick' ? '✋ Zdejmuje deskę' : cmd.op === 'move' ? '🔁 Przenosi deskę' : `🪵 Kładzie deskę (${PIECE_TYPES[cmd.spec.type]})`;
+    const label = cmd.op === 'pick' ? `🔨 Rozbiera: ${piece ? PIECE_TYPES[piece.type] : 'deskę'}` : cmd.op === 'move' ? '🔁 Przenosi deskę' : `🪵 Kładzie deskę (${PIECE_TYPES[cmd.spec.type]})`;
     return {
       path: this.pathTo(stand.i, stand.j) || [], face: toWorld(at.i, at.j), label,
       onEnd: finish,
@@ -170,16 +175,18 @@ export const buildingMethods = {
           if (!piece || !w.pieceById(piece.id)) return 'fail';
           const why = w.removeProblem(piece);
           if (why) { this.speak(`Nie zdejmę jej, ${why}.`); return 'fail'; }
-          if (!this.roomFor(1, 1.5)) return 'fail';
+          if (!this.roomFor(2, 3)) return 'fail';
           w.removePiece(piece);
-          this.inv.planks++;
-          if (cmd.op === 'pick') { this.say(`zdejmuje deskę „${piece.name}” ✋`); return 'done'; }
+          const back = PIECE_COST[piece.type] || { planks: 1 };
+          for (const k in back) this.inv[k] += back[k];
+          if (cmd.op === 'pick') { this.say(`rozbiera ${PIECE_TYPES[piece.type]} „${piece.name}” 🔨`); return 'done'; }
         }
         const spec = cmd.op === 'move' ? { ...cmd.spec, name: cmd.spec.name || piece.name } : cmd.spec;
-        if (this.inv.planks < 1) return 'fail';
+        const cost = PIECE_COST[spec.type] || { planks: 1 };
+        if (Object.keys(cost).some((k) => this.inv[k] < cost[k])) return 'fail';
         const why = w.placeProblem(spec);
         if (why) { if (cmd.from === 'llm') this.speak(`Tu deska nie wejdzie: ${why}.`); return 'fail'; }
-        this.inv.planks--;
+        for (const k in cost) this.inv[k] -= cost[k];
         const before = w.shelterSum(spec.i, spec.j);
         const p = w.placePiece(spec, this);
         // doświadczenie: czy przy budowie zrobiło się zaciszniej? (zapamiętane dla rodzaju deski i poziomu)

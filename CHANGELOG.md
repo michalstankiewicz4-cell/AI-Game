@@ -3,6 +3,14 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.31.0] - 2026-11-12
+### Dodane
+- Schody (2 deski, 4 stopnie poziom wyżej w wybraną stronę) i drabina (deska i 2 gałęzie, oparta o ścianę albo o podłogę piętro wyżej) jako nowe elementy budowy. Model językowy może je kłaść poleceniami „schody” i „drabina”, a postać budująca metodą prób dostaje je do wyboru, gdy budowa ma już piętro.
+- Rozbiórka: każdy element da się rozebrać i odzyskać materiał (schody 2 deski, drabina deskę i 2 gałęzie). Model wydaje polecenie „rozbierz”, a postać zamknięta w budowie bez wyjścia sama rozbiera najbliższą ścianę, zamiast przez nią przenikać.
+
+### Zmienione
+- Przez schody, drabiny i niskie skosy na ziemi nie da się przejść (tak jak przez ściany). Podłoga na ziemi zostaje przechodnia. Postać, która kładzie albo rozbiera taki element, staje obok niego.
+
 ## [0.30.1] - 2026-11-12
 ### Zmienione
 - Trudniejsze przetrwanie. Głód i pragnienie rosną szybciej, dni i noce są o ok. 1°C chłodniejsze (średnia dnia 4–18°C, większe wahania w ciągu doby), jagody odrastają wolniej, przy ścinaniu i kopaniu łatwiej o skaleczenie, a rany goją się wolniej. W symulacjach 8 dni nikt nie ginie, ale zdrowie postaci potrafi już spaść do ok. 20–50 i ranna postać musi odpocząć.
@@ -297,6 +305,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.31.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.31.0
 [0.30.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.30.1
 [0.30.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.30.0
 [0.29.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.29.0
