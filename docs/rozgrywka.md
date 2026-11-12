@@ -190,7 +190,7 @@ Przycisk „📖 Wiki” w górnym pasku (albo klawisz K) otwiera encyklopedię 
 
 Widać w niej wszystko, z kosztem receptur, miejscem, gdzie da się je odkryć (przy ognisku albo przy stole), wagą i sytością. Rzeczy, które odkryła choć jedna postać, mają zielony znaczek ✓ i zostają odkryte także po jej śmierci. Licznik „Odkryto X z Y” pokazuje postęp. Wiki jest tylko dla gracza: model językowy jej nie dostaje, więc w trybie „Odkrywa sam” postacie dalej uczą się wyłącznie na próbach. Każda nowa gra zaczyna wiki od zera. W trybie „Wie wszystko” znaczek ✓ dostaje tylko to, co postacie naprawdę zrobią, zjedzą albo spotkają, a nie wiedza, z którą startują.
 
-Okienko „Postacie” i kartę postaci przesuwasz, chwytając za nagłówek.
+Okienko „Postacie” i kartę postaci przesuwasz, chwytając za nagłówek. Karta postaci ma zakładki: 🧍 Stan (potrzeby, temperatura, zajęcie, ręce, statystyki), ⚖️ Priorytety (ranking rozważanych działań, wnioski, podejrzenia, szansa odpowiedzi na to, co słyszy, z mnożnikami za humor, zdrowie, zmęczenie i pilne sprawy, oraz to, co słyszała), 🎒 Plecak i 🧠 Wiedza.
 
 ## Pomiar wydajności
 Przycisk ⏱️ w górnym pasku (albo klawisz P) otwiera okienko „⏱️ Wydajność”. Od chwili otwarcia mierzy każdą klatkę i pokazuje dla ok. 10 ostatnich sekund, ile milisekund zajęły:

@@ -163,6 +163,14 @@ export class Agent {
       if (!reply) o.reactTo(this, text);
     }
   }
+  // od czego zależy, czy postać odpowie na to, co słyszy (pokazywane też na karcie postaci)
+  // priorytety: pilne zadanie, głód albo pragnienie odbierają ochotę na pogawędki; zdrowie, humor i zmęczenie też się liczą
+  reactFactors() {
+    const busy = (this.task && this.task.urgent) || this.hunger < 25 || this.thirst < 25;
+    const f = { mood: clamp(this.mood / 70, 0.3, 1.1), health: clamp(this.health / 80, 0.3, 1), energy: this.energy < 30 ? 0.5 : 1, busy: busy ? 0.2 : 1 };
+    f.chance = Math.min(1, f.mood * f.health * f.energy * f.busy);
+    return f;
+  }
   reactTo(a, text) {
     const w = this.world;
     if (this.talkUntil > w.time) return; // w trakcie rozmowy odpowiada tylko rozmówcy
@@ -179,10 +187,7 @@ export class Agent {
     else if (/pomoc|ratunk|uciekam|au!/.test(lower) && Math.random() < 0.6) line = pick([`${a.name}, trzymaj się!`, 'Uważaj!', 'Biegnę, uważaj na siebie!']);
     if (!line) return;
     // jak człowiek: może odpowiedzieć, ale nie musi (zajęta, zmęczona, w złym humorze albo po prostu nie ma ochoty)
-    // priorytety: pilne zadanie, głód albo pragnienie odbierają ochotę na pogawędki; zdrowie i humor też się liczą
-    const busy = (this.task && this.task.urgent) || this.hunger < 25 || this.thirst < 25;
-    const chance = (text.includes(this.name) ? 0.75 : 1) * clamp(this.mood / 70, 0.3, 1.1) * clamp(this.health / 80, 0.3, 1)
-      * (this.energy < 30 ? 0.5 : 1) * (busy ? 0.2 : 1);
+    const chance = (text.includes(this.name) ? 0.75 : 1) * this.reactFactors().chance;
     this.reactCd = w.time + 8;
     if (Math.random() > chance) return;
     this.reactCd = w.time + 15;
