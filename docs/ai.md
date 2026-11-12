@@ -61,6 +61,16 @@ Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie t
 - `pickCrop()` wybiera nasiona rośliny, której najmniej rośnie. Opcje: „💧 Podlać rośliny” (doniczki najpierw), „🥣 Nabrać wody do miski” (także gdy rośliny są suche), „🪴 Posadzić w doniczce / w misce” (gdy ma co najmniej 2 naczynia), „🧱 Nabrać gliny”, „🏺 Wypalić doniczkę”, „🌾 Zebrać żyto”, „🌼 Zerwać kwiaty”.
 - `VESSELS` łączy puste i pełne naczynia (`bowl`/`waterBowl`, `pot`/`waterPot`). Doświadczenia `watering` (przy zbiorze z podlewanej rośliny) i `clay` (przy piciu ze stawu, 15%) trafiają do `known`. Ziarno, nasiona kwiatów i kwiaty to drobiazgi spoza plecaka (limity w `POCKET_CAP`).
 
+## Pamięć oczekiwań i wnioski (`src/ai/memory.js`)
+- `expect` (id budowli → stan): `expectStore` po odłożeniu albo wzięciu rzeczy, `expectPlant` po zasianiu. W `see()` postać, która widzi taką budowlę z bliska (do 7 pól), wywołuje `checkExpect`.
+- Brak rzeczy: postać mówi, czego brakuje. Podejrzewa tego, kto ostatnio brał (`s.lastTaker`), chyba że już się przyznał (`shared:<id>`). Kupka → wniosek `stashUnsafe` (+0,2 do skrzyni). Dwa razy ta sama osoba → `distrust:<id>` (brak prezentów).
+- Plony zebrane przez kogoś innego (`harvestedBy`) → `fieldsRaided` (+0,12 do sadzenia w doniczkach, więcej doniczek). Roślina rośnie ponad 1,25 × `FARM.grow` na suchej ziemi → wniosek `dryGrowth` i doświadczenie `watering`.
+- `suspect` → w rozmowie pytanie wprost; podejrzany mówi prawdę według `lastTaker`/`harvestedBy`. Ostatnie 4 wnioski (`conclusions`) trafiają do modelu i na kartę postaci.
+
+## Słyszenie (`agent.js`)
+- `hearAround`: wszystko, co postać powie, słyszą przytomne postacie do 7 pól (`heard`, ostatnie 4 kwestie, trafiają do modelu przez 40 s).
+- `reactTo`: reakcja na swoje imię (tłumaczenie się albo zaprzeczenie), na zaginione rzeczy, odkrycia i wołanie o pomoc. Szansa zależy od humoru, zdrowia, zmęczenia i priorytetów (pilne zadanie, głód, pragnienie); w rozmowie postać odpowiada tylko rozmówcy. Odpowiedzi nie wywołują kolejnych reakcji.
+
 ## Kolizje (`world.js`, `agent.js`)
 - `world.solid(k)`: zasób (drzewo od `growth` 0,5, skała, krzak) albo budowla z `solidStruct` (ognisko, stół, skrzynia). `bfs` nadaje takim polom odległość, ale z nich nie rusza dalej, więc `nearestRes` działa jak dawniej, a `pathTo` zdejmuje ostatni krok (postać staje obok).
 - Ściany parteru to bity krawędzi z `wallBits()` (przeliczane, gdy zmieni się `pieceVer`); `edgeOpen` sprawdza krok, a po przekątnej oba narożniki. Gdy z miejsca postaci da się dojść do mniej niż 25 pól, `bfs` liczy trasę bez przeszkód (`loose`) i ta trasa może przejść przez ścianę.

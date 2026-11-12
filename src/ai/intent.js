@@ -155,6 +155,8 @@ export function describeFree(a) {
   lines.push('Widzisz i pamiętasz w pobliżu: ' + sees.join(', ') + '.');
   const people = w.agents.filter((o) => o !== a && o.alive && Math.hypot(o.i - a.i, o.j - a.j) < 12).map((o) => o.name);
   if (people.length) lines.push(`Niedaleko jest: ${people.join(', ')}.`);
+  if (a.heard && a.heard.length && w.time - (a.heardT || 0) < 40) lines.push(`Słyszysz: ${a.heard.join(' | ')}`);
+  if (a.conclusions && a.conclusions.length) lines.push(`Twoje wnioski z tego, co się stało: ${a.conclusions.join(' ')}`);
   const inv = Object.entries(a.inv).filter(([, v]) => v > 0).map(([k, v]) => `${ITEM_LABELS[k].replace(/^[^\p{L}]+/u, '').toLowerCase()} ×${v}`);
   lines.push(`Masz przy sobie: ${[...Object.entries(a.tools).filter(([, v]) => v).map(([k]) => TOOL_LABELS[k].replace(/^[^\p{L}]+/u, '').toLowerCase()), ...inv].join(', ') || 'nic'}.`);
   const recipes = [...a.known].filter((r) => RECIPE_NAMES[r]).map((r) => RECIPE_NAMES[r]);

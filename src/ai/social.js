@@ -179,7 +179,25 @@ export class Social {
     let t1 = teach(a, b), T1 = a, S1 = b;
     if (!t1) { t1 = teach(b, a); T1 = b; S1 = a; }
     // przedmioty
-    const gA = gift(a, b), gB = gA ? null : gift(b, a);
+    // nie daje prezentów komuś, komu nie ufa
+    const gA = a.beliefs.has('distrust:' + b.id) ? null : gift(a, b), gB = gA || b.beliefs.has('distrust:' + a.id) ? null : gift(b, a);
+    // podejrzenia: pyta wprost, a tamten mówi prawdę (gra wie, kto co brał)
+    for (const [x, y] of [[a, b], [b, a]]) {
+      if (!(x.suspect.get(y.id) > 0)) continue;
+      const took = w.structures.some((s) => (s.lastTaker && s.lastTaker.id === y.id) || (s.harvestedBy && s.harvestedBy.id === y.id));
+      say(x, `${y.name}, brał${y.f('eś', 'aś')} moje rzeczy? ${x.f('Wróciłem', 'Wróciłam')} i czegoś brakowało.`);
+      if (took) {
+        say(y, pick([`Tak, przepraszam. Potrzebował${y.f('em', 'am')} tego. Myślał${y.f('em', 'am')}, że zapasy są wspólne.`, 'Wziął' + y.f('em', 'am') + ', to prawda. Następnym razem zapytam.']));
+        say(x, 'Dobrze, że mówisz prawdę. Zapasy mogą być wspólne, byle uczciwie.');
+        x.conclude('shared:' + y.id, `${y.name} przyznał${y.f('', 'a')} się do brania rzeczy: zapasy są wspólne, ale warto mieć własną skrzynię.`);
+      } else {
+        say(y, 'Nie, to nie ja! Może to ktoś inny?');
+        say(x, 'Hm, w takim razie przepraszam.');
+      }
+      x.suspect.delete(y.id); x.beliefs.delete('distrust:' + y.id);
+      w.log(`🕵️ ${x.name} pyta ${y.name} o zaginione rzeczy.`, 'talk');
+      break;
+    }
     const logs = [];
     if (t1) { say(T1, t1.text); say(S1, t1.reply); logs.push(`${T1.name} ${t1.log}`); }
     if (gA) { say(a, gA.text); say(b, gA.reply); logs.push(`${a.name} ${gA.log}`); }

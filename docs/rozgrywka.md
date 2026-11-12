@@ -128,6 +128,12 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Ptaki:** upolowany ptak daje mięso i 2 pióra.
 - **Łuk:** ze strzałami trafia ptaka częściej niż włócznia (75% zamiast 50% na start). Postać z łukiem i strzałami może też walczyć z dzikiem i na niego polować.
 
+## Pamięć, wnioski i słuch
+- **Co gdzie zostawiła:** postać pamięta, co odłożyła na kupkę albo do skrzyni i co posadziła. Gdy wraca i czegoś brakuje, mówi to na głos i zastanawia się, kto to wziął (podejrzewa tego, kogo widziała przy zapasach).
+- **Wnioski:** gdy rzeczy giną z kupki, postać chce skrzyni. Gdy ktoś zbiera jej plony, sadzi w doniczkach przy obozie. Gdy roślina na suchej ziemi rośnie podejrzanie wolno, sama dochodzi do tego, że trzeba podlewać. Komuś, kto powtarzalnie bierze jej rzeczy, nie daje prezentów, dopóki się nie wytłumaczy.
+- **Wyjaśnianie:** w rozmowie pyta podejrzanego wprost, a ten mówi prawdę. Po przyznaniu się zapasy uchodzą za wspólne i postać przestaje robić z tego sprawę.
+- **Słuch:** postacie słyszą się w promieniu ok. 7 pól i mogą zareagować (np. „Słyszę cię, to ja wziąłem…”), ale nie muszą. To zależy od humoru, zdrowia, zmęczenia i tego, czy mają coś pilnego. Wnioski widać na karcie postaci.
+
 ## Kolizje
 - **Duże obiekty:** drzewa (pnie już nie), skały, krzaki, ogniska, stoły rzemieślnicze i skrzynie zajmują pole. Postać nie przechodzi przez nie, tylko obchodzi, a żeby coś z nimi zrobić, staje obok.
 - **Ściany:** ściana z desek na parterze zamyka krawędź pola. Pole otoczone ścianami ze wszystkich stron ma drzwi od południa. Postać, która mimo to utknie (np. w większym zamkniętym domu), wychodzi awaryjnie przez ścianę.

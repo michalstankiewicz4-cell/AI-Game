@@ -45,7 +45,11 @@ export const perceptionMethods = {
         this.memByTile.set(k, r.id);
       }
     }
-    for (const s of w.structures) if (!this.knownStructs.has(s.id) && visible(s.x - x0, s.z - z0)) this.knownStructs.add(s.id);
+    for (const s of w.structures) {
+      if (!this.knownStructs.has(s.id)) { if (visible(s.x - x0, s.z - z0)) this.knownStructs.add(s.id); continue; }
+      // wraca w miejsce, o którym coś pamięta: czy wszystko jest, jak zostawił(a)?
+      if (this.expect.has(s.id) && Math.hypot(s.x - x0, s.z - z0) < 7 && visible(s.x - x0, s.z - z0)) this.checkExpect(s);
+    }
     for (const b of w.birds) {
       if (b.state === 'landed' && visible(b.x - x0, b.z - z0)) { const t = toTile(b.x, b.z); this.memBirds.set(b.id, { b, i: t.i, j: t.j, t: w.time }); }
       else if (b.state !== 'landed' && this.memBirds.has(b.id) && visible(b.x - x0, b.z - z0)) this.memBirds.delete(b.id);
