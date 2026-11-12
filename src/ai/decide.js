@@ -1,6 +1,7 @@
 // Mózg agenta: wybór działania na podstawie użyteczności (utility AI).
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
+import { llm } from './llm.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
@@ -215,12 +216,28 @@ export const decideMethods = {
 
     opts.sort((a, c) => c.score - a.score);
     this.scores = opts.slice(0, 6).map((o) => ({ label: o.label, score: o.score }));
-    for (const o of opts) {
+    // tryb LLM: wybór modelu (jeśli świeży) wygrywa, chyba że lokalnie coś jest krytyczne
+    let order = opts;
+    this.llmDriven = false;
+    if (this.llmPick) {
+      const pick = this.llmPick; this.llmPick = null;
+      const o = llm.decides && w.time - pick.at < 30 && opts.find((x) => x.label === pick.label);
+      if (o && (o === opts[0] || opts[0].score < 1.1)) { order = [o, ...opts.filter((x) => x !== o)]; this.llmDriven = true; }
+    }
+    for (const o of order) {
       const task = o.make();
       if (task) {
         task.label = task.label || o.label;
         this.task = task;
-        if (o.label !== this.lastLabel) { this.lastLabel = o.label; if (Math.random() < 0.55) this.speak(thought(o.label)); }
+        const changed = o.label !== this.lastLabel;
+        this.lastLabel = o.label;
+        // zapytaj model: w trybie decyzji przy każdej decyzji, w trybie rozmowy przy zmianie zajęcia
+        let asked = false;
+        if (llm.active && !this.llmDriven && (llm.decides || changed)) {
+          const labels = llm.decides ? [o.label, ...opts.filter((x) => x !== o).slice(0, 5).map((x) => x.label)] : [o.label];
+          asked = llm.ask(this, labels);
+        }
+        if (changed && !asked && !this.llmDriven && Math.random() < 0.55) this.speak(thought(o.label));
         return;
       }
     }

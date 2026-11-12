@@ -2,6 +2,7 @@
 // Zachowania są w osobnych modułach dołączanych do klasy (perception, knowledge, decide, tasks).
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
+import { llm } from './llm.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
@@ -80,9 +81,18 @@ export class Agent {
     if (!force && this.speakCd > 0) return;
     this.bubble = { text, t: 4.5 };
     this.speakCd = 6 + Math.random() * 6;
-    if (this.world.onChat) this.world.onChat(this, text);
+    if (this.world.onChat) this.world.onChat(this, text, this.llmSaid);
   }
   event(key, ctx) { this.speak(eventLine(key, ctx), true); }
+  // odpowiedź z Claude API (tryb LLM)
+  onLLM({ label, thought, at }) {
+    if (!this.alive) return;
+    if (thought) { this.llmSaid = true; this.speak(thought, true); this.llmSaid = false; }
+    if (label && this.task && label !== this.lastLabel && !this.task.urgent && this.world.time - at < 30) {
+      this.llmPick = { label, at };
+      this.task = null; // przy najbliższej aktualizacji agent przemyśli decyzję
+    }
+  }
 
   get island() { return this.world.island[idx(this.i, this.j)]; }
 
@@ -147,6 +157,11 @@ export class Agent {
     if (this.invTotal() >= INV_CAP - 1) this.dropSurplus();
     if (!this.task) this.decide();
     if (this.task) this.runTask(dt);
+    // tryb Claude: co jakiś czas postać pyta model, nawet w trakcie długiego zadania
+    if (this.task && !this.task.urgent && !this.asleep && llm.active && w.time >= (this.llmNext || 0) && this.scores && this.scores.length) {
+      const labels = [this.lastLabel, ...this.scores.map((s) => s.label).filter((l) => l !== this.lastLabel)].filter(Boolean).slice(0, 6);
+      if (labels.length) llm.ask(this, llm.decides ? labels : [this.task.label]);
+    }
     // wzrok (śpiący nie widzi)
     this.visionT -= dt;
     if (this.visionT <= 0 && !this.asleep) { this.visionT = 0.3; this.see(false); }

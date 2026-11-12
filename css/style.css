@@ -16,7 +16,7 @@ button { font: inherit; cursor: pointer; }
 @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 /* menu */
-.overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(10,30,60,.55), rgba(5,10,25,.85)); z-index: 20; padding: 16px; }
+.overlay { position: fixed; inset: 0; display: flex; align-items: safe center; overflow-y: auto; justify-content: center; background: radial-gradient(ellipse at center, rgba(10,30,60,.55), rgba(5,10,25,.85)); z-index: 20; padding: 16px; }
 .menu-card { width: min(460px, 100%); background: rgba(16,28,48,.92); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 26px; box-shadow: 0 20px 60px rgba(0,0,0,.5); backdrop-filter: blur(6px); }
 .menu-card h1 { margin: 0 0 6px; font-size: 30px; }
 .sub { margin: 0 0 18px; color: #b6c4d6; line-height: 1.45; }
@@ -50,7 +50,12 @@ button { font: inherit; cursor: pointer; }
 #bridgeBar .bar { width: 140px; height: 7px; background: rgba(255,255,255,.15); border-radius: 4px; overflow: hidden; }
 #bridgeFill { height: 100%; width: 0; background: #d6a14f; transition: width .3s; }
 
-#agents { position: absolute; top: 10px; right: 10px; width: 236px; display: flex; flex-direction: column; gap: 6px; max-height: calc(100% - 20px); overflow-y: auto; }
+#agentsWin { position: absolute; top: 10px; right: 10px; width: 236px; max-height: calc(100% - 20px); display: flex; flex-direction: column; background: rgba(12,22,40,.55); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; }
+#agentsWin .win-h { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 10px; font-size: 12.5px; font-weight: 600; cursor: move; user-select: none; }
+#agentsWin .win-h .hint { flex: 1; font-weight: 400; font-size: 11px; color: #8aa0b6; }
+#agentsWin .win-h button { background: none; border: 0; color: #9fb2c8; font-size: 15px; padding: 0 4px; }
+#agentsWin.min #agents { display: none; }
+#agents { display: flex; flex-direction: column; gap: 6px; padding: 0 6px 6px; overflow-y: auto; }
 .acard { padding: 8px 10px; background: rgba(12,22,40,.8); border: 1px solid rgba(255,255,255,.1); border-left: 4px solid var(--c); border-radius: 10px; cursor: pointer; font-size: 12px; }
 .acard.sel { background: rgba(40,60,90,.9); border-color: var(--c); }
 .acard.dead { opacity: .45; }
@@ -62,7 +67,9 @@ button { font: inherit; cursor: pointer; }
 .bars .b i { display: block; height: 100%; border-radius: 3px; transition: width .3s; }
 
 #detail { position: absolute; right: 256px; top: 92px; width: 250px; padding: 12px; background: rgba(12,22,40,.85); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; font-size: 12.5px; max-height: calc(100% - 102px); overflow-y: auto; }
-#detail h3 { margin: 0 0 2px; font-size: 16px; }
+#detail h3 { margin: 0 0 2px; font-size: 16px; cursor: move; user-select: none; }
+#detail h3::before { content: '⠿ '; color: #6f8399; font-size: 13px; }
+#detail.dragging { opacity: .85; }
 #detail h4 { margin: 10px 0 4px; font-size: 11.5px; color: #9fb2c8; text-transform: uppercase; letter-spacing: .06em; }
 #detail .grid { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; }
 #detail .tools span { display: inline-block; margin: 2px 4px 2px 0; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,.08); }
@@ -97,3 +104,16 @@ button { font: inherit; cursor: pointer; }
   #feed { width: calc(100% - 200px); }
   .toggles label { display: none; }
 }
+
+.llm-box { margin: -4px 0 12px; display: flex; flex-direction: column; gap: 6px; }
+.llm-box input[type=password] { flex: 1; }
+.llm-box select { flex: 1; background: rgba(255,255,255,.08); color: #e8f1f8; border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 6px; }
+.llm-box select option { background: #13233b; }
+.llm-box .budget { display: flex; align-items: center; gap: 4px; font-size: 12.5px; color: #9fb2c8; }
+.llm-box .budget input { width: 70px; }
+.llm-note { font-size: 11.5px; color: #9fb2c8; line-height: 1.4; }
+#tokBtn { font-variant-numeric: tabular-nums; }
+#tokBtn.warn { color: #f0b05a; }
+#tokBtn.err { color: #ff7b7b; }
+.acard .llm { font-size: 11px; margin-left: 4px; }
+#detail, #agentsWin { z-index: 3; }
