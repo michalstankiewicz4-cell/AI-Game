@@ -7,7 +7,7 @@ const ICON = {
   planks: '🟫', rope: '🪢', rod: '🎣', spear: '🔱', campfire: '🔥', shelter: '🛖', ironTool: '⚒️', tent: '⛺', workbench: '🛠️',
   grill: '♨️', bed: '🛏️', chest: '📦', torch: '🔥', clothes: '👕', sword: '🗡️', shield: '🛡️',
   logs: '🪵', sticks: '🥢', leaves: '🍃', seaweed: '🌿', stone: '🪨', iron: '⛏️',
-  knife: '🔪', hoe: '🌾', bowl: '🥣', bow: '🏹', arrows: '🏹', leather: '🧥', feathers: '🪶', hide: '🟤', seeds: '🌱', clay: '🧱', pot: '🏺', grain: '🌾', flowers: '🌼', flowerSeeds: '🌱',
+  knife: '🔪', hoe: '🌾', bowl: '🥣', bow: '🏹', arrows: '🏹', leather: '🧥', feathers: '🪶', hide: '🟤', seeds: '🌱', clay: '🧱', pot: '🏺', shovel: '🪏', grain: '🌾', flowers: '🌼', flowerSeeds: '🌱',
   berries: '🫐', rawFish: '🐟', cookedFish: '🍣', rawMeat: '🍗', cookedMeat: '🍖',
 };
 
@@ -33,6 +33,7 @@ const RECIPE_DESC = {
   bow: 'Kłoda wystrugana nożem i lina jako cięciwa. Ze strzałami poluje się celniej na ptaki i walczy z dzikiem z daleka.',
   arrows: 'Gałąź, kamienny grot i lotka z piór: 4 strzały. Czasem się gubią albo łamią.',
   leather: 'Ubranie uszyte ze skóry dzika przy stole rzemieślniczym. Grzeje mocniej niż ubranie z liści.',
+  shovel: 'Deska, gałąź i kamień. Łopatą ubija się drogi na wydeptanych ścieżkach przy obozie i szybciej wyrywa pnie.',
   pot: 'Glina z brzegu stawu wypalona w ognisku. Można w niej nosić wodę jak w misce, a po nasypaniu ziemi posadzić nasiona. W doniczce roślina rośnie tylko podlewana.',
   chest: 'Porządne miejsce na zapasy przy obozie. W odróżnieniu od kupki na ziemi trzyma też jedzenie, po które postać wraca, gdy jest głodna.',
 };
@@ -81,6 +82,8 @@ const WORLD = [
   ['piece_wall', '🧱', 'Ściana z desek', 'Deska postawiona pionowo na krawędzi pola. Wyżej da się ją postawić tylko na innej ścianie.'],
   ['piece_slope', '📐', 'Skos z desek', 'Deska położona pod skosem, np. na ścianach. Postacie mogą ją zdjąć, przenieść i przemianować.'],
   ['field', '🌾', 'Grządka', 'Ziemia spulchniona motyką. Rośnie na niej krzak jagód (6 jagód i 2 nasiona), żyto (8 ziaren) albo kwiaty (3 kwiaty i 2 nasiona). Podlewana dojrzewa po ok. półtorej doby, sucha prawie trzy razy wolniej.'],
+  ['road', '🛤️', 'Droga', 'Ubita łopatą ziemia na często uczęszczanych ścieżkach przy obozie. Po drodze chodzi się o połowę szybciej.'],
+  ['stump', '🪵', 'Pień', 'Zostaje po ściętym drzewie i z czasem odrasta w nowe drzewo. Można go wyrwać kilofem albo łopatą: daje kawałek drewna (kłodę), ale drzewo już nie odrośnie.'],
   ['planter', '🪴', 'Doniczka z rośliną', 'Doniczka albo miska z ziemią i nasionami, stawiana przy obozie. Rośnie tylko podlewana i daje mniej więcej połowę plonu grządki. Po zbiorze można w niej znów coś posadzić.'],
   ['rye', '🌾', 'Dzikie żyto', 'Kępy żyta rosną tu i ówdzie na łąkach. Z kłosów wyłuskuje się ziarno do siewu, a kłosy odrastają.'],
   ['flower', '🌼', 'Kwiaty', 'Rosną na łąkach w trzech kolorach. Zerwane cieszą, a co drugi daje nasiona.'],
@@ -95,6 +98,7 @@ const EXPERIENCE = [
   ['seeds', '🌱', 'Nasiona w jagodach', 'Postać, która je jagody, znajduje w nich pestki.'],
   ['farm', '🌾', 'Uprawa', 'Po pierwszym zbiorze postać wie, że z posadzonych nasion coś wyrasta.'],
   ['watering', '💧', 'Podlewanie', 'Gdy zbiera plon z podlewanej rośliny, postać wie, że woda przyspiesza wzrost.'],
+  ['road', '🛤️', 'Droga przyspiesza', 'Pierwszy krok po ubitej drodze uczy postać, że idzie się po niej szybciej.'],
   ['clay', '🧱', 'Glina', 'Pijąc ze stawu, postać czasem zauważa, że brzeg jest gliniasty.'],
   ['boarDanger', '🐗', 'Dziki są groźne', 'Po pierwszym zderzeniu z dzikiem postać wie, że trzeba uważać.'],
 ];
@@ -114,7 +118,7 @@ function catalog() {
     {
       id: 'tools', name: '🧰 Narzędzia', items: [
         ...START_TOOLS.map(([k, icon, name, desc]) => ({ key: 'tool:' + k, icon, name, desc })),
-        ...['rod', 'spear', 'clothes', 'sword', 'shield', 'knife', 'hoe', 'bow', 'leather'].map((t) => ({ key: 'tool:' + t, icon: ICON[t], name: RECIPE_NAMES[t], desc: RECIPE_DESC[t], meta: `receptura: ${cost(t)}` })),
+        ...['rod', 'spear', 'clothes', 'sword', 'shield', 'knife', 'hoe', 'bow', 'leather', 'shovel'].map((t) => ({ key: 'tool:' + t, icon: ICON[t], name: RECIPE_NAMES[t], desc: RECIPE_DESC[t], meta: `receptura: ${cost(t)}` })),
         { key: 'item:seeds', icon: ICON.seeds, name: 'nasiona jagód', desc: 'Pestki znalezione w zjedzonych jagodach (mniej więcej co trzecia garść) i zebrane z grządki. Sadzi się je na grządce przygotowanej motyką albo w doniczce.', meta: '0.02 kg / szt.' },
         { key: 'item:grain', icon: ICON.grain, name: 'ziarno żyta', desc: 'Wyłuskane z kłosów dzikiego żyta (2 ziarna z kłosa). To nasiona: z grządki zbiera się 8 ziaren, z doniczki 4.', meta: '0.02 kg / szt.' },
         { key: 'item:flowerSeeds', icon: ICON.flowerSeeds, name: 'nasiona kwiatów', desc: 'Zostają z co drugiego zerwanego kwiatu. Wysiane dają nowe kwiaty i kolejne nasiona.', meta: '0.02 kg / szt.' },
@@ -157,6 +161,8 @@ export function scanDiscoveries(world) {
     if (s.items) for (const k in s.items) if (s.items[k] > 0) add((FOOD[k] ? 'food:' : 'item:') + k);
   }
   if (world.bridges && world.bridges.some((b) => b.planks > 0)) add('world:bridge');
+  if (world.roadCount) add('world:road');
+  if (world.agents.some((a) => a.uprooted)) add('world:stump');
   for (const p of world.pieces || []) add('world:piece_' + p.type);
   return f;
 }

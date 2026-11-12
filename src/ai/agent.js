@@ -6,7 +6,7 @@ import { llm } from './llm.js';
 import { mapIntent } from './intent.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
-  SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp, TORCH,
+  SPEED, ROAD_SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp, TORCH,
 } from './data.js';
 import { perceptionMethods } from './perception.js';
 import { knowledgeMethods } from './knowledge.js';
@@ -34,7 +34,7 @@ export class Agent {
     this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
     this.mood = 60; this.joy = 0; this.lastTalk = -999; // samopoczucie 0-100, chwilowa radość, ostatnia rozmowa
     this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0, feathers: 0, hide: 0, seeds: 0, arrows: 0, bowl: 0, waterBowl: 0, clay: 0, grain: 0, flowerSeeds: 0, flowers: 0, pot: 0, waterPot: 0 };
-    this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false, knife: false, hoe: false, bow: false, leather: false };
+    this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false, knife: false, hoe: false, bow: false, leather: false, shovel: false };
     this.task = null;
     this.alive = true;
     this.asleep = false;
@@ -143,9 +143,10 @@ export class Agent {
     // gdy model nie działa (ładuje się, błąd, brak klucza), mówi skrypt, oznaczony 📜
     const script = !this.llmSaid;
     if (!script) this.lastSaid = text;
-    this.bubble = { text, t: 5.5, script };
+    const to = this.talkUntil > this.world.time && this.talkWith && this.talkWith.alive ? this.talkWith : null;
+    this.bubble = { text, t: 5.5, script, dialog: !!to };
     this.speakCd = 6 + Math.random() * 6;
-    if (this.world.onChat) this.world.onChat(this, text, !script);
+    if (this.world.onChat) this.world.onChat(this, text, !script, to);
   }
   event(key, ctx) { this.speak(eventLine(key, ctx), true); }
   // odpowiedź modelu językowego
@@ -327,6 +328,7 @@ export class Agent {
     if (this.asleep) h = null;
     else if (/Skóruje|nóż|miskę|Struga/i.test(lbl) && this.tools.knife) h = 'knife';
     else if (/grządk|ziemię|motyk/i.test(lbl) && this.tools.hoe) h = 'hoe';
+    else if (/drogę|pień/i.test(lbl)) h = this.tools.shovel ? 'shovel' : 'pickaxe';
     else if (/łuk/i.test(lbl) && this.tools.bow) h = 'bow';
     else if (this.fightBoar || /dzik/i.test(lbl)) h = this.tools.sword ? 'sword' : this.tools.spear ? 'spear' : this.tools.bow && this.inv.arrows > 0 ? 'bow' : 'axe';
     else if (/Ścina|Bada drzewo|Bada palm|deski|Ciosa/i.test(lbl)) h = this.tools.ironAxe ? 'ironAxe' : 'axe';
@@ -355,10 +357,15 @@ export class Agent {
       const dx = p.x - this.x, dz = p.z - this.z, d = Math.hypot(dx, dz);
       // ciężki plecak spowalnia (od 70% udźwigu), zmęczenie też
       const load = this.invWeight() / MAX_WEIGHT;
-      const step = SPEED * dt * (this.energy < 15 ? 0.6 : 1) * (load > 0.7 ? 1 - (load - 0.7) * 1.2 : 1);
+      const w = this.world, k = idx(this.i, this.j);
+      // po drodze idzie się szybciej (gdy postać stoi na drodze albo na nią wchodzi)
+      const road = w.road[k] || w.road[idx(next.i, next.j)];
+      const step = SPEED * dt * (road ? ROAD_SPEED : 1) * (this.energy < 15 ? 0.6 : 1) * (load > 0.7 ? 1 - (load - 0.7) * 1.2 : 1);
+      if (road && !this.known.has('road') && w.road[k]) { this.known.add('road'); this.say('zauważa, że po ubitej drodze idzie się dużo szybciej 🛤️🧠', 'learn'); }
       if (d <= step) {
         this.x = p.x; this.z = p.z; this.i = next.i; this.j = next.j;
         t.path.shift();
+        w.traffic[idx(next.i, next.j)] += 1; // wydeptana ścieżka: tu warto kiedyś zrobić drogę
       } else {
         this.x += dx / d * step; this.z += dz / d * step;
         this.facing = Math.atan2(dx, dz);

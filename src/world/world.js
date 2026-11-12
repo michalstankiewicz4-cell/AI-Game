@@ -47,6 +47,9 @@ export class World {
     this.height = new Float32Array(W * H);
     this.island = new Int8Array(W * H).fill(-1); // 0 = wyspa zachodnia, 1 = wschodnia
     this.res = new Array(W * H).fill(null);
+    // drogi ubite łopatą (1 = droga) i wydeptanie: ile razy postacie przeszły przez pole
+    this.road = new Uint8Array(W * H);
+    this.traffic = new Float32Array(W * H);
     this.resources = [];
     this.structures = []; // ogniska, szałasy
     this.fish = [];
@@ -101,6 +104,13 @@ export class World {
     if (!this.inBounds(i, j)) return false;
     const t = this.type[idx(i, j)];
     return t === T.SAND || t === T.GRASS || t === T.ROCK || t === T.BRIDGE;
+  }
+
+  addRoad(i, j) {
+    const k = idx(i, j);
+    if (this.road[k] || !this.walkable(i, j) || this.type[k] === T.BRIDGE) return false;
+    this.road[k] = 1; this.roadCount = (this.roadCount || 0) + 1; this.roadChanged = true;
+    return true;
   }
 
   removeResource(res) {

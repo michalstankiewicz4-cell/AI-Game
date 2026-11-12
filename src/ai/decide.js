@@ -216,6 +216,19 @@ export const decideMethods = {
         if (spot && spot.d < 30) add(0.32 + (seedy ? 0.06 : 0) - spot.d * 0.004, '🧱 Nabrać gliny', () => this.taskClay(spot));
       }
     }
+    // łopata, drogi i pnie
+    craftT('shovel', '🪏 Zrobić łopatę', 'robi łopatę 🪏', 0.32 + (myFire || myRoof ? 0.06 : 0));
+    const camp = myFire ? anyFire : myRoof ? (myShelter ? shelter : tentN) : null;
+    if (camp) {
+      if (tools.shovel && !w.isNight()) {
+        const rs = this.roadSpot(camp.s || camp);
+        if (rs) add(0.24 + 0.06 * this.w.build + Math.min(0.1, rs.s * 0.004) + (K('road') ? 0.06 : 0) - (taken.has('r' + idx(rs.i, rs.j)) ? 1 : 0),
+          rs.stump ? '🪵 Wyrwać pień' : '🛤️ Budować drogę', () => (rs.stump ? this.taskUproot(rs.stump) : this.taskRoad(rs)));
+      }
+      // pnie w samym obozie przeszkadzają: wyrwać (kilofem albo łopatą)
+      const st = this.nearestRes(bfs, (m) => (m.kind === 'tree' || m.kind === 'palm') && this.isStump(m.r) && Math.hypot(m.i - camp.i, m.j - camp.j) <= 3, taken);
+      if (st && this.roomFor(2, 3)) add(0.22 - st.d * 0.004, '🪵 Wyrwać pień', () => this.taskUproot(st.r));
+    }
     // dzikie żyto: ziarno do siewu
     if (inv.grain < 6 && (tools.hoe || K('hoe') || K('farm'))) {
       const rye = this.nearestRes(bfs, (m) => m.kind === 'rye' && (m.ears > 0 || m.age > 80), taken);
@@ -254,6 +267,7 @@ export const decideMethods = {
     if (plankOp) want.planks += 2; // zapas desek na budowę
     if (K('torch') && inv.torch < 2 && myFire) wish(RECIPES.torch);
     if (!tools.knife && K('knife')) wish(RECIPES.knife);
+    if (!tools.shovel && K('shovel') && (myFire || myRoof)) wish(RECIPES.shovel);
     if (!tools.hoe && K('hoe') && this.anySeeds()) wish(RECIPES.hoe);
     if (!tools.bow && K('bow') && tools.knife) wish(RECIPES.bow);
     if (tools.knife && K('bowl') && inv.bowl + inv.waterBowl < 1) wish(RECIPES.bowl);
@@ -315,6 +329,11 @@ export const decideMethods = {
       const short = Math.max(shortLogs, shortSticks, Math.ceil(shortLeaves / 2));
       if (tree) add(Math.min(0.5, 0.18 + short * 0.04) - tree.d * 0.003, '🪓 Ścinać drzewo', () => this.taskChop(tree.r));
       else unknownNeed = Math.max(unknownNeed, 0.3);
+      // brak drzew w pobliżu, a trzeba kłody: pień też da kawałek drewna
+      if (shortLogs > 0 && (!tree || tree.d > 25)) {
+        const st = this.nearestRes(bfs, (m) => (m.kind === 'tree' || m.kind === 'palm') && this.isStump(m.r), taken);
+        if (st && st.d < 20) add(0.26 - st.d * 0.004, '🪵 Wyrwać pień', () => this.taskUproot(st.r));
+      }
     }
     if (want.seaweed > inv.seaweed && room) {
       const sw = this.nearestSeaweed(bfs, taken);

@@ -89,7 +89,8 @@ function buildGame() {
   state.opts.follow = false;
   const world = game.world;
   clearFeed();
-  world.onChat = (a, text, ai) => feed('chat', `<b style="color:${hex(a.color)}">${ai ? '🤖 ' : '📜 '}${a.name}:</b> ${esc(text)}`);
+  // rozmowa dwóch postaci ma własny kolor: „Ada → Bruno”
+  world.onChat = (a, text, ai, to) => feed('chat', `<b style="color:${hex(a.color)}">${ai ? '🤖 ' : '📜 '}${a.name}${to ? ` <span class="to">→ ${to.name}</span>` : ''}:</b> ${to ? `<span class="say">${esc(text)}</span>` : esc(text)}`, to ? 'dialog' : '');
   renderer.build(world);
   // kamera nad wyspą startową
   const c = world.islandDefs[0];

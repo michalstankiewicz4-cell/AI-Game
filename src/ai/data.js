@@ -41,7 +41,8 @@ export const RECIPES = {
   bow: { logs: 1, rope: 1 },                  // łuk (wystrugany nożem z kłody)
   arrows: { sticks: 1, feathers: 1, stone: 1 }, // 4 strzały z lotkami z piór
   leather: { hide: 2, rope: 1 },              // ubranie ze skóry dzika (przy stole), cieplejsze niż z liści
-  pot: { clay: 3 },                           // gliniana doniczka wypalona w ognisku: naczynie na wodę i na ziemię z nasionami
+  pot: { clay: 3 },
+  shovel: { planks: 1, sticks: 1, stone: 1 }, // łopata: ubija drogi i wyrywa pnie                           // gliniana doniczka wypalona w ognisku: naczynie na wodę i na ziemię z nasionami
 };
 // receptury, do których trzeba mieć nóż (strugane albo drążone)
 export const KNIFE_RECIPES = new Set(['bowl', 'bow']);
@@ -53,7 +54,7 @@ export const FIRE_FUEL = { max: 150, start: 100, burn: 0.5, logs: 60, sticks: 25
 export const RECIPE_NAMES = {
   planks: 'deski', rope: 'lina', rod: 'wędka', spear: 'włócznia', campfire: 'ognisko', shelter: 'szałas', ironTool: 'żelazne narzędzia',
   tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko', clothes: 'ubranie z liści', sword: 'miecz', shield: 'tarcza', chest: 'skrzynia', torch: 'pochodnia',
-  knife: 'nóż kamienny', hoe: 'motyka', bowl: 'drewniana miska', bow: 'łuk', arrows: 'strzały', leather: 'ubranie ze skóry', pot: 'gliniana doniczka',
+  knife: 'nóż kamienny', hoe: 'motyka', bowl: 'drewniana miska', bow: 'łuk', arrows: 'strzały', leather: 'ubranie ze skóry', pot: 'gliniana doniczka', shovel: 'łopata',
 };
 // miejsca na zapasy: kupka na ziemi i skrzynia
 export const STORES = new Set(['stash', 'chest']);
@@ -70,7 +71,8 @@ export const WORLD_FACTS = 'Znasz ten świat: przy ognisku i pod dachem (szałas
   + 'w jagodach są nasiona: motyką przygotowuje się ziemię i sadzi je, a po ok. półtorej doby wyrasta krzak z jagodami, miskę można napełnić wodą ze stawu i pić z niej z dala od wody, łuk ze strzałami poluje z daleka, '
   + 'podlana roślina rośnie szybciej (sucha grządka rośnie wolno, a doniczka bez wody wcale), dziko rośnie żyto: jego ziarno to nasiona, '
   + 'z kwiatów są nasiona kwiatów, a zerwane kwiaty cieszą, brzeg stawu jest gliniasty: glina wypalona w ognisku daje doniczkę, '
-  + 'do doniczki albo miski nasypuje się ziemi i sadzi nasiona, a doniczką, tak jak miską, można też nosić wodę.';
+  + 'do doniczki albo miski nasypuje się ziemi i sadzi nasiona, a doniczką, tak jak miską, można też nosić wodę, '
+  + 'łopatą ubija się drogę: po drodze chodzi się o połowę szybciej, a pień ściętego drzewa można wyrwać kilofem albo łopatą (zostaje kawałek drewna, ale drzewo już nie odrośnie).';
 export const recipeList = () => Object.entries(RECIPES).map(([r, c]) => `${RECIPE_NAMES[r]} (${Object.entries(c).map(([k, n]) => `${MAT_NAMES[k]} ×${n}`).join(' + ')}${FIRE_RECIPES.has(r) ? ', przy ogniu' : BENCH_RECIPES.has(r) ? ', przy stole' : KNIFE_RECIPES.has(r) ? ', nożem' : ''})`).join('; ');
 export const RECIPE_BY_COMBO = new Map(Object.entries(RECIPES).map(([k, r]) => [comboKey(Object.keys(r)), k]));
 export const KIND_NAMES = { tree: 'drzewo', palm: 'palmę', rock: 'skałę', bush: 'krzak', seaweed: 'wodorosty', mine: 'kopalnię', rye: 'żyto', flower: 'kwiaty' };
@@ -83,10 +85,11 @@ export const ITEM_LABELS = {
 };
 export const TOOL_LABELS = {
   axe: '🪓 Siekiera', pickaxe: '⛏️ Kilof', rod: '🎣 Wędka', spear: '🔱 Włócznia', ironAxe: '🪓 Żel. siekiera', ironPick: '⛏️ Żel. kilof', clothes: '👕 Ubranie z liści', sword: '🗡️ Miecz', shield: '🛡️ Tarcza',
-  knife: '🔪 Nóż kamienny', hoe: '⛏️ Motyka', bow: '🏹 Łuk', leather: '🧥 Ubranie ze skóry',
+  knife: '🔪 Nóż kamienny', hoe: '⛏️ Motyka', bow: '🏹 Łuk', leather: '🧥 Ubranie ze skóry', shovel: '🪏 Łopata',
 };
 
-export const SPEED = 2.6; // kafelki / s
+export const SPEED = 1.9; // kafelki / s
+export const ROAD_SPEED = 1.5; // po drodze o połowę szybciej
 // pole widzenia: im dalej, tym węższy stożek
 export const VIEW_RANGE = 18;
 export const VIEW_NEAR = 2.5; // tuż obok widzi dookoła

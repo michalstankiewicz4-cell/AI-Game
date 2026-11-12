@@ -26,7 +26,7 @@ Każda wyspa ma mniej więcej rozmiar ekranu. Przy kilku wyspach:
 
 ### 🐗 Dziki
 - **Gdzie:** na każdej wyspie jest jeden dzik, a na wyspie startowej dodatkowy, daleko od miejsca startu. Przez pierwszą dobę dziki są spokojne.
-- **Szarża:** postać, która podejdzie do dzika na ok. 4 kafelki, może sprowokować szarżę. Dzik biega wolniej niż postać (2,4 wobec 2,6 kafelka/s), więc ucieczka się udaje, jeśli zacznie się na czas.
+- **Szarża:** postać, która podejdzie do dzika na ok. 4 kafelki, może sprowokować szarżę. Dzik biega wolniej niż postać (1,75 wobec 1,9 kafelka/s, a po drodze postać idzie jeszcze szybciej), więc ucieczka się udaje, jeśli zacznie się na czas.
 - **Cios:** odbiera 7 zdrowia, a z tarczą o 60% mniej. Często to tylko ostrzeżenie: po ciosie dzik odpuszcza.
 - **Obrona:** postać z włócznią (9) albo mieczem (14) staje i walczy, a bez broni ucieka.
 - **Ucieczka dzika:** gdy zostanie mu mniej niż 15 z 40 punktów życia.
@@ -94,6 +94,7 @@ Na starcie każda postać ma siekierę i kilof. Receptur nie zna, odkrywa je, ł
 | Łuk | kłoda + lina | strugany nożem; ze strzałami poluje na ptaki i walczy z dzikiem z daleka |
 | Strzały | gałąź + pióra + kamień | 4 sztuki; czasem się gubią albo łamią |
 | Ubranie ze skóry | 2 skóry + lina | odkrywane tylko przy stole rzemieślniczym; +7°C odczuwalnej temperatury |
+| Łopata | deska + gałąź + kamień | ubija drogi, szybciej wyrywa pnie |
 | Gliniana doniczka | 3 grudki gliny | wypalana w ognisku; naczynie na wodę i doniczka na rośliny |
 
 Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo przy ogniu, łóżko przy stole rzemieślniczym. Miski i łuku nie zrobi się bez noża. Próba w złym miejscu kończy się wskazówką w myślach postaci.
@@ -126,6 +127,11 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Dzik:** z nożem postać skóruje upolowanego dzika (ok. 4 s): 3 mięsa i skóra. Bez noża urwie tylko 1 kawałek mięsa. Martwy dzik leży na boku, dopóki ktoś go nie oskóruje.
 - **Ptaki:** upolowany ptak daje mięso i 2 pióra.
 - **Łuk:** ze strzałami trafia ptaka częściej niż włócznia (75% zamiast 50% na start). Postać z łukiem i strzałami może też walczyć z dzikiem i na niego polować.
+
+## Drogi i pnie
+- **Wydeptane ścieżki:** gra liczy, ile razy postacie przeszły przez każde pole. Pole, przez które przeszły co najmniej 6 razy, nadaje się na drogę.
+- **Droga:** postać z łopatą ubija drogę na wydeptanych polach do 22 pól od obozu (ok. 3 s na pole, za dnia). Po drodze chodzi się o połowę szybciej (postacie chodzą 1,9 kafelka/s, po drodze ok. 2,85).
+- **Pnie:** po ściętym drzewie zostaje pień, który z czasem odrasta w drzewo. Kilofem (5 s) albo łopatą (3 s) można go wyrwać: daje kłodę, ale drzewo już nie odrośnie. Postacie wyrywają pnie w obozie (do 3 pól od ogniska), na wydeptanej ścieżce przed ubiciem drogi i wtedy, gdy potrzebne są kłody, a w pobliżu nie ma drzew.
 
 ## Noc, pochodnie i przedmioty w rękach
 - **Widoczność:** w dzień postać widzi na 18 pól. W nocy widzi na ok. 1/4 tego (4–5 pól), a z płonącą pochodnią w ręku albo przy palącym się ognisku na połowę (9 pól). O zmierzchu i świcie zasięg zmienia się płynnie.

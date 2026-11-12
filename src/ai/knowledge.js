@@ -13,7 +13,7 @@ export const knowledgeMethods = {
     const w = this.world;
     this.omniscient = true;
     for (const r of Object.keys(RECIPES)) this.known.add(r);
-    for (const k of ['cook', 'bridge', 'warmFire', 'warmRoof', 'bedRest', 'boarDanger', 'seeds', 'farm', 'watering', 'clay']) this.known.add(k);
+    for (const k of ['cook', 'bridge', 'warmFire', 'warmRoof', 'bedRest', 'boarDanger', 'seeds', 'farm', 'watering', 'clay', 'road']) this.known.add(k);
     for (const k of Object.keys(FOOD)) this.edible.set(k, true);
     for (const k of Object.keys(KIND_NAMES)) this.triedKinds.add(k);
     this.saltKnown = true;
@@ -89,7 +89,7 @@ export const knowledgeMethods = {
         // od razu zrób, jeśli starcza materiałów (narzędzia i półprodukty)
         const cost = RECIPES[r];
         const enough = Object.keys(cost).every((k) => this.inv[k] >= cost[k]);
-        if (enough && ['planks', 'rope', 'rod', 'spear', 'knife', 'hoe', 'bow', 'bowl', 'arrows', 'pot'].includes(r)) {
+        if (enough && ['planks', 'rope', 'rod', 'spear', 'knife', 'hoe', 'bow', 'bowl', 'arrows', 'pot', 'shovel'].includes(r)) {
           for (const k in cost) this.inv[k] -= cost[k];
           if (r === 'planks') this.inv.planks += 2;
           else if (r === 'rope') this.inv.rope += 1;

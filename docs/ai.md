@@ -61,12 +61,19 @@ Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie t
 - `pickCrop()` wybiera nasiona rośliny, której najmniej rośnie. Opcje: „💧 Podlać rośliny” (doniczki najpierw), „🥣 Nabrać wody do miski” (także gdy rośliny są suche), „🪴 Posadzić w doniczce / w misce” (gdy ma co najmniej 2 naczynia), „🧱 Nabrać gliny”, „🏺 Wypalić doniczkę”, „🌾 Zebrać żyto”, „🌼 Zerwać kwiaty”.
 - `VESSELS` łączy puste i pełne naczynia (`bowl`/`waterBowl`, `pot`/`waterPot`). Doświadczenia `watering` (przy zbiorze z podlewanej rośliny) i `clay` (przy piciu ze stawu, 15%) trafiają do `known`. Ziarno, nasiona kwiatów i kwiaty to drobiazgi spoza plecaka (limity w `POCKET_CAP`).
 
+## Drogi i pnie (`tasks.js`, `world.js`)
+- `world.traffic` liczy przejścia przez pola, a `world.road` trzyma drogi (`addRoad`). W `runTask` krok na drodze jest dłuższy o `ROAD_SPEED` (1,5).
+- `roadSpot(home)` szuka w promieniu 22 pól od obozu pola z co najmniej 6 przejściami, bez zasobu (albo z pniem) i bez budowli. Opcje: „🛤️ Budować drogę” (łopata, za dnia), „🪵 Wyrwać pień” (pień na drodze, w obozie albo brak drzew przy potrzebie kłód), „🪏 Zrobić łopatę”.
+- `taskUproot` usuwa zasób drzewa (`removeResource`), więc nie odrośnie. Doświadczenie `road` postać zdobywa przy pierwszym kroku po drodze.
+
 ## Rozmowy (`src/ai/social.js`)
 Postacie, które spotkają się bliżej niż 2,6 kafelka, mogą porozmawiać. Ta sama para rozmawia najwyżej raz na 70 s. W rozmowie:
 - przekazują najciekawszą nowinę, np. gdzie jest kopalnia, staw albo krzaki,
 - dzielą się wiedzą: pamięcią mapy, recepturami, jadalnością i tym, że woda morska jest słona,
 - uczą się nawzajem umiejętności,
 - oddają sobie przedmioty, np. jedzenie głodnemu.
+
+To, co postać mówi w trakcie rozmowy (`talkWith`, `talkUntil`), trafia do czatu jako dialog „Ada → Bruno” z własnym kolorem (klasa `dialog`), a dymek nad głową jest jasnozielony.
 
 ## Odkrywanie przez doświadczenie
 - **Łóżko:** postać, która je zrobi, z ciekawości kładzie się w nim spać. Po pierwszym śnie wie, że lepiej się w nim wysypia, i od tej pory wybiera je do spania.
