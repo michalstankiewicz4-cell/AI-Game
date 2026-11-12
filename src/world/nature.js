@@ -28,7 +28,7 @@ export const natureMethods = {
         if (r.regrow > 40) { r.regrow = 0; r.amount++; this.changed.add(r); }
       } else if (r.kind === 'bush' && r.berries < r.max) {
         r.regrow += dt;
-        if (r.regrow > 75) { r.regrow = 0; r.berries++; this.changed.add(r); }
+        if (r.regrow > 90) { r.regrow = 0; r.berries++; this.changed.add(r); }
       } else if (r.kind === 'rye' && r.ears < r.max) {
         r.regrow += dt;
         if (r.regrow > 80) { r.regrow = 0; r.ears++; this.changed.add(r); }

@@ -79,7 +79,7 @@ Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie t
 - `reactLog` (ostatnie 14: ikona, co, co powiedział(a) albo `null` = przemilczał(a)) i `reactKinds` (do wiki).
 
 ## Priorytety: zdrowie, nastrój, eksperymenty (`decide.js`, `knowledge.js`)
-- Zdrowie < 60: „🩹 Odpocząć, żeby wydobrzeć” (0,25 + do 0,6); poniżej 50 ciężka praca −0,006 za punkt; < 30 ucieczka przed dzikiem mimo broni. Gojenie: 0,03/s, w spoczynku 0,12/s, we śnie 0,05 + dach (szałas 0,12, namiot 0,08) + łóżko 0,08. Skaleczenia w `practice('chop'|'mine')`.
+- Zdrowie < 60: „🩹 Odpocząć, żeby wydobrzeć” (0,25 + do 0,6); poniżej 50 ciężka praca −0,006 za punkt; < 30 ucieczka przed dzikiem mimo broni. Gojenie: 0,02/s, w spoczynku 0,1/s, we śnie 0,05 + dach (szałas 0,12, namiot 0,08) + łóżko 0,08. Skaleczenia w `practice('chop'|'mine')`.
 - Nastrój < 40: „Posiedzieć przy ognisku”, +0,15 do rozmowy; > 70: +0,05 do tworzenia (eksperymenty, budowa, rzemiosło, sadzenie), < 35: −0,06.
 - `nextExperiment`: najpierw podpatrzone receptury (`ideas`, z `noticeIdea`), potem kombinacje z materiałem zdobytym w ostatnich 150 s i, póki nie zna ognia, krzemień + drewno. `failStreak` obniża ocenę ślepych prób do −0,24.
 
