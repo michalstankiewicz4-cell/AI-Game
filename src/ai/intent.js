@@ -27,6 +27,7 @@ const KEYWORDS = [
   ['Odłożyć zapasy', ['odloz', 'zostaw', 'schowa', 'magazyn', 'skladzi', 'ciezk', 'za duzo']],
   ['Wziąć z zapasów', ['wziac', 'zabra', 'zapas', 'skladzi', 'magazyn']],
   ['Wziąć jedzenie ze skrzyni', ['skrzyn', 'kufer', 'zapas jedzen', 'wyjm']],
+  ['Budować z desek', ['desk', 'poloz', 'podlog', 'scian', 'dach', 'dom', 'buduj', 'skos', 'chat']],
   ['Zrobić skrzynię', ['skrzyn', 'kufer', 'zbij', 'pojemnik', 'schowek']],
   ['Zrobić łóżko', ['lozk', 'posla', 'legow', 'wyspac']],
   ['Eksperymentować przy stole', ['eksperym', 'sprob', 'polacz', 'stol', 'warsztat', 'kombin']],

@@ -190,3 +190,6 @@ h1 .ver { font-size: 14px; font-weight: 600; color: #8fd0f0; background: rgba(63
 @media (max-width: 520px) { #wikiList { grid-template-columns: 1fr; } }
 #wikiTabs button { padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: #eef3f8; font-size: 13px; }
 #wikiTabs button.on { background: #3fa7d6; border-color: #3fa7d6; }
+
+/* podpis deski pod kursorem */
+#pieceTip { position: fixed; z-index: 12; pointer-events: none; padding: 4px 8px; border-radius: 6px; background: rgba(12,22,40,.92); border: 1px solid rgba(255,255,255,.15); color: #eef3f8; font-size: 12px; white-space: nowrap; }

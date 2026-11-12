@@ -15,10 +15,11 @@ src/
   main.js             punkt wejścia: pętla klatek, spina grę, render i UI
   game.js             createGame(cfg), stepGame(game) – symulacja bez DOM
   core/rng.js         losowość z ziarnem (mulberry32), szum fbm
-  world/              świat (kafelki, generowanie, mosty, przyroda, dziki w boars.js)
+  world/              świat (kafelki, generowanie, mosty, przyroda, dziki w boars.js, deski z budowy w pieces.js)
   ai/                 postacie (stan, decyzje, zadania, percepcja, wiedza, rozmowy, komentarze)
     llm.js            modele językowe: WebLLM i Claude API, limity zapytań, licznik tokenów
     llmWorker.js      Web Worker z silnikiem WebLLM
+    building.js       budowanie z desek: polecenia modelu, majsterkowanie, opis budowy
     intent.js         pełna swoboda: opis zmysłów, mapIntent (zamiar → działanie)
   render/             Three.js: scena, modele low-poly, teren, mgła
     instances.js      Instancer: InstancedMesh dla zasobów

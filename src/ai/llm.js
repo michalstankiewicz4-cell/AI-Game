@@ -4,6 +4,7 @@
 import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES } from './data.js';
 import { FREE_SYSTEM, describeFree } from './intent.js';
 import { reportError } from '../ui/errors.js';
+import { parseBuildOps } from './building.js';
 
 export const MODELS = {
   'claude-opus-5-5': { name: 'Claude Opus 5.5', inp: 4, out: 20 },
@@ -176,9 +177,11 @@ class LLM {
       + (decide ? 'Format: {"wybor": <numer opcji>, "mysl": "<krótka wypowiedź>"}. ' : 'Format: {"mysl": "<krótka wypowiedź>"}. ')
       + 'Wypowiedź to jedno zdanie po polsku (do 14 słów), mówione na głos w pierwszej osobie, zgodnie z charakterem postaci, jak komentarz streamera. Wymyśl ją sam(a), za każdym razem inaczej. Bez cudzysłowów w środku.';
     const free = this.freedom;
-    const user = free ? describeFree(agent) : describe(agent, labels, decide);
+    // budowanie z desek: opis budowy i możliwość wydania poleceń (tylko gdy postać ma deski albo stoi przy budowie)
+    const bctx = agent.buildContext ? agent.buildContext() : null;
+    const user = (free ? describeFree(agent) : describe(agent, labels, decide)) + (bctx ? '\n' + bctx : '');
     const started = agent.world.time;
-    this.call(free ? FREE_SYSTEM : sys, user, 160)
+    this.call(free ? FREE_SYSTEM : sys, user, bctx ? 260 : 160, !!bctx)
       .then((txt) => {
         let j = parseJson(txt);
         // mały model czasem odpowie zwykłym tekstem albo innymi kluczami: bierzemy, co się da
@@ -191,24 +194,33 @@ class LLM {
         let label = null, intent = null;
         if (free) intent = typeof j.zamiar === 'string' ? j.zamiar.trim().slice(0, 80) : '';
         else if (decide) { const n = Math.round(+j.wybor); if (n >= 1 && n <= labels.length) label = labels[n - 1]; }
-        agent.onLLM({ label, thought, intent, at: started });
+        const build = bctx ? parseBuildOps(j.deska ?? j['deski'] ?? j.build) : null;
+        agent.onLLM({ label, thought, intent, at: started, build });
       })
       .catch((e) => { this.usage.errors++; this.lastError = String(e.message || e).slice(0, 160); reportError(this.provider === 'web' ? 'Model w przeglądarce' : 'Claude API', e.message || e); })
       .finally(() => { this.inflight--; agent.llmBusy = false; });
     return true;
   }
 
-  call(system, user, maxTokens) {
-    return this.provider === 'web' ? this.callWeb(system, user, maxTokens) : this.callClaude(system, user, maxTokens);
+  call(system, user, maxTokens, build) {
+    return this.provider === 'web' ? this.callWeb(system, user, maxTokens, build) : this.callClaude(system, user, maxTokens);
   }
 
-  async callWeb(system, user, maxTokens) {
+  async callWeb(system, user, maxTokens, build) {
     const engine = this.web.engine;
     if (!engine) throw new Error('Model nie jest załadowany');
     // WebLLM wymaga schematu jako tekstu; bez niego pada „grammar matcher … non-string to std::string”
-    const schema = JSON.stringify(system.includes('"zamiar"')
+    const base = system.includes('"zamiar"')
       ? { type: 'object', properties: { mysl: { type: 'string' }, zamiar: { type: 'string' } }, required: ['mysl', 'zamiar'] }
-      : { type: 'object', properties: { wybor: { type: 'integer' }, mysl: { type: 'string' } }, required: ['wybor', 'mysl'] });
+      : { type: 'object', properties: { wybor: { type: 'integer' }, mysl: { type: 'string' } }, required: ['wybor', 'mysl'] };
+    // opcjonalne polecenia dla desek
+    if (build) {
+      base.properties.deska = { type: 'array', items: { type: 'object', properties: {
+        akcja: { type: 'string' }, miejsce: { type: 'integer' }, id: { type: 'integer' }, typ: { type: 'string' },
+        x: { type: 'integer' }, y: { type: 'integer' }, poziom: { type: 'integer' }, strona: { type: 'string' }, nazwa: { type: 'string' },
+      } } };
+    }
+    const schema = JSON.stringify(base);
     const m = WEB_MODELS[this.web.id] || {};
     const thinking = !!(m.think && this.think);
     const req = (fmt) => engine.chat.completions.create({

@@ -129,7 +129,19 @@ export const tasksMethods = {
     const fi = this.nearestStructure(bfs, 'campfire');
     // łóżko: z ciekawości raz spróbuje, a potem wybiera je, bo wie, że lepiej się w nim śpi
     const bed = (this.known.has('bedRest') || !this.bedTried) && this.nearestStructure(bfs, 'bed');
+    // dom z desek: postać, która wie, że pod dachem cieplej, wybiera najlepiej osłonięte pole
+    let house = null;
+    if (this.known.has('warmRoof') && this.world.pieces.length) {
+      for (const p of this.world.pieces) {
+        if (p.type !== 'floor' || p.lvl !== 0) continue;
+        const d = bfs.dist[idx(p.i, p.j)];
+        if (d < 0 || d > 30) continue;
+        const s = this.world.shelterAt(p.i, p.j);
+        if (s && s.warm >= 5 && (!house || s.warm > house.warm)) house = { i: p.i, j: p.j, d, warm: s.warm };
+      }
+    }
     if (bed && bed.d < 30) { target = bed; this.bedTried = true; }
+    else if (house && (!sh || sh.d >= 30 || house.warm >= 6)) target = house;
     else if (sh && sh.d < 30) target = sh;
     else if (fi && fi.d < 30) target = this.freeTileNear(fi.i, fi.j, bfs) || fi;
     const path = target ? this.pathTo(target.i, target.j) : [];
@@ -524,6 +536,7 @@ export const tasksMethods = {
       const k = idx(i, j);
       if (w.type[k] !== T.GRASS && w.type[k] !== T.SAND) continue;
       if (w.res[k] || w.structures.some((s) => Math.abs(s.i - i) + Math.abs(s.j - j) < 2)) continue;
+      if (w.pieces.some((p) => p.type !== 'wall' && p.lvl === 0 && Math.abs(p.i - i) + Math.abs(p.j - j) < 2)) continue; // nie na podłodze z desek
       if (bfs.dist[k] < 0) continue;
       const stand = w.adjacentTo(i, j, (tt, ni, nj) => w.walkable(ni, nj) && bfs.dist[idx(ni, nj)] >= 0 && !w.res[idx(ni, nj)]);
       if (stand) { best = { i, j, stand }; break; }
