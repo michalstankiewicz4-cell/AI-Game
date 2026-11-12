@@ -33,7 +33,7 @@ Zasady:
    python3 tools/version.py check        # to samo sprawdza CI
    ```
 3. Workflow `.github/workflows/version-check.yml` sprawdza każdy PR. Wersja musi być spójna, `index.html` aktualny, a CHANGELOG musi mieć sekcję tej wersji.
-4. Po scaleniu commit na `main` dostaje tag `vX.Y.Z`.
+4. Po scaleniu workflow `.github/workflows/release.yml` sam tworzy tag `vX.Y.Z` i wydanie na GitHub z opisem z CHANGELOG.
 
 Dlaczego `?v=`: GitHub Pages pozwala przeglądarkom trzymać pliki w pamięci podręcznej przez 10 minut. Importmapa w `index.html` przekierowuje każdy moduł na adres z wersją, więc nowa wersja wczytuje świeże pliki od razu.
 
