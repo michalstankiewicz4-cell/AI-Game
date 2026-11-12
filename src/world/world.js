@@ -139,7 +139,8 @@ export class World {
   solid(k) {
     const r = this.res[k];
     if (r && (r.kind === 'rock' || r.kind === 'bush' || ((r.kind === 'tree' || r.kind === 'palm') && r.growth >= 0.5))) return true;
-    return !!(this.solidStruct && this.solidStruct[k]);
+    if (this.solidStruct && this.solidStruct[k]) return true;
+    return !!(this.pieces && this.pieces.length && this.pieceSolid(k));
   }
   // ściany z desek na parterze jako bity krawędzi pola: 1 = krawędź północna, 2 = zachodnia
   wallBits() {

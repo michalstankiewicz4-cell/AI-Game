@@ -1,2 +1,2 @@
 // Wersja gry (semver). Zmieniaj tylko przez: python3 tools/version.py bump X.Y.Z
-export const VERSION = '0.30.1';
+export const VERSION = '0.31.0';

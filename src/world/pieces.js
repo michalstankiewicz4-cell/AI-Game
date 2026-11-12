@@ -5,7 +5,12 @@ import { T, idx } from './world.js';
 
 export const PIECE_LH = 0.85;     // wysokość jednego poziomu (ściany)
 export const PIECE_MAX_LVL = 2;   // poziomy 0..2
-export const PIECE_TYPES = { floor: 'podłoga', wall: 'ściana', slope: 'skos' };
+export const PIECE_TYPES = { floor: 'podłoga', wall: 'ściana', slope: 'skos', stairs: 'schody', ladder: 'drabina' };
+// koszt elementu (rozbiórka oddaje to samo)
+export const PIECE_COST = { floor: { planks: 1 }, wall: { planks: 1 }, slope: { planks: 1 }, stairs: { planks: 2 }, ladder: { planks: 1, sticks: 2 } };
+// elementy, które stoją na polu i zajmują je (podłoga leży płasko, więc da się po niej chodzić)
+const TILE_KEY = { floor: 'f', slope: 's', stairs: 't', ladder: 'l' };
+const BULKY = new Set(['stairs', 'ladder']);
 export const SIDES = ['N', 'E', 'S', 'W'];
 export const SIDE_NAMES = { N: 'północna', E: 'wschodnia', S: 'południowa', W: 'zachodnia' };
 const DIR = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] };
@@ -18,7 +23,7 @@ export function canonEdge(i, j, side) {
 }
 export function slotKey(p) {
   if (p.type === 'wall') { const e = canonEdge(p.i, p.j, p.side); return `w:${e.i}:${e.j}:${p.lvl}:${e.side}`; }
-  return `${p.type[0]}:${p.i}:${p.j}:${p.lvl}`;
+  return `${TILE_KEY[p.type] || p.type[0]}:${p.i}:${p.j}:${p.lvl}`;
 }
 
 export const piecesMethods = {
@@ -26,7 +31,7 @@ export const piecesMethods = {
     this.pieces = [];
     this.pieceSlots = new Map(); // slotKey -> deska
     this.pieceNextId = 1;
-    this.pieceCount = { floor: 0, wall: 0, slope: 0 };
+    this.pieceCount = { floor: 0, wall: 0, slope: 0, stairs: 0, ladder: 0 };
     this.piecesChanged = true; this.pieceVer = (this.pieceVer || 0) + 1;
   },
 
@@ -42,12 +47,20 @@ export const piecesMethods = {
     if (!PIECE_TYPES[type]) return 'nieznany rodzaj';
     if (!(lvl >= 0 && lvl <= PIECE_MAX_LVL)) return 'za wysoko';
     if (!this.inBounds(i, j)) return 'poza mapą';
-    if (type !== 'floor' && type !== 'wall' && type !== 'slope') return 'nieznany rodzaj';
-    if ((type === 'wall' || type === 'slope') && !SIDES.includes(spec.side)) return 'brak strony';
+    if (type !== 'floor' && !SIDES.includes(spec.side)) return 'brak strony';
     const taken = this.pieceSlots.get(slotKey(spec));
     if (taken && taken !== ignore && taken !== spec) return 'tu już leży deska';
     const has = (t, a, b, l, s) => { const p = this.pieceAt(t, a, b, l, s); return p && p !== ignore; };
     const wallAround = (a, b, l) => SIDES.some((s) => has('wall', a, b, l, s));
+    // schody i drabina zajmują całe pole: nic innego na tym samym poziomie, a one same nie wejdą na zajęte pole
+    if (BULKY.has(type) && ['floor', 'slope', 'stairs', 'ladder'].some((t) => t !== type && has(t, i, j, lvl))) return 'pole jest zajęte';
+    if (!BULKY.has(type) && type !== 'wall' && (has('stairs', i, j, lvl) || has('ladder', i, j, lvl))) return 'stoją tu schody albo drabina';
+    if (type === 'ladder') {
+      // drabina musi się o coś oprzeć: ściana po tej stronie albo deska poziom wyżej tuż obok
+      const [di, dj] = DIR[spec.side];
+      const lean = has('wall', i, j, lvl, spec.side) || has('floor', i + di, j + dj, lvl + 1) || has('floor', i, j, lvl + 1) || has('slope', i + di, j + dj, lvl + 1);
+      if (!lean) return 'drabina nie ma się o co oprzeć (ściana albo podłoga piętro wyżej)';
+    }
     if (type === 'wall') {
       const [di, dj] = DIR[spec.side];
       if (!this.land(i, j) && !this.land(i + di, j + dj)) return 'nie ma na czym stanąć';
@@ -109,6 +122,17 @@ export const piecesMethods = {
     p.name = nm;
     this.piecesChanged = true; this.pieceVer = (this.pieceVer || 0) + 1;
     return true;
+  },
+
+  // pola, przez które nie da się przejść: drabina, schody i niski skos na ziemi (ściany zatrzymują na krawędziach osobno)
+  pieceSolid(k) {
+    if (this._pSolidVer !== this.pieceVer) {
+      const b = this._pSolid || (this._pSolid = new Uint8Array(this.type.length));
+      b.fill(0);
+      for (const p of this.pieces) if (p.lvl === 0 && (p.type === 'ladder' || p.type === 'stairs' || p.type === 'slope')) b[idx(p.i, p.j)] = 1;
+      this._pSolidVer = this.pieceVer;
+    }
+    return this._pSolid[k] === 1;
   },
 
   // przykrycie pola: 1 = deska nad głową, 0.5 = niski skos na ziemi (da się tylko skulić), 0 = nic
@@ -191,9 +215,14 @@ export const piecesMethods = {
           if (l < 0 || l > PIECE_MAX_LVL) continue;
           const a = i + di, b = j + dj;
           push({ type: 'floor', i: a, j: b, lvl: l });
-          for (const sd of SIDES) { push({ type: 'wall', i: a, j: b, lvl: l, side: sd }); push({ type: 'slope', i: a, j: b, lvl: l, side: sd }); }
+          for (const sd of SIDES) {
+            push({ type: 'wall', i: a, j: b, lvl: l, side: sd }); push({ type: 'slope', i: a, j: b, lvl: l, side: sd });
+            // schody i drabina mają sens dopiero, gdy jest jakieś piętro
+            if (upper) { push({ type: 'stairs', i: a, j: b, lvl: l, side: sd }); push({ type: 'ladder', i: a, j: b, lvl: l, side: sd }); }
+          }
         }
       };
+      const upper = near.some((p) => p.lvl >= 1 && (p.type === 'floor' || p.type === 'slope'));
       if (!near.length) around(ci, cj, [0]);
       for (const p of near) around(p.i, p.j, [p.lvl, p.lvl + 1]);
       this.slotCache = { key, all };
