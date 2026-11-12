@@ -54,7 +54,7 @@ function updateWebStatus() {
   else if (W.loading) txt = `${W.note ? W.note + ' ' : ''}📥 ${Math.round(W.progress * 100)}% · ${W.text}`;
   else if (llm.webReady) txt = `✅ ${WEB_MODELS[llm.webModel].name} gotowy.`;
   else if (W.note) txt = W.note;
-  else txt = 'Model pobierze się po kliknięciu 📥 albo przy starcie gry. Do czasu załadowania postacie działają odruchowo i milczą, bo mówi tylko model.';
+  else txt = 'Model pobierze się po kliknięciu 📥 albo przy starcie gry. Do czasu załadowania za postacie mówi skrypt (📜).';
   if ($('webModel').value !== llm.webModel) $('webModel').value = llm.webModel;
   st.textContent = txt; st.classList.toggle('err', err);
   pr.classList.toggle('hidden', !W.loading && !llm.webReady);

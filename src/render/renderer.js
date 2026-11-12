@@ -246,8 +246,10 @@ export class Renderer {
       if (visible) {
         el.style.transform = `translate(-50%, -100%) translate(${(v.x * 0.5 + 0.5) * wpx}px, ${(-v.y * 0.5 + 0.5) * hpx}px)`;
         const bubble = el.firstChild;
-        const text = !a.alive ? '💀' : a.asleep ? 'Zzz...' : a.bubble ? a.bubble.text : '';
+        // dymek: wypowiedź, a gdy model właśnie myśli nad odpowiedzią – „💭”
+        const text = !a.alive ? '💀' : a.asleep ? 'Zzz...' : a.bubble ? a.bubble.text : a.llmBusy ? '💭 …' : '';
         if (bubble.textContent !== text) bubble.textContent = text;
+        bubble.classList.toggle('script', !!(a.bubble && a.bubble.script));
         bubble.style.display = text && opts.bubbles ? '' : 'none';
         el.classList.toggle('dead', !a.alive);
         el.classList.toggle('sel', a === selected);

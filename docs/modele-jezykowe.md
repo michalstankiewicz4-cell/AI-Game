@@ -16,7 +16,11 @@ Model odpowiada obiektem JSON:
 {"wybor": 2, "mysl": "Nazbieram jagód, zanim zrobi się ciemno."}
 ```
 
-Mówi tylko model. Teksty z szablonów (myśli, reakcje na zdarzenia, rozmowy) nie trafiają do dymków. Postać zbiera je jako notatki, które model dostaje w następnym zapytaniu i opisuje własnymi słowami. Ważne zdarzenie przyspiesza zapytanie, a rozmowy z szablonów widać w dzienniku.
+Gdy model działa, mówi tylko on. Teksty z szablonów (myśli, reakcje na zdarzenia, rozmowy) nie trafiają wtedy do dymków. Postać zbiera je jako notatki, które model dostaje w następnym zapytaniu i opisuje własnymi słowami. Ważne zdarzenie przyspiesza zapytanie, a rozmowy z szablonów widać w dzienniku.
+
+Gdy model się ładuje, ma błąd albo brakuje klucza, za postacie mówi skrypt: dymki są wtedy kursywą, a w czacie mają znak 📜. Kiedy model liczy odpowiedź, nad postacią widać „💭 …”.
+
+Odpowiedź modelu jest czytana łagodnie: inne nazwy kluczy (`thought`, `intent`) albo zwykły tekst zamiast JSON-a też zostaną użyte.
 
 Wtedy:
 - `mysl` trafia do dymka i do czatu z oznaczeniem 🤖,

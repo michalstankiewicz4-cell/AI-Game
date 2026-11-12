@@ -81,7 +81,7 @@ export class Agent {
   // zostają jako notatki, które model dostaje w następnym zapytaniu i opisuje własnymi słowami.
   speak(text, force = false) {
     if (!text || !this.alive) return;
-    if (!this.llmSaid) {
+    if (!this.llmSaid && llm.active) {
       this.notes = (this.notes || []).concat(text).slice(-5);
       if (force) {
         this.world.log(`<span style="opacity:.7">${this.name}: ${text}</span>`, 'talk');
@@ -90,10 +90,12 @@ export class Agent {
       return;
     }
     if (!force && this.speakCd > 0) return;
-    this.lastSaid = text;
-    this.bubble = { text, t: 5.5 };
+    // gdy model nie działa (ładuje się, błąd, brak klucza), mówi skrypt, oznaczony 📜
+    const script = !this.llmSaid;
+    if (!script) this.lastSaid = text;
+    this.bubble = { text, t: 5.5, script };
     this.speakCd = 6 + Math.random() * 6;
-    if (this.world.onChat) this.world.onChat(this, text, this.llmSaid);
+    if (this.world.onChat) this.world.onChat(this, text, !script);
   }
   event(key, ctx) { this.speak(eventLine(key, ctx), true); }
   // odpowiedź modelu językowego
