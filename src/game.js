@@ -31,6 +31,8 @@ export function createGame(cfg) {
 // jeden krok symulacji; narrate(text) dostaje komentarze narratora
 export function stepGame(game, narrate) {
   const w = game.world;
+  // poprzednie pozycje: render płynnie przesuwa postacie i zwierzęta między krokami symulacji
+  for (const list of [game.agents, w.boars || [], w.birds, w.fish]) for (const o of list) { o._px = o.x; o._py = o.y; o._pz = o.z; o._pf = o.facing ?? o.dir; }
   timed('world', () => w.update(STEP));
   timed('agents', () => { for (const a of game.agents) { const wasAlive = a.alive; a.update(STEP); if (wasAlive && !a.alive) a.diedAt = w.time; } });
   timed('social', () => {

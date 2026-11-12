@@ -3,6 +3,10 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.22.2] - 2026-11-12
+### Poprawione
+- Płynny ruch: symulacja liczy pozycje 10 razy na sekundę, a ekran rysuje nawet ponad 100 klatek, więc postacie poruszały się skokami. Teraz render przesuwa postacie, dziki, ptaki i ryby płynnie między krokami symulacji (także obrót i kamerę śledzącą postać).
+
 ## [0.22.1] - 2026-11-12
 ### Zmienione
 - Pomiar wydajności sprawdza, czy model w przeglądarce liczył w danej klatce. Czas i przycięcia z tych chwil trafiają do osobnej pozycji „🤖 Model w przeglądarce”, a podsumowanie i raport podają, w ilu procentach klatek model liczył i ile przycięć wtedy wypadło. Gdy to model przycina grę, okienko podpowiada, co pomaga.
@@ -192,6 +196,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.22.2]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.2
 [0.22.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.1
 [0.22.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.0
 [0.21.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.21.0
