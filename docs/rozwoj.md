@@ -10,7 +10,7 @@ Moduły ES nie działają z `file://`, więc potrzebny jest dowolny serwer HTTP.
 ## Testy
 Gra nie ma frameworka testowego. Sprawdza się ją w przeglądarce bez okna (Playwright + Chromium):
 - **Chromium:** uruchom z flagami `--use-gl=swiftshader --enable-unsafe-swiftshader`, żeby WebGL działał bez karty graficznej.
-- **Start gry:** kliknij `#optIslands button[data-v=N]`, `#optAgents button[data-v=N]`, a potem `#startBtn`.
+- **Start gry:** kliknij `#optIslands button[data-v=N]`, `#optAgents button[data-v=N]`, a potem `#startBtn`. Świat buduje się dwie klatki po kliknięciu (najpierw rysuje się loader `#loading`), więc przed użyciem `window.__game.world` odczekaj chwilę.
 - **Przewijanie symulacji:** postaw `window.__game.paused = true` i w pętli wywołuj `world.update(0.1)`, `agent.update(0.1)` oraz `social.update(0.1)`. Gdy `world.shoresDirty` jest ustawione, wywołaj `computeShores(world)` z `./src/ai/agent.js`.
 - **Co sprawdzać:** czy postacie przeżywają kilka dni w różnych konfiguracjach, czy w konsoli nie ma błędów i jak wyglądają zrzuty ekranu.
 - **Modele językowe:** podstaw odpowiedzi przez `page.route`:

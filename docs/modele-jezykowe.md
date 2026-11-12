@@ -59,6 +59,7 @@ VRAM to wartości z WebLLM dla okna 4096 tokenów, a gra używa mniejszego (1536
 
 - **Laptop z dwiema kartami:** Chrome bywa przypięty do słabszej karty zintegrowanej, a WebLLM nie może tego zmienić na Windows. Wejdź w Ustawienia › System › Ekran › Grafika i ustaw Chrome na „Wysoka wydajność” (np. NVIDIA RTX).
 - **Wymagania:** Chrome lub Edge na komputerze z WebGPU. Bez WebGPU gra pokazuje komunikat, a postacie działają na samym kodzie gry i mówi za nie skrypt (📜).
+- **Ładowanie:** w menu jest pasek postępu, a w grze, na dole ekranu, karta „Ładowanie modelu … %” z nazwą pobieranego pliku. Znika, gdy model jest gotowy.
 - **Osobny wątek:** model działa w Web Workerze (`src/ai/llmWorker.js`), więc obsługa modelu nie blokuje głównej pętli gry i nie powoduje przycięć. Karta graficzna jest nadal ta sama co dla grafiki. Gdy wątek się nie uruchomi, model startuje w głównym wątku, a powód trafia do zakładki „⚠️ Błędy”. W menu przy gotowym modelu widać „(osobny wątek)”.
 - **Dwie karty graficzne:** Chrome na Windows używa jednej karty dla całej strony (grafika i model) i ignoruje `powerPreference`, więc gra nie podzieli pracy między kartę zintegrowaną a mocniejszą.
 - **Odpowiedź:** wymuszony JSON (`response_format: json_object` ze schematem przekazanym jako tekst), okno kontekstu 1536 tokenów. Jeśli wymuszony JSON nie działa, gra przechodzi na zwykły tekst.

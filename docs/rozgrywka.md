@@ -3,6 +3,8 @@
 Wyspy AI to symulacja: gracz nie steruje postaciami, tylko patrzy, jak rozbitkowie próbują przeżyć. Może przy tym obracać kamerę, śledzić wybraną postać i podglądać jej myśli.
 
 ## Tryby
+Przycisk Start działa, gdy gra się wczyta (do tego czasu pokazuje „Ładowanie gry…”). Po kliknięciu widać „Budowanie świata…”, dopóki scena się nie zbuduje.
+
 W menu wybierasz:
 - **Liczbę AI:** od 1 do 4.
 - **Liczbę wysp:** od 1 do 4, w dowolnej kombinacji z liczbą AI.

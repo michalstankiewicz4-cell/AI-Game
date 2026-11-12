@@ -78,6 +78,14 @@ export function updateTokens() {
   const bad = web ? (!hasWebGPU() || !!W.error) : (!llm.key || llm.paused);
   b.classList.toggle('err', bad);
   b.classList.toggle('warn', !bad && (web ? W.loading : u.cost > llm.budget * 0.8));
+  // loader w grze: widoczny tylko, gdy model się pobiera lub uruchamia
+  const ml = $('modelLoad');
+  const showLoad = web && W.loading;
+  ml.classList.toggle('hidden', !showLoad);
+  if (showLoad) {
+    $('modelLoadText').textContent = `Ładowanie modelu ${WEB_MODELS[llm.webModel].name}: ${Math.round(W.progress * 100)}%${W.text ? ' · ' + W.text : ''}. Do tego czasu mówi skrypt (📜).`;
+    ml.querySelector('.progress i').style.width = W.progress * 100 + '%';
+  }
   const who = web ? `${WEB_MODELS[llm.webModel].name} w przeglądarce${W.inWorker ? ', w osobnym wątku' : ''}` : `Claude API (${MODELS[llm.model].name})`;
   b.title = `${who} · zapytań: ${u.calls}, błędów: ${u.errors}\n`
     + `Tokeny wejściowe: ${u.input}, wyjściowe: ${u.output}${web ? '' : ' (z myśleniem modelu)'}\n`

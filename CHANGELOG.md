@@ -3,6 +3,12 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.11.0] - 2026-11-12
+### Dodane
+- Loadery: przycisk Start pokazuje „Ładowanie gry…”, dopóki moduły się nie wczytają; po kliknięciu Start widać „Budowanie świata…” do pierwszej narysowanej klatki; w grze, na dole ekranu, pasek ładowania modelu w przeglądarce z procentem i nazwą pliku.
+### Naprawione
+- Pasek postępu pobierania modelu w menu nie miał stylu i był niewidoczny.
+
 ## [0.10.0] - 2026-11-12
 ### Dodane
 - Większe modele w przeglądarce na mocniejszą kartę: Qwen3.5 2B, Llama 3.2 3B, Gemma 4 E2B i Qwen3.5 4B.
@@ -90,6 +96,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.11.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.11.0
 [0.10.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.10.0
 [0.9.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.9.0
 [0.8.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.8.1
