@@ -15,6 +15,15 @@ const state = {
   opts: { labels: true, bubbles: true, follow: false, aiView: false }, cfg: { agents: 3, islands: 2, seed: 0 }, acc: 0, over: false,
 };
 const renderer = new Renderer($('app'));
+let quality = 'high';
+try { quality = localStorage.getItem('wyspyai.quality') === 'low' ? 'low' : 'high'; } catch { /* brak dostępu */ }
+function applyQuality() { renderer.setQuality(quality); $('qualityBtn').textContent = quality === 'low' ? '🎨 Niska' : '🎨 Wysoka'; }
+applyQuality();
+$('qualityBtn').onclick = () => {
+  quality = quality === 'low' ? 'high' : 'low';
+  try { localStorage.setItem('wyspyai.quality', quality); } catch { /* brak dostępu */ }
+  applyQuality();
+};
 renderer.onPick = (a) => select(a);
 const feed = (target, html, cls) => addFeed(state.world, target, html, cls);
 
@@ -79,9 +88,10 @@ function startGame() {
 }
 
 // ---------- pętla ----------
-let last = performance.now(), hudT = 0;
+let last = performance.now(), hudT = 0, fps = 60;
 function loop(now) {
   const rdt = Math.min(0.1, (now - last) / 1000);
+  if (now > last) fps = fps * 0.95 + (1000 / (now - last)) * 0.05;
   last = now;
   const w = state.world;
   if (w) {
@@ -101,7 +111,7 @@ function loop(now) {
     panCamera(rdt);
     renderer.frame(w, state.agents, state.selected, now / 1000, state.opts);
     hudT -= rdt;
-    if (hudT <= 0) { hudT = 0.25; updateHud(state); updateTokens(); }
+    if (hudT <= 0) { hudT = 0.25; updateHud(state); updateTokens(); $('fpsLbl').textContent = Math.round(fps) + ' FPS'; }
   }
   requestAnimationFrame(loop);
 }
@@ -117,3 +127,4 @@ function gameOver() {
 
 // podgląd dla testów
 window.__game = state;
+window.__renderer = renderer;

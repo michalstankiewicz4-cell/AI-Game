@@ -88,15 +88,16 @@ export const modelsMethods = {
     g.position.set(r.x, y, r.z);
     g.rotation.y = r.kind === 'mine' ? (r.rot || 0) : r.rot;
     if (r.kind !== 'mine') g.scale.setScalar(r.scale);
-    this.scene.add(g);
+    // grupa nie trafia do sceny: jej siatki rysuje Instancer (kilkadziesiąt wywołań zamiast tysięcy)
     this.resMeshes.set(r, g);
+    this.instancer.attach(g);
     this.updateResMesh(r);
   },
 
   updateResMesh(r) {
     const g = this.resMeshes.get(r);
     if (!g) return;
-    if (r.removed) { this.scene.remove(g); this.resMeshes.delete(r); return; }
+    if (r.removed) { this.instancer.detach(g); this.resMeshes.delete(r); return; }
     if (r.kind === 'tree' || r.kind === 'palm') {
       const full = g.getObjectByName('full');
       const grown = r.growth >= 1;
@@ -111,6 +112,7 @@ export const modelsMethods = {
       const s = 0.55 + Math.min(r.stone, 6) * 0.1;
       g.getObjectByName('main').scale.set(1.2 * s, 0.8 * s, s);
     }
+    this.instancer.sync(g);
   },
 
   addStructure(s) {
@@ -128,7 +130,6 @@ export const modelsMethods = {
       }
       const f = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 6), m.flame); f.position.y = 0.3; f.name = 'flame'; g.add(f);
       const f2 = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.35, 5), new THREE.MeshBasicMaterial({ color: 0xffe070 })); f2.position.y = 0.25; f2.name = 'flame2'; g.add(f2);
-      const light = new THREE.PointLight(0xff9a40, 0, 9, 1.6); light.position.y = 0.7; light.name = 'light'; g.add(light);
     } else if (s.kind === 'shelter') {
       const roof = new THREE.Mesh(new THREE.ConeGeometry(0.95, 1.3, 4, 1, true), m.thatch);
       roof.position.y = 0.65; roof.rotation.y = Math.PI / 4; roof.castShadow = true; roof.receiveShadow = true;

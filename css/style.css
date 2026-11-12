@@ -137,3 +137,4 @@ h1 .ver { font-size: 14px; font-weight: 600; color: #8fd0f0; background: rgba(63
 .llm-box .free input { vertical-align: -2px; margin: 0 4px 0 0; }
 #detail .intent { margin-top: 4px; color: #cfe3f2; }
 #detail .intent .no { color: #f0b05a; }
+#topbar button { white-space: nowrap; }

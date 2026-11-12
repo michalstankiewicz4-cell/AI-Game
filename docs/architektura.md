@@ -40,7 +40,10 @@ src/
 ## Render
 - **Teren:** jedna siatka z kolorami w wierzchołkach.
 - **Morze:** animowane fale.
-- **Obiekty:** modele low-poly z `models.js`.
+- **Obiekty:** modele low-poly z `models.js`. Zasoby (drzewa, palmy, skały, krzaki, wodorosty) nie trafiają do sceny jako osobne siatki. `instances.js` zbiera ich części w `InstancedMesh` pogrupowane po geometrii i materiale, co daje ok. 110 wywołań rysowania zamiast ok. 1500. Ukrycie części albo całego zasobu zeruje jego macierz.
+- **Ogniska:** świecą trzema stałymi `PointLight`, przypisanymi do ognisk najbliżej kamery. Nowe ognisko nie wymusza więc przekompilowania materiałów.
+- **Morze:** fale liczone są co drugą klatkę.
+- **Jakość grafiki** (przycisk 🎨 w górnym pasku): wysoka ma cienie i rozdzielczość do 1,5×, niska wyłącza cienie i zmniejsza rozdzielczość. Licznik FPS stoi obok.
 - **Mgła niewiedzy:** płaszczyzna z `DataTexture`, aktualizowana w trybie „Oczami AI”.
 - **Etykiety i dymki:** elementy DOM nakładane na obraz.
 

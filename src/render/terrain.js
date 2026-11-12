@@ -100,7 +100,7 @@ export const terrainMethods = {
 
   buildSea() {
     const size = Math.max(W, H) * 3;
-    const geo = new THREE.PlaneGeometry(size, size, 90, 90);
+    const geo = new THREE.PlaneGeometry(size, size, 64, 64);
     geo.rotateX(-Math.PI / 2);
     this.seaBase = Float32Array.from(geo.attributes.position.array);
     const mat = new THREE.MeshStandardMaterial({ color: 0x2b8fc9, transparent: true, opacity: 0.78, roughness: 0.25, metalness: 0.05, flatShading: true });

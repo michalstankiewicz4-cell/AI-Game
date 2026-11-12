@@ -18,8 +18,8 @@ export const WEB_MODELS = {
 const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.86/+esm';
 const LS = 'wyspyai.llm';
 const LS_KEY = 'wyspyai.apiKey';
-const AGENT_CD = { claude: 25, web: 12 }; // s czasu gry między zapytaniami jednej postaci
-const GLOBAL_GAP = { claude: 2500, web: 400 }; // ms czasu rzeczywistego między dowolnymi zapytaniami
+const AGENT_CD = { claude: 25, web: 20 }; // s czasu gry między zapytaniami jednej postaci
+const GLOBAL_GAP = { claude: 2500, web: 4000 }; // model w przeglądarce dzieli kartę z grafiką, więc daje jej oddech // ms czasu rzeczywistego między dowolnymi zapytaniami
 const MAX_INFLIGHT = { claude: 2, web: 1 };    // model w przeglądarce liczy jedno zapytanie naraz
 
 function load(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : v; } catch { return def; } }
