@@ -31,7 +31,7 @@ export class Agent {
     this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
     this.mood = 60; this.joy = 0; this.lastTalk = -999; // samopoczucie 0-100, chwilowa radość, ostatnia rozmowa
     this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0 };
-    this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false };
+    this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false };
     this.task = null;
     this.alive = true;
     this.asleep = false;
@@ -59,6 +59,7 @@ export class Agent {
     this.tried = new Set();      // wypróbowane kombinacje materiałów
     this.triedKinds = new Set(); // rodzaje zasobów, które już badał
     this.saltKnown = false;      // wie, że morska woda nie gasi pragnienia
+    this.memBoars = new Map(); // id -> { b, i, j, t } gdzie widział dziki
     this.memAgents = new Map(); // id -> { a, i, j, t } gdzie ostatnio widział innych          // łowiska, gdzie nic nie brało
     this.visionT = 0;
     this.lastLook = -999;
@@ -89,6 +90,28 @@ export class Agent {
     const s = w.addStructure('stash', spot.i, spot.j, this.id);
     s.items = {};
     return s;
+  }
+
+  // dzik zaatakował: rana (tarcza osłabia cios), lekcja na przyszłość i walka albo ucieczka
+  hitByBoar(b, dmg) {
+    if (!this.alive) return;
+    this.health = clamp(this.health - dmg * (this.tools.shield ? 0.4 : 1), 0, 100);
+    this.lastHit = { by: 'boar', t: this.world.time };
+    this.joy = 0; this.mood = Math.max(0, this.mood - 4);
+    this.asleep = false;
+    this.fightBoar = b;
+    if (!this.known.has('boarDanger')) {
+      this.known.add('boarDanger');
+      this.say('przekonuje się na własnej skórze, że dziki są groźne 🐗🧠', 'learn');
+      this.speak('Au! Ten dzik mnie zaatakował!', true);
+    }
+    if (!this.tools.sword && !this.tools.spear && !(this.task && this.task.flee)) { this.task = this.taskFlee(b); this.speak('Uciekam!', true); }
+  }
+
+  boarKilled() {
+    this.inv.rawMeat += 3; this.stats.boars = (this.stats.boars || 0) + 1; this.practice('hunt');
+    this.joy = Math.min(30, this.joy + 15); this.fightBoar = null;
+    this.speak('Mam go! Będzie pieczeń.', true);
   }
 
   rememberStruct(s) { this.knownStructs.add(s.id); }
@@ -219,7 +242,7 @@ export class Agent {
     else if (this.hunger > 40 && this.thirst > 40 && this.energy > 25 && this.bodyT > 35.5) this.health = clamp(this.health + 0.15 * dt, 0, 100);
     if (this.health <= 0) {
       this.health = 0; this.alive = false; this.task = null; this.asleep = false;
-      const cause = this.thirst <= 0 ? 'z pragnienia' : this.hunger <= 0 ? 'z głodu' : this.bodyT < 35 ? 'z wychłodzenia' : this.bodyT > 39 ? 'z przegrzania' : 'z wycieńczenia';
+      const cause = this.lastHit && w.time - this.lastHit.t < 5 ? 'od ran zadanych przez dzika' : this.thirst <= 0 ? 'z pragnienia' : this.hunger <= 0 ? 'z głodu' : this.bodyT < 35 ? 'z wychłodzenia' : this.bodyT > 39 ? 'z przegrzania' : 'z wycieńczenia';
       this.say(`💀 umiera ${cause} (dzień ${w.day()})`, 'death');
       this.bubble = { text: '...', t: 3 };
       const other = w.agents.find((a) => a.alive);
@@ -227,6 +250,22 @@ export class Agent {
       return;
     }
 
+    // walka z dzikiem: uzbrojona postać stoi i zadaje ciosy, zamiast robić cokolwiek innego
+    const fb = this.fightBoar;
+    if (fb && (fb.dead || Math.hypot(fb.x - this.x, fb.z - this.z) > 2.2 || (fb.target !== this && fb.state !== 'roam'))) this.fightBoar = null;
+    else if (fb && (this.tools.sword || this.tools.spear)) {
+      this.facing = Math.atan2(fb.x - this.x, fb.z - this.z);
+      this.working = true;
+      this.strikeT = (this.strikeT || 0) - dt;
+      if (this.strikeT <= 0) {
+        this.strikeT = 1;
+        const dmg = (this.tools.sword ? 14 : 9) + this.skill.hunt * 4;
+        if (w.hurtBoar(fb, dmg, this)) this.boarKilled();
+      }
+      if (this.task && !this.task.urgent) this.task = null;
+      this.visionT -= dt; if (this.visionT <= 0) { this.visionT = 0.3; this.see(false); }
+      return;
+    }
     // przerwanie zadania gdy pojawi się pilna potrzeba
     this.recheck -= dt;
     if (this.task && this.recheck <= 0) {

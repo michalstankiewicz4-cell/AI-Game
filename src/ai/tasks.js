@@ -220,6 +220,50 @@ export const tasksMethods = {
     };
   },
 
+  // ucieczka przed dzikiem: kilka kafelków dalej, w przeciwną stronę
+  taskFlee(b) {
+    const w = this.world;
+    const ang = Math.atan2(this.z - b.z, this.x - b.x);
+    let target = null;
+    for (let r = 8; r >= 3 && !target; r--) for (const da of [0, 0.5, -0.5, 1, -1]) {
+      const t = toTile(this.x + Math.cos(ang + da) * r, this.z + Math.sin(ang + da) * r);
+      if (w.walkable(t.i, t.j)) { const p = this.pathTo(t.i, t.j); if (p && p.length) { target = p; break; } }
+    }
+    return { urgent: true, flee: true, path: target || [], label: '🏃 Ucieka przed dzikiem', act: () => 'done' };
+  },
+
+  // polowanie na dzika: podejść i zaatakować (dalej walka toczy się odruchowo)
+  taskHuntBoar(m) {
+    const b = m.b;
+    return {
+      targetId: b.id, path: this.pathTo(m.i, m.j) || [], face: b, label: '🐗 Poluje na dzika',
+      act: (dt, t) => {
+        if (b.dead) return 'fail';
+        if (Math.hypot(b.x - this.x, b.z - this.z) > 2.2) { if (t.elapsed > 6) return 'fail'; const p = this.pathTo(b.i, b.j); if (p && p.length) t.path = p; return null; }
+        this.fightBoar = b;
+        if (this.world.hurtBoar(b, (this.tools.sword ? 14 : 9) + this.skill.hunt * 4, this)) this.boarKilled();
+        return 'done';
+      },
+    };
+  },
+
+  // wykuwanie miecza przy ogniu
+  taskForgeSword(fire, cost) {
+    const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
+    return {
+      path: this.pathTo(spot.i, spot.j), face: fire.s, label: '⚒️ Kuje miecz',
+      act: (dt, t) => {
+        if (t.elapsed < 7) return null;
+        for (const k in cost) if (this.inv[k] < cost[k]) return 'fail';
+        for (const k in cost) this.inv[k] -= cost[k];
+        this.tools.sword = true;
+        this.say('wykuwa żelazny miecz 🗡️', 'big');
+        this.joy = Math.min(30, this.joy + 10);
+        return 'done';
+      },
+    };
+  },
+
   taskWarm(fire) {
     const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
     return {
@@ -247,7 +291,7 @@ export const tasksMethods = {
   },
 
   taskCraft(tool, cost, msg, announce, produce) {
-    const names = { rod: 'wędka', spear: 'włócznia', clothes: 'ubranie' };
+    const names = { rod: 'wędka', spear: 'włócznia', clothes: 'ubranie', shield: 'tarcza' };
     return {
       path: [], label: tool === 'clothes' ? '👕 Szyje ubranie' : tool ? '🔨 Majsterkuje' : produce.planks ? '🪚 Ciosa deski' : '🪢 Skręca linę',
       act: (dt, t) => {

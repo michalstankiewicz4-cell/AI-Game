@@ -31,15 +31,17 @@ export const RECIPES = {
   grill: { sticks: 3, stone: 2 },             // ruszt (zakłada się na palące się ognisko)
   bed: { planks: 3, sticks: 2, leaves: 4 },   // łóżko (tylko przy stole rzemieślniczym)
   clothes: { leaves: 6, rope: 2 },            // ubranie z liści (tylko przy stole)
+  sword: { iron: 2, planks: 1 },              // żelazny miecz (wykuwany przy ogniu)
+  shield: { planks: 3, rope: 1 },             // drewniana tarcza (tylko przy stole)
 };
 // receptury, które da się odkryć i zrobić tylko w określonym miejscu
-export const FIRE_RECIPES = new Set(['ironTool', 'grill']);
-export const BENCH_RECIPES = new Set(['bed', 'clothes']);
+export const FIRE_RECIPES = new Set(['ironTool', 'grill', 'sword']);
+export const BENCH_RECIPES = new Set(['bed', 'clothes', 'shield']);
 export const FIRE_FUEL = { max: 150, start: 100, burn: 0.5, logs: 60, sticks: 25, leaves: 8 }; // paliwo ogniska (s palenia)
 
 export const RECIPE_NAMES = {
   planks: 'deski', rope: 'lina', rod: 'wędka', spear: 'włócznia', campfire: 'ognisko', shelter: 'szałas', ironTool: 'żelazne narzędzia',
-  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko', clothes: 'ubranie z liści',
+  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko', clothes: 'ubranie z liści', sword: 'miecz', shield: 'tarcza',
 };
 export const MATS = ['logs', 'sticks', 'leaves', 'planks', 'seaweed', 'rope', 'stone', 'iron'];
 export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', leaves: 'liście', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda' };
@@ -53,7 +55,7 @@ export const ITEM_LABELS = {
   berries: '🫐 Jagody', rawFish: '🐟 Ryba', cookedFish: '🍣 Piecz. ryba', rawMeat: '🍗 Mięso', cookedMeat: '🍖 Piecz. mięso',
 };
 export const TOOL_LABELS = {
-  axe: '🪓 Siekiera', pickaxe: '⛏️ Kilof', rod: '🎣 Wędka', spear: '🔱 Włócznia', ironAxe: '🪓 Żel. siekiera', ironPick: '⛏️ Żel. kilof', clothes: '👕 Ubranie z liści',
+  axe: '🪓 Siekiera', pickaxe: '⛏️ Kilof', rod: '🎣 Wędka', spear: '🔱 Włócznia', ironAxe: '🪓 Żel. siekiera', ironPick: '⛏️ Żel. kilof', clothes: '👕 Ubranie z liści', sword: '🗡️ Miecz', shield: '🛡️ Tarcza',
 };
 
 export const SPEED = 2.6; // kafelki / s

@@ -271,7 +271,8 @@ function describe(a, labels, decide) {
     + `Temperatura powietrza ok. ${Math.round(w.airTemp(a.i, a.j))}°C (${w.weatherWord(w.airTemp(a.i, a.j))}), twoje ciało ${a.bodyT.toFixed(1)}°C${a.bodyT < 36.1 ? ' (marzniesz)' : a.bodyT > 37.5 ? ' (jest ci gorąco)' : ''}.\n`
     + `Samopoczucie ${Math.round(a.mood)}/100. Plecak: ${a.invTotal()} rzeczy, ${a.invWeight().toFixed(1)} z 25 kg.\n`
     + `Ekwipunek: ${inv}. Narzędzia: ${tools}. Znane receptury: ${recipes}. Jadalne: ${edible}.\n`
-    + `Pozostali: ${others}.\n`;
+    + `Pozostali: ${others}.\n`
+    + ([...a.memBoars.values()].some((m) => !m.b.dead && w.time - m.t < 30 && Math.hypot(m.i - a.i, m.j - a.j) < 12) ? `W pobliżu kręci się dzik${a.known.has('boarDanger') ? ' (wiesz, że atakuje)' : ''}.\n` : '');
   if (a.notes && a.notes.length) s += `Co się ostatnio działo w twojej głowie i wokół (opisz to własnymi słowami, nie cytuj): ${a.notes.join(' | ')}\n`;
   if (a.lastSaid) s += `Twoja poprzednia wypowiedź (nie powtarzaj jej): ${a.lastSaid}\n`;
   if (decide) s += `Możliwe działania (lokalna ocena od najlepszego):\n${labels.map((l, n) => `${n + 1}. ${l}`).join('\n')}\nWybierz jedno działanie, dbając o przeżycie, i powiedz, co myślisz.`;

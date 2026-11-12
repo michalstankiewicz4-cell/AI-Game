@@ -20,6 +20,9 @@ const KEYWORDS = [
   ['Zrobić ruszt', ['ruszt', 'grill', 'smaz', 'ruszcie']],
   ['Rozbić namiot', ['namiot', 'rozbi', 'schron']],
   ['Zrobić stół rzemieślniczy', ['stol', 'warsztat', 'blat', 'zbij']],
+  ['Polować na dzika', ['dzik', 'walcz', 'zabi', 'pokona', 'odyn']],
+  ['Wykuć miecz', ['miecz', 'wyku', 'bron', 'ostrz']],
+  ['Zrobić tarczę', ['tarcz', 'oslon', 'obron']],
   ['Uszyć ubranie', ['ubra', 'ubior', 'szyc', 'uszy', 'odziez', 'ciuch', 'okryc']],
   ['Odłożyć zapasy', ['odloz', 'zostaw', 'schowa', 'magazyn', 'skladzi', 'ciezk', 'za duzo']],
   ['Wziąć z zapasów', ['wziac', 'zabra', 'zapas', 'skladzi', 'magazyn']],
@@ -110,6 +113,14 @@ export function describeFree(a) {
     if (d > 16) continue;
     const ang = Math.atan2(s.i - a.i, -(s.j - a.j)) * 180 / Math.PI;
     sees.unshift(`${SNAME[s.kind](s)} ${d < 3 ? 'tuż obok' : DIR[Math.round(((ang + 360) % 360) / 45) % 8]}`);
+  }
+  for (const m of a.memBoars.values()) {
+    if (m.b.dead || w.time - m.t > 30) continue;
+    const d = Math.hypot(m.i - a.i, m.j - a.j);
+    if (d > 14) continue;
+    const ang = Math.atan2(m.i - a.i, -(m.j - a.j)) * 180 / Math.PI;
+    sees.unshift(`dzik${a.known.has('boarDanger') ? ' (wiesz, że potrafi zaatakować)' : ''} ${d < 3 ? 'tuż obok' : DIR[Math.round(((ang + 360) % 360) / 45) % 8]}`);
+    break;
   }
   lines.push('Widzisz i pamiętasz w pobliżu: ' + sees.join(', ') + '.');
   const people = w.agents.filter((o) => o !== a && o.alive && Math.hypot(o.i - a.i, o.j - a.j) < 12).map((o) => o.name);

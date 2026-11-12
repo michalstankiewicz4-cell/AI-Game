@@ -19,7 +19,17 @@ Każda wyspa ma mniej więcej rozmiar ekranu. Przy kilku wyspach:
 - Ocean z falami i wyspy w stylu low-poly z poszarpaną linią brzegu.
 - Stawy ze słodką wodą. Wody morskiej nie da się pić, a postacie muszą to odkryć same.
 - Zasoby: drzewa i palmy (odrastają po ścięciu), skały, krzaki z jagodami (owoce odrastają), wodorosty przy brzegu, a na wzgórzu kopalnia.
-- Zwierzęta: ptaki do polowania i ławice ryb do łowienia.
+- Zwierzęta: ptaki do polowania, ławice ryb do łowienia i dziki (`src/world/boars.js`).
+
+### 🐗 Dziki
+- **Gdzie:** na każdej wyspie jest jeden dzik, a na wyspie startowej dodatkowy, daleko od miejsca startu. Przez pierwszą dobę dziki są spokojne.
+- **Szarża:** postać, która podejdzie do dzika na ok. 4 kafelki, może sprowokować szarżę. Dzik biega wolniej niż postać (2,4 wobec 2,6 kafelka/s), więc ucieczka się udaje, jeśli zacznie się na czas.
+- **Cios:** odbiera 7 zdrowia, a z tarczą o 60% mniej. Często to tylko ostrzeżenie: po ciosie dzik odpuszcza.
+- **Obrona:** postać z włócznią (9) albo mieczem (14) staje i walczy, a bez broni ucieka.
+- **Ucieczka dzika:** gdy zostanie mu mniej niż 15 z 40 punktów życia.
+- **Mięso:** pokonany dzik daje 3 mięsa i odradza się po 300 s.
+- **Doświadczenie:** dopiero po pierwszym ataku postać wie, że dziki są groźne, i chętniej robi broń i tarczę.
+- **Polowanie:** z bronią i przy zdrowiu powyżej 60 postać sama poluje na dziki, gdy potrzebuje jedzenia.
 - Cykl dnia i nocy: doba trwa 180 s czasu gry (`DAY_LENGTH`). W nocy postacie chętniej śpią.
 - Klimat umiarkowany (`world.airTemp`):
   - średnia temperatura dnia to 7–21°C i zmienia się płynnie z dnia na dzień (cieplejsze i chłodniejsze dni),
@@ -70,6 +80,8 @@ Na starcie każda postać ma siekierę i kilof. Receptur nie zna, odkrywa je, ł
 | Stół rzemieślniczy | 2 kłody + 3 deski | przy nim postacie próbują nowych połączeń |
 | Szałas | 2 kłody + 4 deski + 2 liny | szybszy sen i leczenie |
 | Żelazne narzędzia | 2 rudy + gałąź | wykuwane przy ognisku; szybsze ścinanie i kopanie |
+| Miecz | 2 rudy + deska | wykuwany przy ogniu; najlepsza broń na dziki |
+| Tarcza | 3 deski + lina | odkrywana tylko przy stole rzemieślniczym; cios dzika słabszy o 60% |
 | Łóżko | 3 deski + 2 gałęzie + 4 liście | odkrywane tylko przy stole rzemieślniczym; dużo szybszy sen |
 
 Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo przy ogniu, łóżko przy stole rzemieślniczym. Próba w złym miejscu kończy się wskazówką w myślach postaci.

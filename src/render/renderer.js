@@ -81,6 +81,7 @@ export class Renderer {
     }
     this.fishMeshes = new Map();
     this.birdMeshes = new Map();
+    this.boarMeshes = new Map();
     this.agentMeshes = new Map();
     this.labelLayer.innerHTML = '';
     this.labels = new Map();
@@ -228,6 +229,29 @@ export class Renderer {
       g.visible = inCone(b.x, b.z);
     }
     for (const [b, g] of this.birdMeshes) if (!seenB.has(b)) { scene.remove(g); this.birdMeshes.delete(b); }
+
+    // dziki
+    for (const b of world.boars || []) {
+      let g = this.boarMeshes.get(b);
+      if (!g) {
+        g = new THREE.Group();
+        const fur = this.mat.boar || (this.mat.boar = new THREE.MeshStandardMaterial({ color: 0x5a3b26, roughness: 0.9, flatShading: true }));
+        const tusk = this.mat.tusk || (this.mat.tusk = new THREE.MeshStandardMaterial({ color: 0xf2ead8, roughness: 0.5 }));
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 0.75), fur); body.position.y = 0.36; body.castShadow = true; g.add(body);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.27, 0.3), fur); head.position.set(0, 0.36, 0.48); head.castShadow = true; g.add(head);
+        const snout = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.12, 0.1), this.mat.post); snout.position.set(0, 0.32, 0.66); g.add(snout);
+        for (const s of [-1, 1]) {
+          const t = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.12, 4), tusk); t.position.set(s * 0.09, 0.28, 0.66); t.rotation.x = -0.6; g.add(t);
+          for (const zz of [-0.25, 0.25]) { const l = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.22, 0.08), fur); l.position.set(s * 0.14, 0.11, zz); l.name = 'leg'; g.add(l); }
+        }
+        scene.add(g); this.boarMeshes.set(b, g);
+      }
+      g.position.set(b.x, world.groundHeight(b.x, b.z), b.z);
+      g.rotation.y = Math.PI / 2 - b.dir;
+      const run = b.state === 'charge' || b.state === 'flee';
+      g.children.forEach((c) => { if (c.name === 'leg') c.rotation.x = Math.sin(rt * (run ? 18 : 8) + c.position.z * 10) * (run ? 0.6 : 0.3); });
+      g.visible = !b.dead && inCone(b.x, b.z);
+    }
 
     // agenci
     const v = new THREE.Vector3();

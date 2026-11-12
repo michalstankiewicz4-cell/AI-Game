@@ -61,6 +61,7 @@ export const generateMethods = {
     this.placeResources();
     this.spawnFish();
     this.spawnBirds();
+    this.spawnBoars();
   },
 
   keepLargestComponent(isl) {

@@ -61,7 +61,7 @@ export function renderDetail(state) {
     <h4>Narzędzia</h4><div class="tools">${tools}</div>
     <h4>Statystyki</h4><div class="grid">
       <span>Przeżył(a) dni</span><b>${alive.toFixed(1)}</b><span>Kłody</span><b>${a.stats.wood}</b><span>Ryby</span><b>${a.stats.fish}</b>
-      <span>Ptaki</span><b>${a.stats.birds}</b><span>Jagody</span><b>${a.stats.berries}</b><span>Deski na mosty</span><b>${a.stats.bridge}</b><span>Ruda żelaza</span><b>${a.stats.iron}</b>
+      <span>Ptaki</span><b>${a.stats.birds}</b><span>Dziki</span><b>${a.stats.boars || 0}</b><span>Jagody</span><b>${a.stats.berries}</b><span>Deski na mosty</span><b>${a.stats.bridge}</b><span>Ruda żelaza</span><b>${a.stats.iron}</b>
     </div>`;
 }
 
