@@ -52,6 +52,9 @@ initFeed(initErrors());
 $('verLbl').textContent = $('hudVer').textContent = 'v' + VERSION;
 document.title = `Wyspy AI v${VERSION} – symulacja przetrwania`;
 initMenu(state.cfg, startGame);
+// moduły gry wczytane: Start działa
+$('startBtn').disabled = false;
+if ($('startBtn').querySelector('.spin')) $('startBtn').textContent = '▶ Start';
 initLlmMenu();
 makeDraggable($('detail'), '.dhead');
 makeDraggable($('agentsWin'), '.win-h');
@@ -61,7 +64,17 @@ $('menuBtn').onclick = () => { state.paused = true; updatePause(); showMenu(); }
 $('goRestart').onclick = () => { $('gameover').classList.add('hidden'); rndSeed(); showMenu(); };
 
 // ---------- start gry ----------
+let firstFrame = null; // wywoływane po narysowaniu pierwszej klatki nowego świata
 function startGame() {
+  // pokaż loader i oddaj przeglądarce chwilę, żeby go narysowała, zanim zacznie się ciężka praca
+  $('loading').classList.remove('hidden');
+  $('loadText').textContent = 'Budowanie świata…';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    try { buildGame(); } catch (e) { $('loading').classList.add('hidden'); throw e; }
+    firstFrame = () => $('loading').classList.add('hidden');
+  }));
+}
+function buildGame() {
   $('menu').classList.add('hidden');
   $('hud').classList.remove('hidden');
   if (state.opts.aiView) toggleAiView();
@@ -111,6 +124,7 @@ function loop(now) {
     }
     panCamera(rdt);
     renderer.frame(w, state.agents, state.selected, now / 1000, state.opts);
+    if (firstFrame) { firstFrame(); firstFrame = null; }
     hudT -= rdt;
     if (hudT <= 0) { hudT = 0.25; updateHud(state); updateTokens(); $('fpsLbl').textContent = Math.round(fps) + ' FPS'; }
   }
