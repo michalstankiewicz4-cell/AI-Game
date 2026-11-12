@@ -35,11 +35,17 @@ export function renderDetail(state) {
   const max = Math.max(0.01, ...a.scores.map((s) => s.score));
   const util = a.scores.map((s, n) => `<span class="${n === 0 ? 'first' : ''}">${s.label}</span><div class="b"><i style="width:${Math.max(3, s.score / max * 100)}%"></i></div>`).join('');
   const alive = ((a.alive ? state.world.time : a.diedAt || state.world.time) - a.stats.bornAt) / 180;
-  $('detail').innerHTML = `
-    <button class="close" onclick="this.parentNode.classList.add('hidden')">✕</button>
-    <h3 style="color:${hex(a.color)}">${a.name}</h3><div style="color:#9fb2c8">${a.role} · ${a.alive ? 'żyje' : 'nie żyje'} · wyspa ${a.island + 1}</div>
+  // stały szkielet: nagłówek z osobą się nie przewija, przewija się tylko część ze statystykami
+  const el = $('detail');
+  if (!el.querySelector('.dbody')) {
+    el.innerHTML = `<div class="dhead"><button class="close" onclick="this.closest('#detail').classList.add('hidden')">✕</button><h3></h3><div class="drole"></div></div><div class="dbody"></div>`;
+  }
+  const h3 = el.querySelector('h3');
+  h3.textContent = a.name; h3.style.color = hex(a.color);
+  el.querySelector('.drole').textContent = `${a.role} · ${a.alive ? 'żyje' : 'nie żyje'} · wyspa ${a.island + 1}`;
+  el.querySelector('.dbody').innerHTML = `
     <h4>Potrzeby</h4>${barsHtml(a)}
-    <h4>Teraz</h4><div>${!a.alive ? '💀' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔'}${a.llmDriven ? ' <span title="Wybór Claude">🤖</span>' : ''}</div>
+    <h4>Teraz</h4><div>${!a.alive ? '💀' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔'}${a.llmDriven ? ' <span title="Wybór modelu językowego">🤖</span>' : ''}</div>
     ${a.bubble ? `<div style="margin-top:4px;color:#cfe3f2">💬 „${esc(a.bubble.text)}”</div>` : ''}
     <h4>Wiedza</h4><div>🗺️ Zna ${(a.seenCount / (W * H) * 100).toFixed(0)}% mapy · 🧠 pamięta ${a.mem.size} miejsc z zasobami${a.memBirds.size ? ` · 🐦 ${a.memBirds.size} ptaków` : ''}</div>
     <h4>Rozważane decyzje (użyteczność)</h4><div class="util">${util}</div>

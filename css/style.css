@@ -66,8 +66,13 @@ button { font: inherit; cursor: pointer; }
 .bars .b { height: 6px; background: rgba(255,255,255,.12); border-radius: 3px; overflow: hidden; }
 .bars .b i { display: block; height: 100%; border-radius: 3px; transition: width .3s; }
 
-#detail { position: absolute; right: 256px; top: 92px; width: 250px; padding: 12px; background: rgba(12,22,40,.85); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; font-size: 12.5px; max-height: calc(100% - 102px); overflow-y: auto; }
-#detail h3 { margin: 0 0 2px; font-size: 16px; cursor: move; user-select: none; }
+#detail { position: absolute; right: 256px; top: 92px; width: 250px; padding: 12px; background: rgba(12,22,40,.85); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; font-size: 12.5px; max-height: calc(100% - 102px); display: flex; flex-direction: column; overflow: hidden; }
+#detail .dhead { flex: none; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,.08); }
+#detail .drole { color: #9fb2c8; }
+#detail .dbody { flex: 1; min-height: 0; overflow-y: auto; margin-right: -8px; padding-right: 8px; }
+#detail .dbody > h4:first-child { margin-top: 6px; }
+#detail h3 { margin: 0 0 2px; font-size: 16px; }
+#detail .dhead { cursor: move; user-select: none; }
 #detail h3::before { content: '⠿ '; color: #6f8399; font-size: 13px; }
 #detail.dragging { opacity: .85; }
 #detail h4 { margin: 10px 0 4px; font-size: 11.5px; color: #9fb2c8; text-transform: uppercase; letter-spacing: .06em; }
@@ -119,3 +124,11 @@ button { font: inherit; cursor: pointer; }
 #detail, #agentsWin { z-index: 3; }
 .ver { font-size: 11px; color: #7f93a8; text-decoration: none; }
 h1 .ver { font-size: 14px; font-weight: 600; color: #8fd0f0; background: rgba(63,167,214,.15); padding: 2px 8px; border-radius: 8px; vertical-align: middle; }
+
+/* paski przewijania w stylu gry */
+* { scrollbar-width: thin; scrollbar-color: rgba(63,167,214,.55) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(63,167,214,.45); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(63,167,214,.8); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
