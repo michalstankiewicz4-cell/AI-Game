@@ -52,7 +52,7 @@ function updateWebStatus() {
   if (!hasWebGPU()) { txt = '⚠️ Brak WebGPU w tej przeglądarce. Użyj Chrome lub Edge na komputerze albo wybierz Claude API.'; err = true; }
   else if (W.error) { txt = '⚠️ ' + W.error; err = true; }
   else if (W.loading) txt = `${W.note ? W.note + ' ' : ''}📥 ${Math.round(W.progress * 100)}% · ${W.text}`;
-  else if (llm.webReady) txt = `✅ ${WEB_MODELS[llm.webModel].name} gotowy.`;
+  else if (llm.webReady) txt = `✅ ${WEB_MODELS[llm.webModel].name} gotowy${W.inWorker ? ' (osobny wątek)' : ''}.`;
   else if (W.note) txt = W.note;
   else txt = 'Model pobierze się po kliknięciu 📥 albo przy starcie gry. Do czasu załadowania za postacie mówi skrypt (📜).';
   if ($('webModel').value !== llm.webModel) $('webModel').value = llm.webModel;
@@ -74,7 +74,7 @@ export function updateTokens() {
   const bad = web ? (!hasWebGPU() || !!W.error) : (!llm.key || llm.paused);
   b.classList.toggle('err', bad);
   b.classList.toggle('warn', !bad && (web ? W.loading : u.cost > llm.budget * 0.8));
-  const who = web ? `${WEB_MODELS[llm.webModel].name} w przeglądarce` : `Claude API (${MODELS[llm.model].name})`;
+  const who = web ? `${WEB_MODELS[llm.webModel].name} w przeglądarce${W.inWorker ? ', w osobnym wątku' : ''}` : `Claude API (${MODELS[llm.model].name})`;
   b.title = `${who} · zapytań: ${u.calls}, błędów: ${u.errors}\n`
     + `Tokeny wejściowe: ${u.input}, wyjściowe: ${u.output}${web ? '' : ' (z myśleniem modelu)'}\n`
     + (web ? 'Koszt: 0 zł, model liczy na Twojej karcie graficznej' : `Szacunkowy koszt: $${u.cost.toFixed(4)} z limitu $${llm.budget.toFixed(2)}`)

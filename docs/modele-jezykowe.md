@@ -50,6 +50,8 @@ Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN
 
 - **Laptop z dwiema kartami:** Chrome bywa przypięty do słabszej karty zintegrowanej, a WebLLM nie może tego zmienić na Windows. Wejdź w Ustawienia › System › Ekran › Grafika i ustaw Chrome na „Wysoka wydajność” (np. NVIDIA RTX).
 - **Wymagania:** Chrome lub Edge na komputerze z WebGPU. Bez WebGPU gra pokazuje komunikat, a postacie działają na samym kodzie gry i mówi za nie skrypt (📜).
+- **Osobny wątek:** model działa w Web Workerze (`src/ai/llmWorker.js`), więc obsługa modelu nie blokuje głównej pętli gry i nie powoduje przycięć. Karta graficzna jest nadal ta sama co dla grafiki. Gdy wątek się nie uruchomi, model startuje w głównym wątku, a powód trafia do zakładki „⚠️ Błędy”. W menu przy gotowym modelu widać „(osobny wątek)”.
+- **Dwie karty graficzne:** Chrome na Windows używa jednej karty dla całej strony (grafika i model) i ignoruje `powerPreference`, więc gra nie podzieli pracy między kartę zintegrowaną a mocniejszą.
 - **Odpowiedź:** wymuszony JSON (`response_format: json_object` ze schematem przekazanym jako tekst), okno kontekstu 1536 tokenów. Jeśli wymuszony JSON nie działa, gra przechodzi na zwykły tekst.
 - **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli. „📋 Kopiuj wszystko” kopiuje je razem z wersją gry i nazwą karty graficznej.
 - **Utrata karty graficznej** (np. `DXGI_ERROR_DEVICE_HUNG` na Windows): gra przełącza się na lżejszy model i zapamiętuje go. Chrome po takim resecie blokuje WebGPU, dopóki strona się nie odświeży, więc gra prosi o F5.

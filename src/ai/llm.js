@@ -39,7 +39,7 @@ class LLM {
     this.budget = +s.budget > 0 ? +s.budget : 1;
     this.freedom = !!s.freedom; // „pełna swoboda”: model sam wymyśla zamiar
     this.key = load(LS_KEY, '');
-    this.web = { engine: null, id: null, loading: false, progress: 0, text: '', error: '', note: '', lost: 0 };
+    this.web = { engine: null, id: null, loading: false, progress: 0, text: '', error: '', note: '', lost: 0, worker: null, inWorker: false };
     this.usage = { input: 0, output: 0, calls: 0, errors: 0, cost: 0 };
     this.inflight = 0;
     this.lastCall = -1e9;
@@ -67,11 +67,26 @@ class LLM {
     W.loading = true; W.progress = 0; W.text = 'Ładowanie biblioteki WebLLM...';
     try {
       if (W.engine) { try { await W.engine.unload(); } catch { /* ignoruj */ } W.engine = null; W.id = null; }
+      this.stopWorker();
       const webllm = await import(WEBLLM_URL);
       const id = this.webModel;
-      const engine = await webllm.CreateMLCEngine(id, {
-        initProgressCallback: (r) => { W.progress = r.progress || 0; W.text = r.text || ''; },
-      }, { context_window_size: 1536 }); // mniejsza pamięć podręczna = mniej VRAM
+      const cfg = { initProgressCallback: (r) => { W.progress = r.progress || 0; W.text = r.text || ''; } };
+      const opts = { context_window_size: 1536 }; // mniejsza pamięć podręczna = mniej VRAM
+      let engine = null;
+      // najpierw w osobnym wątku (Web Worker), żeby obsługa modelu nie przycinała gry
+      if (typeof Worker !== 'undefined' && webllm.CreateWebWorkerMLCEngine) {
+        try {
+          W.worker = new Worker(new URL('./llmWorker.js', import.meta.url), { type: 'module' });
+          W.worker.addEventListener('error', (ev) => reportError('Wątek modelu', ev.message || 'błąd wątku'));
+          engine = await webllm.CreateWebWorkerMLCEngine(W.worker, id, cfg, opts);
+          W.inWorker = true;
+        } catch (e) {
+          this.stopWorker();
+          if (/device|lost|hung|memory|compatible GPU|adapter/i.test(String(e.message || e))) throw e;
+          reportError('Wątek modelu', 'Nie udało się uruchomić modelu w osobnym wątku, uruchamiam w głównym: ' + (e.message || e));
+        }
+      }
+      if (!engine) { engine = await webllm.CreateMLCEngine(id, cfg, opts); W.inWorker = false; }
       W.engine = engine; W.id = id; W.progress = 1; W.text = 'Model gotowy';
     } catch (e) {
       W.loading = false;
@@ -80,20 +95,26 @@ class LLM {
     } finally { W.loading = false; }
   }
 
+  stopWorker() {
+    const W = this.web;
+    if (W.worker) { try { W.worker.terminate(); } catch { /* ignoruj */ } }
+    W.worker = null; W.inWorker = false;
+  }
+
   // karta graficzna „zgubiła” urządzenie (za mało pamięci, przeciążenie): zejdź na lżejszy model i spróbuj ponownie
   webLost(e) {
     const msg = String((e && e.message) || e || '');
     const W = this.web;
     // po resecie karty Chrome blokuje WebGPU dla tej strony aż do odświeżenia
     if (/compatible GPU|adapter/i.test(msg)) {
-      W.engine = null; W.id = null;
+      W.engine = null; W.id = null; this.stopWorker();
       W.error = W.lost > 0
         ? `Po resecie karty graficznej przeglądarka blokuje WebGPU do odświeżenia strony. Odśwież stronę (F5), gra zapamiętała lżejszy model: ${WEB_MODELS[this.webModel].name}.`
         : 'Przeglądarka nie znalazła karty graficznej z WebGPU. Sprawdź, czy w Chrome/Edge jest włączona akceleracja sprzętowa, albo wybierz Claude API.';
       return true;
     }
     if (!/device|lost|hung|memory|not loaded|unload/i.test(msg)) return false;
-    W.engine = null; W.id = null; W.lost++;
+    W.engine = null; W.id = null; W.lost++; this.stopWorker();
     const ids = Object.keys(WEB_MODELS);
     const k = ids.indexOf(this.webModel);
     if (k > 0) {
