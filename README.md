@@ -15,7 +15,7 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Percepcja i pamięć:** stożek widzenia (im dalej, tym węższy), pamięć tego, co widział; trzeba się rozejrzeć, by odświeżyć wiedzę. Tryb „👁️ Oczami AI” pokazuje stożek i mgłę niewiedzy.
 - **Rozmowy:** agenci spotykają się, wymieniają wiedzą o mapie, recepturami, doświadczeniem (umiejętności rosną z praktyką) i przedmiotami.
 - **Komentarze na żywo:** dymki z myślami postaci i narrator.
-- **Opcjonalnie Claude API:** w menu „Mózg postaci” można włączyć Claude (mowa albo decyzje + mowa). Klucz API wpisujesz w przeglądarce; zostaje tylko w localStorage i trafia wyłącznie do api.anthropic.com. Licznik tokenów z szacunkowym kosztem jest w górnym pasku, a po przekroczeniu limitu postacie wracają do lokalnego AI.
+- **Mózg postaci (menu):** lokalny skrypt (domyślnie), darmowy model z Hugging Face w przeglądarce (WebLLM na WebGPU: Qwen2.5 1.5B, Llama 3.2 1B lub Qwen2.5 0.5B; pobiera się raz, potem z pamięci przeglądarki; bez WebGPU gra wraca do skryptu) albo Claude API. Każdy model może tylko mówić albo też wybierać działania. Klucz API wpisujesz w przeglądarce; zostaje tylko w localStorage i trafia wyłącznie do api.anthropic.com. Licznik tokenów z szacunkowym kosztem jest w górnym pasku, a po przekroczeniu limitu postacie wracają do lokalnego AI.
 - **Okienka:** „Postacie” (klik przenosi kamerę do postaci) i karta postaci dają się przesuwać za nagłówek.
 
 ## Sterowanie
@@ -44,7 +44,7 @@ src/
     knowledge.js      ciekawość, eksperymenty, odkrywanie receptur
     social.js         rozmowy i wymiana wiedzy/przedmiotów
     commentary.js     myśli w dymkach i narrator
-    llm.js            opcjonalny tryb Claude API, licznik tokenów i kosztu
+    llm.js            opcjonalny mózg z modelem językowym: Claude API lub WebLLM, licznik tokenów
   render/
     renderer.js       scena 3D, światło, aktualizacja co klatkę
     models.js         modele low-poly

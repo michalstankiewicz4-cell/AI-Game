@@ -37,17 +37,26 @@
     <div class="opt">
       <div class="opt-label">Mózg postaci</div>
       <div class="seg" id="optLlm">
-        <button data-v="off" class="on">Lokalny</button><button data-v="talk">Claude: mowa</button><button data-v="decide">Claude: decyzje</button>
+        <button data-v="local" class="on">Lokalny skrypt</button><button data-v="web">Model w przeglądarce</button><button data-v="claude">Claude API</button>
       </div>
     </div>
     <div id="llmBox" class="llm-box hidden">
-      <div class="seed-row"><input id="llmKey" type="password" placeholder="Klucz API Anthropic (sk-ant-...)" autocomplete="off"><button id="llmKeyClear" title="Usuń klucz z przeglądarki">🗑️</button></div>
-      <div class="seed-row">
-        <select id="llmModel"></select>
-        <label class="budget">limit $<input id="llmBudget" type="number" min="0.05" step="0.05"></label>
+      <div class="seg small" id="optLlmMode"><button data-v="talk">Tylko mowa</button><button data-v="decide" class="on">Decyzje + mowa</button></div>
+      <div id="webBox" class="llm-box hidden">
+        <div class="seed-row"><select id="webModel"></select><button id="webLoad" title="Pobierz i uruchom model">📥</button></div>
+        <div class="progress hidden" id="webProg"><i></i></div>
+        <div id="webStatus" class="llm-note"></div>
+        <div class="llm-note">Darmowy, otwarty model z Hugging Face działa w całości na Twojej karcie graficznej (WebLLM, WebGPU). Za pierwszym razem pobiera się raz i zostaje w pamięci przeglądarki. Mały model myśli wolniej i prościej niż Claude, więc ruch i przetrwanie nadal pilnuje skrypt, a model wybiera cele co kilka sekund. Bez WebGPU gra wraca do lokalnego skryptu.</div>
       </div>
-      <div class="llm-note">Klucz zostaje tylko w tej przeglądarce (localStorage) i idzie wyłącznie do api.anthropic.com. Każde zapytanie kosztuje według cennika Twojego konta, więc pilnuj licznika tokenów. Po osiągnięciu limitu postacie wracają do lokalnego AI.
-      „Mowa”: Claude układa wypowiedzi postaci. „Decyzje”: Claude dodatkowo wybiera działanie spośród opcji lokalnego AI (przy krytycznych potrzebach lokalne AI ma pierwszeństwo).</div>
+      <div id="claudeBox" class="llm-box hidden">
+        <div class="seed-row"><input id="llmKey" type="password" placeholder="Klucz API Anthropic (sk-ant-...)" autocomplete="off"><button id="llmKeyClear" title="Usuń klucz z przeglądarki">🗑️</button></div>
+        <div class="seed-row">
+          <select id="llmModel"></select>
+          <label class="budget">limit $<input id="llmBudget" type="number" min="0.05" step="0.05"></label>
+        </div>
+        <div class="llm-note">Klucz zostaje tylko w tej przeglądarce (localStorage) i idzie wyłącznie do api.anthropic.com. Każde zapytanie kosztuje według cennika Twojego konta, więc pilnuj licznika tokenów. Po osiągnięciu limitu postacie wracają do lokalnego skryptu.</div>
+      </div>
+      <div class="llm-note">„Decyzje”: model wybiera działanie spośród opcji skryptu (przy krytycznych potrzebach skrypt ma pierwszeństwo). „Mowa”: model układa wypowiedzi postaci.</div>
     </div>
     <div id="modeDesc" class="mode-desc"></div>
     <button id="startBtn" class="primary">▶ Start</button>
