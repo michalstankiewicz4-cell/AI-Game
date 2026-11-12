@@ -259,6 +259,7 @@ export const tasksMethods = {
         for (const k in want) {
           while (this.inv[k] < want[k] && s.items[k] > 0 && this.roomFor(2, WEIGHT[k] + 1)) { s.items[k]--; this.inv[k]++; got++; }
         }
+        if (got) { s.lastTaker = { id: this.id, t: this.world.time }; if (this.expect.has(s.id)) this.expectStore(s); }
         return got ? 'done' : 'fail';
       },
     };
@@ -282,6 +283,7 @@ export const tasksMethods = {
           const n = Math.max(0, this.inv[k] - 2);
           if (n > 0) { this.inv[k] -= n; s.items[k] = (s.items[k] || 0) + n; }
         }
+        this.expectStore(s); // zapamiętuje, co tu zostawił(a)
         return 'done';
       },
     };
@@ -623,6 +625,7 @@ export const tasksMethods = {
         const free = f.kind === 'planter' ? f.stage === 'empty' : f.stage === 'tilled';
         if (!free || this.inv[seed] < 1) return 'fail';
         this.inv[seed]--; f.stage = 'planted'; f.growth = 0; f.planter = this.id; f.crop = crop;
+        this.expectPlant(f);
         if (!this.known.has('farm')) this.speak('Wsadzę to nasionko do ziemi. Ciekawe, czy coś wyrośnie?', true);
         else this.say(`sadzi ${CROPS[crop].name} ${f.kind === 'planter' ? 'w doniczce 🪴' : 'na grządce 🌱'}`);
         return 'done';
@@ -643,6 +646,7 @@ export const tasksMethods = {
         }
         if (got.berries) this.stats.berries += got.berries;
         f.berries = 0; f.stage = f.kind === 'planter' ? 'empty' : 'tilled'; f.growth = 0;
+        f.harvestedBy = { id: this.id, t: this.world.time };
         this.joy = Math.min(30, this.joy + (got.flowers ? 12 : 8));
         if (!this.known.has('farm')) {
           this.known.add('farm');
@@ -752,6 +756,7 @@ export const tasksMethods = {
         this.inv[vessel]--; this.inv[seed]--;
         const p = w.addStructure('planter', spot.i, spot.j, this.id);
         p.vessel = vessel; p.crop = crop; p.stage = 'planted'; p.planter = this.id;
+        this.expectPlant(p);
         this.rememberStruct(p);
         this.say(`sadzi ${CROPS[crop].name} w ${vessel === 'pot' ? 'doniczce' : 'misce'} z ziemią 🌱`);
         return 'done';

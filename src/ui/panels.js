@@ -54,6 +54,7 @@ export function renderDetail(state) {
     <div class="temp">✋ W prawej: ${a.held ? (TOOL_LABELS[a.held] || a.held) : '—'}, w lewej: ${a.heldL === 'torch' ? `🔥 płonąca pochodnia (jeszcze ${Math.ceil(a.torchBurn)} s)` : a.heldL ? (TOOL_LABELS[a.heldL] || a.heldL) : '—'} · 👁️ widzi na ${Math.round(a.viewR || 18)} pól${state.world.daylight() < 0.35 ? ' (ciemno)' : ''}</div>
     ${a.bubble ? `<div style="margin-top:4px;color:#cfe3f2">💬 „${esc(a.bubble.text)}”</div>` : ''}
     <h4>Wiedza</h4><div>🗺️ Zna ${(a.seenCount / (W * H) * 100).toFixed(0)}% mapy · 🧠 pamięta ${a.mem.size} miejsc z zasobami${a.memBirds.size ? ` · 🐦 ${a.memBirds.size} ptaków` : ''}</div>
+    ${a.conclusions && a.conclusions.length ? `<h4>Wnioski</h4><div style="color:#e6d3a3">${a.conclusions.map((c) => '🤔 ' + esc(c)).join('<br>')}</div>` : ''}
     <h4>Rozważane decyzje (użyteczność)</h4><div class="util">${util}</div>
     <h4>Plecak · ${a.invTotal()}/30 rzeczy · ${a.invWeight().toFixed(1)}/25 kg</h4><div class="bars"><span>🎒</span><div class="b"><i style="width:${Math.min(100, a.invWeight() / 25 * 100)}%;background:${a.invWeight() > 17.5 ? '#e0904a' : '#8fb0c8'}"></i></div></div><div class="grid">${inv}</div>
     <h4>Odkryte receptury (${[...a.known].filter((r) => RECIPE_NAMES[r]).length}/${Object.keys(RECIPE_NAMES).length})</h4><div class="tools">${Object.keys(RECIPE_NAMES).map((r) => `<span class="${a.known.has(r) ? '' : 'no'}">${a.known.has(r) ? RECIPE_NAMES[r] : '???'}</span>`).join('')}</div>

@@ -3,6 +3,14 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.27.0] - 2026-11-12
+### Dodane
+- Pamięć oczekiwań: postać pamięta, co zostawiła na kupce albo w skrzyni i co posadziła. Gdy wraca i czegoś brakuje, zastanawia się na głos, co się stało, i podejrzewa tego, kogo widziała przy zapasach.
+- Wnioski i działanie: rzeczy giną z kupki → postać chce zbudować skrzynię. Ktoś zebrał jej plony → sadzi w doniczkach przy swoim obozie. Roślina rośnie podejrzanie wolno na suchej ziemi → postać sama wnioskuje, że trzeba podlewać. Komuś, kto powtarzalnie bierze jej rzeczy, przestaje dawać prezenty.
+- W rozmowie postać pyta podejrzanego wprost, a ten mówi prawdę (przyznaje się albo zaprzecza). Po przyznaniu się sprawa jest wyjaśniona, a zapasy uchodzą za wspólne.
+- Postacie słyszą, co mówią inni w promieniu ok. 7 pól. Mogą odpowiedzieć (np. tłumaczyć się, gdy ktoś mówi o nich), ale nie muszą: zależy to od humoru, zdrowia, zmęczenia i tego, czy mają coś pilnego. Model językowy dostaje to, co postać słyszała, i jej wnioski.
+- Karta postaci pokazuje jej wnioski.
+
 ## [0.26.0] - 2026-11-12
 ### Dodane
 - Kolizje: przez ściany z desek na parterze, drzewa (bez pni), skały, krzaki, ogniska, stoły i skrzynie nie da się przejść. Postać podchodzi do takiego obiektu i staje obok.
@@ -250,6 +258,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.27.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.27.0
 [0.26.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.26.0
 [0.25.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.25.0
 [0.24.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.24.0

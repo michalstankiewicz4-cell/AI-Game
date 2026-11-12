@@ -164,7 +164,7 @@ export const decideMethods = {
     const chestN = this.nearestStructure(bfs, 'chest');
     const myChest = chestN && chestN.d < 25;
     const stashes = w.structures.filter((s) => s.kind === 'stash' && this.knownStructs.has(s.id) && s.items && Object.values(s.items).some((v) => v > 0)).length;
-    if (!myChest && (myFire || myRoof) && K('chest') && has(RECIPES.chest)) add(0.3 + Math.min(0.15, stashes * 0.05) + (this.invWeight() / MAX_WEIGHT > 0.6 ? 0.08 : 0), '📦 Zrobić skrzynię', () => this.taskBuild('chest', RECIPES.chest));
+    if (!myChest && (myFire || myRoof) && K('chest') && has(RECIPES.chest)) add(0.3 + Math.min(0.15, stashes * 0.05) + (this.invWeight() / MAX_WEIGHT > 0.6 ? 0.08 : 0) + (this.beliefs.has('stashUnsafe') ? 0.2 : 0), '📦 Zrobić skrzynię', () => this.taskBuild('chest', RECIPES.chest));
     // --- deski: polecenia modelu albo własne majsterkowanie przy obozie ---
     let plankOp = null;
     if (this.buildQueue.length && w.time - (this.buildQueueT || 0) < 120) {
@@ -209,11 +209,11 @@ export const decideMethods = {
       // jedno naczynie zostaje na wodę (do picia i podlewania)
       const vessels = inv.bowl + inv.waterBowl + inv.pot + inv.waterPot;
       const vessel = vessels < 2 ? null : inv.pot > 0 ? 'pot' : inv.bowl > 0 ? 'bowl' : null;
-      if (home && vessel && beds.filter((s) => s.kind === 'planter').length < 6) add((vessel === 'pot' ? 0.36 : 0.28) + farm * 0.5, vessel === 'pot' ? '🪴 Posadzić w doniczce' : '🪴 Posadzić w misce', () => this.taskPotPlant(home, vessel, this.pickCrop()));
+      if (home && vessel && beds.filter((s) => s.kind === 'planter').length < 6) add((vessel === 'pot' ? 0.36 : 0.28) + farm * 0.5 + (this.beliefs.has('fieldsRaided') ? 0.12 : 0), vessel === 'pot' ? '🪴 Posadzić w doniczce' : '🪴 Posadzić w misce', () => this.taskPotPlant(home, vessel, this.pickCrop()));
     }
     // glina i doniczki: glinę bierze się z brzegu stawu, wypala w ognisku
     const pots = inv.pot + inv.waterPot + w.structures.filter((s) => s.kind === 'planter' && s.vessel === 'pot' && s.owner === this.id).length;
-    if (K('pot') && pots < 3) {
+    if (K('pot') && pots < (this.beliefs.has('fieldsRaided') ? 5 : 3)) {
       if (inv.clay >= RECIPES.pot.clay && fire && fire.d < 30) add(0.4 + (seedy ? 0.06 : 0), '🏺 Wypalić doniczkę', () => this.taskFirePot(fire));
       else if (K('clay') && inv.clay < RECIPES.pot.clay && this.roomFor(3, 5) && (myFire || myRoof)) {
         const spot = this.nearestTile(bfs, w.pondShore);

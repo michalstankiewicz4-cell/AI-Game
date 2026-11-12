@@ -12,12 +12,15 @@ import { perceptionMethods } from './perception.js';
 import { knowledgeMethods } from './knowledge.js';
 import { decideMethods } from './decide.js';
 import { tasksMethods } from './tasks.js';
+import { memoryMethods } from './memory.js';
 import { buildingMethods, BUILD_LABEL } from './building.js';
 
 export { PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MAT_NAMES, KIND_NAMES, VIEW_RANGE, VIEW_NEAR, viewHalfAngle } from './data.js';
 export { ITEM_LABELS, TOOL_LABELS } from './data.js';
 
 const POCKET = new Set(['seeds', 'feathers', 'arrows', 'grain', 'flowerSeeds', 'flowers']);
+
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export class Agent {
   constructor(world, persona, i, j, id) {
@@ -52,6 +55,7 @@ export class Agent {
     this.mem = new Map();        // id zasobu -> zapamiętany stan
     this.memByTile = new Map();  // kafelek -> id zasobu
     this.knownStructs = new Set();
+    this.initMemory();
     this.memBirds = new Map();   // id ptaka -> { b, i, j, t }
     this.memFish = [];           // { x, z, t } ostatnio widziane ryby
     this.skill = { fish: 0, hunt: 0, chop: 0, mine: 0 }; // doświadczenie 0..1
@@ -82,7 +86,7 @@ export class Agent {
     const n = Math.max(1, Math.floor(this.inv[best] / 2));
     this.inv[best] -= n;
     const st = this.stashHere();
-    if (st) { st.items[best] = (st.items[best] || 0) + n; this.rememberStruct(st); }
+    if (st) { st.items[best] = (st.items[best] || 0) + n; this.rememberStruct(st); this.expectStore(st); }
     if (Math.random() < 0.3) this.speak(`Za dużo dźwigam, odkładam ${MAT_NAMES[best]}.`);
   }
   // składzik w zasięgu ręki albo nowa kupka obok
@@ -129,7 +133,7 @@ export class Agent {
   // dymek nad głową + wpis w czacie komentarzy
   // Mówi tylko model językowy. Teksty z szablonów nie trafiają do dymków:
   // zostają jako notatki, które model dostaje w następnym zapytaniu i opisuje własnymi słowami.
-  speak(text, force = false) {
+  speak(text, force = false, reply = false) {
     if (!text || !this.alive) return;
     if (!this.llmSaid && llm.active) {
       this.notes = (this.notes || []).concat(text).slice(-5);
@@ -147,8 +151,44 @@ export class Agent {
     this.bubble = { text, t: 5.5, script, dialog: !!to };
     this.speakCd = 6 + Math.random() * 6;
     if (this.world.onChat) this.world.onChat(this, text, !script, to);
+    this.hearAround(text, reply);
   }
   event(key, ctx) { this.speak(eventLine(key, ctx), true); }
+  // postacie w pobliżu (do 7 pól) słyszą, co ktoś mówi, i czasem reagują
+  hearAround(text, reply) {
+    for (const o of this.world.agents) {
+      if (o === this || !o.alive || o.asleep || Math.hypot(o.x - this.x, o.z - this.z) > 7) continue;
+      o.heard = (o.heard || []).concat(`${this.name}: „${text}”`).slice(-4);
+      o.heardT = this.world.time;
+      if (!reply) o.reactTo(this, text);
+    }
+  }
+  reactTo(a, text) {
+    const w = this.world;
+    if (this.talkUntil > w.time) return; // w trakcie rozmowy odpowiada tylko rozmówcy
+    if ((this.reactCd || 0) > w.time) return;
+    const lower = text.toLowerCase();
+    let line = null;
+    if (text.includes(this.name)) {
+      // ktoś mówi o mnie: tłumaczy się, jeśli to o branie rzeczy
+      const took = w.structures.some((s) => (s.lastTaker && s.lastTaker.id === this.id) || (s.harvestedBy && s.harvestedBy.id === this.id && s.owner === a.id));
+      if (/wzi|zabra|zebra|nie ma|pusto/.test(lower)) line = took ? `Słyszę cię, ${a.name}. Tak, to ja wziął${this.f('em', 'am')}, potrzebował${this.f('em', 'am')} tego. Wybacz!` : `Hej, ${a.name}, to nie ja!`;
+      else line = `Słyszę, że o mnie mówisz, ${a.name}?`;
+    } else if (/nie ma|pusto|ginę|giną|zginęł/.test(lower) && Math.random() < 0.5) line = pick([`Co ci zginęło, ${a.name}?`, 'Też mi się zdaje, że rzeczy tu znikają.', 'Ja nic nie ruszał' + this.f('em', 'am') + '!']);
+    else if (/odkry|wiem już|da się|💡|trzeba/.test(lower) && Math.random() < 0.35) line = pick([`Dobrze wiedzieć, ${a.name}!`, 'O, zapamiętam to.', 'Ciekawe, sprawdzę to.']);
+    else if (/pomoc|ratunk|uciekam|au!/.test(lower) && Math.random() < 0.6) line = pick([`${a.name}, trzymaj się!`, 'Uważaj!', 'Biegnę, uważaj na siebie!']);
+    if (!line) return;
+    // jak człowiek: może odpowiedzieć, ale nie musi (zajęta, zmęczona, w złym humorze albo po prostu nie ma ochoty)
+    // priorytety: pilne zadanie, głód albo pragnienie odbierają ochotę na pogawędki; zdrowie i humor też się liczą
+    const busy = (this.task && this.task.urgent) || this.hunger < 25 || this.thirst < 25;
+    const chance = (text.includes(this.name) ? 0.75 : 1) * clamp(this.mood / 70, 0.3, 1.1) * clamp(this.health / 80, 0.3, 1)
+      * (this.energy < 30 ? 0.5 : 1) * (busy ? 0.2 : 1);
+    this.reactCd = w.time + 8;
+    if (Math.random() > chance) return;
+    this.reactCd = w.time + 15;
+    this.speakCd = 0;
+    this.speak(line, true, true);
+  }
   // odpowiedź modelu językowego
   onLLM({ label, thought, intent, at, build }) {
     if (!this.alive) return;
@@ -414,4 +454,4 @@ export function computeShores(world) {
   }
 }
 
-Object.assign(Agent.prototype, perceptionMethods, knowledgeMethods, decideMethods, tasksMethods, buildingMethods);
+Object.assign(Agent.prototype, perceptionMethods, knowledgeMethods, decideMethods, tasksMethods, buildingMethods, memoryMethods);
