@@ -3,7 +3,7 @@
 Mózg postaci wybierasz w menu, w sekcji „Mózg postaci”. Kod jest w `src/ai/llm.js` (logika), a ustawienia i licznik tokenów w `src/ui/llmPanel.js`.
 
 ## Jak model steruje postacią
-Postać pyta model najwyżej co 12 s czasu gry przy modelu w przeglądarce i co 25 s przy Claude, a także przy nowej decyzji. Jednocześnie trwają najwyżej 1–2 zapytania.
+Postać pyta model najwyżej co 20 s czasu gry przy modelu w przeglądarce i co 25 s przy Claude, a także przy nowej decyzji. Model w przeglądarce dostaje najwyżej jedno zapytanie naraz i co najmniej 4 s przerwy między zapytaniami, bo dzieli kartę graficzną z grafiką gry. Claude dostaje najwyżej 2 zapytania naraz i 2,5 s przerwy.
 
 Model dostaje:
 - imię i rolę postaci, porę dnia, numer wyspy,

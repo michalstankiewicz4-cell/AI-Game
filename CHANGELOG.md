@@ -3,6 +3,15 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.7.0] - 2026-11-12
+### Zmienione
+- Wydajność grafiki: drzewa, skały, krzaki i wodorosty rysowane przez instancjonowanie. Wywołań rysowania jest ok. 110 zamiast ok. 1500, a czas przygotowania klatki spadł z ok. 10–21 ms do ok. 2–3 ms (pomiar w przeglądarce testowej).
+- Ogniska świecą trzema stałymi światłami, więc zbudowanie ogniska nie powoduje przycięcia na kompilację shaderów.
+- Fale morza liczone co drugą klatkę, na lżejszej siatce. Rozdzielczość ograniczona do 1,5×.
+- Model w przeglądarce pyta rzadziej (co najmniej 4 s przerwy między zapytaniami, postać co 20 s), żeby zostawić kartę graficzną grafice.
+### Dodane
+- Przełącznik jakości grafiki (🎨 Wysoka / Niska: bez cieni, mniejsza rozdzielczość) i licznik FPS w górnym pasku.
+
 ## [0.6.0] - 2026-11-12
 ### Dodane
 - Przełącznik „Pełna swoboda” w menu: model dostaje tylko to, co postać czuje (głód, pragnienie, zmęczenie opisane słowami), widzi i pamięta w pobliżu oraz co ma przy sobie. Sam wymyśla zamiar, a gra tłumaczy go na dostępne działanie (`src/ai/intent.js`). Zamiar i jego wykonanie widać w karcie postaci, a niewykonalny zamiar jest oznaczony.
@@ -56,6 +65,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.7.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.7.0
 [0.6.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.6.0
 [0.5.2]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.5.2
 [0.5.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.5.1

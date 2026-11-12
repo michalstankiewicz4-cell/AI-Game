@@ -65,5 +65,6 @@ Plecak mieści 30 rzeczy (`INV_CAP`). Nadmiar postać odkłada.
 | Widok „Oczami AI” (stożek widzenia i mgła niewiedzy) | V |
 | Pauza | spacja |
 | Prędkość 1×, 2×, 4×, 8× | 1–4 |
+| Jakość grafiki (cienie) | przycisk 🎨 w górnym pasku |
 
 Okienko „Postacie” i kartę postaci przesuwasz, chwytając za nagłówek.

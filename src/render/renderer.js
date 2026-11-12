@@ -5,6 +5,7 @@ import { OrbitControls } from '../../lib/OrbitControls.js';
 import { T, W, H, idx, toWorld, toTile, heightToY } from '../world/world.js';
 import { VIEW_RANGE, VIEW_NEAR, viewHalfAngle } from '../ai/data.js';
 import { modelsMethods } from './models.js';
+import { Instancer } from './instances.js';
 import { terrainMethods } from './terrain.js';
 
 
@@ -12,7 +13,7 @@ export class Renderer {
   constructor(container) {
     this.container = container;
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -31,6 +32,14 @@ export class Renderer {
     this.makeShared();
   }
 
+  // jakość grafiki: 'high' (cienie, ostrzejszy obraz) albo 'low' (bez cieni, mniejsza rozdzielczość)
+  setQuality(q) {
+    this.quality = q;
+    this.renderer.setPixelRatio(q === 'low' ? Math.min(window.devicePixelRatio, 1) * 0.85 : Math.min(window.devicePixelRatio, 1.5));
+    if (this.sun) this.sun.castShadow = q !== 'low';
+    this.resize();
+  }
+
   resize() {
     const w = window.innerWidth, h = window.innerHeight;
     this.renderer.setSize(w, h);
@@ -47,7 +56,7 @@ export class Renderer {
     this.hemi = new THREE.HemisphereLight(0xcfeaff, 0x5a7040, 0.9);
     scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight(0xfff2d8, 2.2);
-    this.sun.castShadow = true;
+    this.sun.castShadow = this.quality !== 'low';
     const S = Math.max(W, H) * 0.6;
     Object.assign(this.sun.shadow.camera, { left: -S, right: S, top: S, bottom: -S, near: 1, far: 300 });
     this.sun.shadow.mapSize.set(2048, 2048);
@@ -57,6 +66,9 @@ export class Renderer {
     this.buildTerrain(world);
     this.buildSea();
     this.resMeshes = new Map();
+    this.instancer = new Instancer(scene);
+    // stała pula świateł ognisk: nowe ognisko nie wymusza przekompilowania wszystkich materiałów
+    this.fireLights = [0, 1, 2].map(() => { const l = new THREE.PointLight(0xff9a40, 0, 9, 1.6); scene.add(l); return l; });
     for (const r of world.resources) this.addResMesh(r);
     this.structMeshes = new Map();
     this.bridgeMeshes = new Map();
@@ -107,7 +119,7 @@ export class Renderer {
     };
     const known = (x, z) => { if (!eye) return true; const t = toTile(x, z); return !!eye.seen[idx(t.i, t.j)]; };
     if (eye || this.hadEye) {
-      for (const [r, g] of this.resMeshes) g.visible = !eye || !!eye.seen[idx(r.i, r.j)];
+      for (const [r, g] of this.resMeshes) { const v = !eye || !!eye.seen[idx(r.i, r.j)]; if (g.visible !== v) { g.visible = v; this.instancer.sync(g); } }
       for (const [s, g] of this.structMeshes) g.visible = !eye || eye.knownStructs.has(s.id);
       for (const [k, g] of this.bridgeMeshes) g.visible = !eye || !!eye.seen[k];
       for (const [k, g] of this.ghosts) g.visible = !eye || !!eye.seen[k];
@@ -127,13 +139,17 @@ export class Renderer {
     scene.background = sky; scene.fog.color.copy(sky);
 
     // fale
-    const pos = this.sea.geometry.attributes.position, base = this.seaBase;
-    for (let n = 0; n < pos.count; n++) {
-      const x = base[n * 3], z = base[n * 3 + 2];
-      pos.array[n * 3 + 1] = Math.sin(x * 0.35 + rt * 1.1) * 0.06 + Math.cos(z * 0.3 + rt * 0.8) * 0.06;
+    // fale co drugą klatkę (przeliczanie normalnych jest kosztowne)
+    this.seaTick = (this.seaTick || 0) + 1;
+    if (this.seaTick % 2 === 0) {
+      const pos = this.sea.geometry.attributes.position, base = this.seaBase;
+      for (let n = 0; n < pos.count; n++) {
+        const x = base[n * 3], z = base[n * 3 + 2];
+        pos.array[n * 3 + 1] = Math.sin(x * 0.35 + rt * 1.1) * 0.06 + Math.cos(z * 0.3 + rt * 0.8) * 0.06;
+      }
+      pos.needsUpdate = true;
+      this.sea.geometry.computeVertexNormals();
     }
-    pos.needsUpdate = true;
-    this.sea.geometry.computeVertexNormals();
 
     // zmiany zasobów
     for (const r of world.changed) {
@@ -148,13 +164,20 @@ export class Renderer {
       world.bridgeChanged = false;
       for (const br of world.bridges) br.tiles.forEach((t) => { if (world.type[idx(t.i, t.j)] === T.BRIDGE) this.addBridgeTile(t.i, t.j, br); });
     }
+    const fires = [];
     for (const [s, g] of this.structMeshes) {
       if (s.kind !== 'campfire') continue;
       const fl = g.getObjectByName('flame'), fl2 = g.getObjectByName('flame2');
       const k = 1 + Math.sin(rt * 13 + s.id) * 0.15 + Math.sin(rt * 7.3) * 0.1;
       fl.scale.set(1, k, 1); fl2.scale.set(1, 2 - k, 1);
-      g.getObjectByName('light').intensity = (1 - dl) * 6 * k + 0.5;
+      fires.push({ g, k, d: g.position.distanceToSquared(this.controls.target) });
     }
+    fires.sort((a, b) => a.d - b.d);
+    this.fireLights.forEach((l, n) => {
+      const f = fires[n];
+      l.intensity = f ? (1 - dl) * 6 * f.k + 0.5 : 0;
+      if (f) l.position.set(f.g.position.x, f.g.position.y + 0.7, f.g.position.z);
+    });
 
     // ryby
     const seenF = new Set();
