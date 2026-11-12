@@ -2,6 +2,7 @@
 //  - Claude API (klucz wpisuje gracz; zostaje tylko w localStorage tej przeglądarki, nigdy w repo),
 //  - darmowy model z Hugging Face uruchamiany w przeglądarce (WebLLM + WebGPU).
 import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES } from './data.js';
+import { FREE_SYSTEM, describeFree } from './intent.js';
 
 export const MODELS = {
   'claude-opus-5-5': { name: 'Claude Opus 5.5', inp: 4, out: 20 },
@@ -35,6 +36,7 @@ class LLM {
     this.model = MODELS[s.model] ? s.model : 'claude-opus-5-5';
     this.webModel = WEB_MODELS[s.webModel] ? s.webModel : 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
     this.budget = +s.budget > 0 ? +s.budget : 1;
+    this.freedom = !!s.freedom; // „pełna swoboda”: model sam wymyśla zamiar
     this.key = load(LS_KEY, '');
     this.web = { engine: null, id: null, loading: false, progress: 0, text: '', error: '', note: '', lost: 0 };
     this.usage = { input: 0, output: 0, calls: 0, errors: 0, cost: 0 };
@@ -43,7 +45,7 @@ class LLM {
     this.lastError = '';
     this.paused = false; // wstrzymane po przekroczeniu budżetu lub błędzie klucza
   }
-  persist() { save(LS, JSON.stringify({ provider: this.provider, model: this.model, webModel: this.webModel, budget: this.budget })); }
+  persist() { save(LS, JSON.stringify({ provider: this.provider, model: this.model, webModel: this.webModel, budget: this.budget, freedom: this.freedom })); }
   setKey(k) { this.key = (k || '').trim(); save(LS_KEY, this.key); this.paused = false; this.lastError = ''; }
   get webReady() { return !!this.web.engine && this.web.id === this.webModel; }
   get active() {
@@ -124,16 +126,18 @@ class LLM {
     const sys = `Grasz postacią w symulacji przetrwania na tropikalnych wyspach. Odpowiadasz wyłącznie jednym obiektem JSON, bez żadnego innego tekstu. `
       + (decide ? 'Format: {"wybor": <numer opcji>, "mysl": "<krótka wypowiedź>"}. ' : 'Format: {"mysl": "<krótka wypowiedź>"}. ')
       + 'Wypowiedź to jedno zdanie po polsku (do 14 słów), mówione na głos w pierwszej osobie, zgodnie z charakterem postaci, jak komentarz streamera. Wymyśl ją sam(a), za każdym razem inaczej. Bez cudzysłowów w środku.';
-    const user = describe(agent, labels, decide);
+    const free = this.freedom;
+    const user = free ? describeFree(agent) : describe(agent, labels, decide);
     const started = agent.world.time;
-    this.call(sys, user, decide ? 160 : 120)
+    this.call(free ? FREE_SYSTEM : sys, user, 160)
       .then((txt) => {
         const j = parseJson(txt);
         if (!j) throw new Error('Model nie zwrócił JSON-a');
         const thought = typeof j.mysl === 'string' ? j.mysl.trim().slice(0, 140) : '';
-        let label = null;
-        if (decide) { const n = Math.round(+j.wybor); if (n >= 1 && n <= labels.length) label = labels[n - 1]; }
-        agent.onLLM({ label, thought, at: started });
+        let label = null, intent = null;
+        if (free) intent = typeof j.zamiar === 'string' ? j.zamiar.trim().slice(0, 80) : '';
+        else if (decide) { const n = Math.round(+j.wybor); if (n >= 1 && n <= labels.length) label = labels[n - 1]; }
+        agent.onLLM({ label, thought, intent, at: started });
       })
       .catch((e) => { this.usage.errors++; this.lastError = String(e.message || e).slice(0, 160); })
       .finally(() => { this.inflight--; agent.llmBusy = false; });

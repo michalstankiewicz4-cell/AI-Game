@@ -5,39 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wyspy AI – symulacja przetrwania</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏝️</text></svg>">
-<link rel="stylesheet" href="css/style.css?v=0.5.2">
+<link rel="stylesheet" href="css/style.css?v=0.6.0">
 <!-- importmap:begin -->
 <script type="importmap">
 {
  "imports": {
-  "three": "./lib/three.module.min.js?v=0.5.2",
-  "./src/ai/agent.js": "./src/ai/agent.js?v=0.5.2",
-  "./src/ai/commentary.js": "./src/ai/commentary.js?v=0.5.2",
-  "./src/ai/data.js": "./src/ai/data.js?v=0.5.2",
-  "./src/ai/decide.js": "./src/ai/decide.js?v=0.5.2",
-  "./src/ai/knowledge.js": "./src/ai/knowledge.js?v=0.5.2",
-  "./src/ai/llm.js": "./src/ai/llm.js?v=0.5.2",
-  "./src/ai/perception.js": "./src/ai/perception.js?v=0.5.2",
-  "./src/ai/social.js": "./src/ai/social.js?v=0.5.2",
-  "./src/ai/tasks.js": "./src/ai/tasks.js?v=0.5.2",
-  "./src/core/rng.js": "./src/core/rng.js?v=0.5.2",
-  "./src/game.js": "./src/game.js?v=0.5.2",
-  "./src/main.js": "./src/main.js?v=0.5.2",
-  "./src/render/models.js": "./src/render/models.js?v=0.5.2",
-  "./src/render/renderer.js": "./src/render/renderer.js?v=0.5.2",
-  "./src/render/terrain.js": "./src/render/terrain.js?v=0.5.2",
-  "./src/ui/controls.js": "./src/ui/controls.js?v=0.5.2",
-  "./src/ui/dom.js": "./src/ui/dom.js?v=0.5.2",
-  "./src/ui/feed.js": "./src/ui/feed.js?v=0.5.2",
-  "./src/ui/llmPanel.js": "./src/ui/llmPanel.js?v=0.5.2",
-  "./src/ui/menu.js": "./src/ui/menu.js?v=0.5.2",
-  "./src/ui/panels.js": "./src/ui/panels.js?v=0.5.2",
-  "./src/version.js": "./src/version.js?v=0.5.2",
-  "./src/world/bridges.js": "./src/world/bridges.js?v=0.5.2",
-  "./src/world/generate.js": "./src/world/generate.js?v=0.5.2",
-  "./src/world/nature.js": "./src/world/nature.js?v=0.5.2",
-  "./src/world/world.js": "./src/world/world.js?v=0.5.2",
-  "./lib/OrbitControls.js": "./lib/OrbitControls.js?v=0.5.2"
+  "three": "./lib/three.module.min.js?v=0.6.0",
+  "./src/ai/agent.js": "./src/ai/agent.js?v=0.6.0",
+  "./src/ai/commentary.js": "./src/ai/commentary.js?v=0.6.0",
+  "./src/ai/data.js": "./src/ai/data.js?v=0.6.0",
+  "./src/ai/decide.js": "./src/ai/decide.js?v=0.6.0",
+  "./src/ai/intent.js": "./src/ai/intent.js?v=0.6.0",
+  "./src/ai/knowledge.js": "./src/ai/knowledge.js?v=0.6.0",
+  "./src/ai/llm.js": "./src/ai/llm.js?v=0.6.0",
+  "./src/ai/perception.js": "./src/ai/perception.js?v=0.6.0",
+  "./src/ai/social.js": "./src/ai/social.js?v=0.6.0",
+  "./src/ai/tasks.js": "./src/ai/tasks.js?v=0.6.0",
+  "./src/core/rng.js": "./src/core/rng.js?v=0.6.0",
+  "./src/game.js": "./src/game.js?v=0.6.0",
+  "./src/main.js": "./src/main.js?v=0.6.0",
+  "./src/render/models.js": "./src/render/models.js?v=0.6.0",
+  "./src/render/renderer.js": "./src/render/renderer.js?v=0.6.0",
+  "./src/render/terrain.js": "./src/render/terrain.js?v=0.6.0",
+  "./src/ui/controls.js": "./src/ui/controls.js?v=0.6.0",
+  "./src/ui/dom.js": "./src/ui/dom.js?v=0.6.0",
+  "./src/ui/feed.js": "./src/ui/feed.js?v=0.6.0",
+  "./src/ui/llmPanel.js": "./src/ui/llmPanel.js?v=0.6.0",
+  "./src/ui/menu.js": "./src/ui/menu.js?v=0.6.0",
+  "./src/ui/panels.js": "./src/ui/panels.js?v=0.6.0",
+  "./src/version.js": "./src/version.js?v=0.6.0",
+  "./src/world/bridges.js": "./src/world/bridges.js?v=0.6.0",
+  "./src/world/generate.js": "./src/world/generate.js?v=0.6.0",
+  "./src/world/nature.js": "./src/world/nature.js?v=0.6.0",
+  "./src/world/world.js": "./src/world/world.js?v=0.6.0",
+  "./lib/OrbitControls.js": "./lib/OrbitControls.js?v=0.6.0"
  }
 }
 </script>
@@ -75,6 +76,7 @@
       </div>
     </div>
     <div id="llmBox" class="llm-box">
+      <label class="free"><input type="checkbox" id="optFree"> <b>Pełna swoboda</b> – model dostaje tylko to, co postać czuje i widzi, i sam wymyśla, co chce zrobić (bez listy działań). Bardziej „żywe”, ale mały model częściej wymyśli coś niewykonalnego; najlepiej z Qwen2.5 1.5B albo Claude.</label>
       <div id="webBox" class="llm-box hidden">
         <div class="seed-row"><select id="webModel"></select><button id="webLoad" title="Pobierz i uruchom model">📥</button></div>
         <div class="progress hidden" id="webProg"><i></i></div>
@@ -141,6 +143,6 @@
   </div>
 </div>
 
-<script type="module" src="src/main.js?v=0.5.2"></script>
+<script type="module" src="src/main.js?v=0.6.0"></script>
 </body>
 </html>

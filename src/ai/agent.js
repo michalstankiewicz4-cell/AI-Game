@@ -3,6 +3,7 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import { llm } from './llm.js';
+import { mapIntent } from './intent.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
@@ -96,8 +97,12 @@ export class Agent {
   }
   event(key, ctx) { this.speak(eventLine(key, ctx), true); }
   // odpowiedź modelu językowego
-  onLLM({ label, thought, at }) {
+  onLLM({ label, thought, intent, at }) {
     if (!this.alive) return;
+    if (intent != null) { // pełna swoboda: przetłumacz zamiar na dostępne działanie
+      label = intent ? mapIntent(intent, this.allLabels || []) : null;
+      this.llmIntent = { text: intent, label, t: this.world.time };
+    }
     if (thought) { this.llmSaid = true; this.speak(thought, true); this.llmSaid = false; this.notes = []; }
     if (label && this.task && label !== this.lastLabel && !this.task.urgent && this.world.time - at < 30) {
       this.llmPick = { label, at };

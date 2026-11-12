@@ -22,6 +22,19 @@ Wtedy:
 - `mysl` trafia do dymka i do czatu z oznaczeniem 🤖,
 - `wybor` przerywa bieżące zadanie (o ile nie jest pilne) i przy następnej decyzji wygrywa, chyba że kod gry widzi krytyczną potrzebę.
 
+## Pełna swoboda (przełącznik w menu)
+Model nie dostaje listy działań ani notatek ze skryptu, tylko to, co postać:
+- **czuje:** potrzeby opisane słowami, np. „bardzo chce ci się pić”,
+- **widzi i pamięta w pobliżu:** drzewa, krzaki, skały, staw, morze i ludzi, z kierunkami,
+- **ma i umie:** przedmioty, narzędzia, znane receptury i jadalne rzeczy.
+
+Model odpowiada `{"mysl": "...", "zamiar": "ściąć drzewo"}`. Gra (`src/ai/intent.js`, `mapIntent`) dopasowuje zamiar po słowach kluczowych do działań, które są teraz możliwe:
+- wygrywa działanie z największą liczbą trafień,
+- przy remisie wygrywa to, które wyżej ocenia skrypt,
+- zamiaru, którego nie da się wykonać (np. „zatańczyć” albo wędka bez liny), gra nie wykonuje, tylko pokazuje w karcie postaci jako „(nie da się teraz)” i przypomina modelowi przy następnym pytaniu.
+
+Krytyczne potrzeby nadal mają pierwszeństwo. Mały model częściej wymyśla rzeczy niewykonalne, więc lepiej sprawdza się Qwen2.5 1.5B albo Claude.
+
 ## Model w przeglądarce (za darmo)
 Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN jsDelivr. Model liczy na karcie graficznej przez WebGPU, a pliki pobiera z Hugging Face. Po pierwszym pobraniu zostają w pamięci przeglądarki.
 
