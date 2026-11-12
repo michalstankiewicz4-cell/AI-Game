@@ -201,7 +201,7 @@ export class Renderer {
     // płonące pochodnie świecą jak małe ogniska
     for (const a of agents) {
       const g = this.agentMeshes.get(a);
-      if (g && a.alive && !a.asleep && a.held === 'torch' && a.torchBurn > 0 && g.visible) fires.push({ g, k: 0.45 + Math.sin(rt * 15 + a.id) * 0.05, d: g.position.distanceToSquared(this.controls.target), torch: true });
+      if (g && a.alive && !a.asleep && a.heldL === 'torch' && a.torchBurn > 0 && g.visible) fires.push({ g, k: 0.45 + Math.sin(rt * 15 + a.id) * 0.05, d: g.position.distanceToSquared(this.controls.target), torch: true });
     }
     fires.sort((a, b) => a.d - b.d);
     this.fireLights.forEach((l, n) => {
@@ -294,21 +294,28 @@ export class Renderer {
       const moving = a.task && a.task.path && a.task.path.length > 0;
       const bob = moving ? Math.abs(Math.sin(rt * 10 + a.id)) * 0.06 : 0;
       g.position.set(ax, gy + bob, az);
-      const arm = g.getObjectByName('arm');
+      const arm = g.getObjectByName('arm'), armL = g.getObjectByName('armL');
       if (!a.alive || a.asleep) {
         g.rotation.set(-Math.PI / 2, af, 0, 'YXZ'); g.position.y = gy + 0.18;
         if (!a.alive) g.getObjectByName('body').material.color.set(0x777777);
       } else {
         g.rotation.set(0, af, 0);
         arm.rotation.x = a.working ? Math.sin(rt * 9 + a.id) * 1.0 - 0.6 : moving ? Math.sin(rt * 10) * 0.4 : 0;
+        // lewa ręka: z pochodnią albo tarczą trzymana przed sobą, pusta macha przy chodzeniu
+        armL.rotation.x = a.heldL ? -0.7 : moving ? -Math.sin(rt * 10) * 0.4 : 0;
       }
       // przedmiot w ręku
       const want = !a.alive || a.asleep ? null : ({ ironAxe: 'axe', ironPick: 'pickaxe' }[a.held] || a.held || null);
       if (g.userData.held !== want) {
-        for (const c of arm.children) c.visible = c.name === 'h_' + want;
+        for (const c of arm.children) if (c.name !== 'hand') c.visible = c.name === 'h_' + want;
         g.userData.held = want;
       }
-      if (want === 'torch') { const f = arm.getObjectByName('tflame'); if (f) f.scale.set(1, 1 + Math.sin(rt * 15 + a.id) * 0.25, 1); }
+      const wantL = !a.alive || a.asleep ? null : a.heldL || null;
+      if (g.userData.heldL !== wantL) {
+        for (const c of armL.children) if (c.name !== 'hand') c.visible = c.name === 'h_' + wantL;
+        g.userData.heldL = wantL;
+      }
+      if (wantL === 'torch') { const f = armL.getObjectByName('tflame'); if (f) f.scale.set(1, 1 + Math.sin(rt * 15 + a.id) * 0.25, 1); }
       g.getObjectByName('ring').visible = a === selected;
       const seenNow = a === eye || inCone(a.x, a.z);
       g.visible = seenNow;

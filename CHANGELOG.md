@@ -3,6 +3,10 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.23.1] - 2026-11-12
+### Poprawione
+- Postać ma dwie ręce. W prawej trzyma narzędzie albo broń (siekierę przy ścinaniu, kilof przy kopaniu, nóż, motykę, wędkę, łuk), a w lewej po zmroku płonącą pochodnię, w walce tarczę. Nie ścina już drzew pochodnią. Łuk trzyma oburącz, więc wtedy odkłada pochodnię. Karta postaci pokazuje obie ręce.
+
 ## [0.23.0] - 2026-11-12
 ### Dodane
 - Nowe receptury do odkrycia:
@@ -215,6 +219,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.23.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.23.1
 [0.23.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.23.0
 [0.22.2]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.2
 [0.22.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.1

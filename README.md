@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.23.0 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.23.1 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -20,7 +20,7 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Klimat umiarkowany:** temperatura zmienia się w ciągu doby i z dnia na dzień. To, że ogień i dach grzeją, postacie odkrywają same.
 - **Rzemiosło:** drzewo → kłody, gałęzie i liście; kłoda → deski (toporkiem); wodorosty → lina; dalej wędka, włócznia, ognisko (wypala się i trzeba je podsycać), ruszt, namiot, szałas, stół rzemieślniczy, łóżko, żelazne narzędzia, nóż kamienny, motyka, drewniana miska, łuk ze strzałami i ubranie ze skóry. Niektóre receptury wychodzą tylko przy ogniu albo przy stole.
 - **Budowanie z desek:** deski kładzione pojedynczo jako podłoga, ściana albo skos, przyciągane do siatki, z nazwami, do zdjęcia i przeniesienia. Model językowy dostaje analizę kształtu budowy (same liczby) i może wydawać polecenia. Bez nich postacie budują metodą prób i błędów; dom (przykryte, obudowane pola grzeją) wychodzi sam albo wcale.
-- **Noc i pochodnie:** w nocy postać widzi na ok. 1/4 dziennego zasięgu, z pochodnią w ręku na połowę. Pochodnię odkrywa się i zapala przy ognisku. Postać trzyma w ręku przedmiot z plecaka: pochodnię, broń albo narzędzie.
+- **Noc i pochodnie:** w nocy postać widzi na ok. 1/4 dziennego zasięgu, z pochodnią w ręku na połowę. Pochodnię odkrywa się i zapala przy ognisku. Postać ma dwie ręce: w prawej narzędzie albo broń, w lewej pochodnię albo tarczę.
 - **Uprawa i łowy:** nasiona z jagód sieje się na grządkach przygotowanych motyką; miska nosi wodę; dzika skóruje się nożem (mięso i skóra), ptaki dają mięso i pióra na strzały do łuku.
 - **Mosty:** budowane segment po segmencie (2 deski + 1 lina), od obu brzegów.
 - **AI:** decyzje oparte na użyteczności (utility AI) – w panelu postaci widać, co rozważa. Każdy agent ma charakter.

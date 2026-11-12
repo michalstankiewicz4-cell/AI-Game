@@ -308,18 +308,18 @@ export class Agent {
     if (this.visionT <= 0 && !this.asleep) { this.visionT = 0.3; this.see(false); }
   }
 
-  // co postać trzyma w ręku: po zmroku płonącą pochodnię, w walce broń, przy pracy narzędzie
+  // co postać trzyma w rękach: w prawej narzędzie albo broń, w lewej po zmroku płonącą pochodnię, a w walce tarczę
   updateHeld(dt) {
     const w = this.world;
     // pochodnia pali się tylko w ręku (w dzień postać ją gasi i chowa)
-    if (this.torchBurn > 0 && this.held === 'torch') {
+    if (this.torchBurn > 0 && this.heldL === 'torch') {
       this.torchBurn -= dt;
-      if (this.torchBurn <= 0) { this.torchBurn = 0; if (this.held === 'torch') this.held = null; this.speak('Pochodnia mi zgasła...', true); }
+      if (this.torchBurn <= 0) { this.torchBurn = 0; this.heldL = null; this.speak('Pochodnia mi zgasła...', true); }
     }
     const dark = w.daylight() < 0.35;
     // zapalenie pochodni od palącego się ogniska
     if (dark && !this.asleep && !(this.torchBurn > 0) && this.inv.torch > 0 && this.known.has('torch') && this.nearStructure('campfire', 2.6)) {
-      this.inv.torch--; this.torchBurn = TORCH.burn; this.held = 'torch';
+      this.inv.torch--; this.torchBurn = TORCH.burn; this.heldL = 'torch';
       this.say('zapala pochodnię 🔥');
     }
     const lbl = (this.task && this.task.label) || '';
@@ -329,13 +329,18 @@ export class Agent {
     else if (/grządk|ziemię|motyk/i.test(lbl) && this.tools.hoe) h = 'hoe';
     else if (/łuk/i.test(lbl) && this.tools.bow) h = 'bow';
     else if (this.fightBoar || /dzik/i.test(lbl)) h = this.tools.sword ? 'sword' : this.tools.spear ? 'spear' : this.tools.bow && this.inv.arrows > 0 ? 'bow' : 'axe';
-    else if (dark && this.torchBurn > 0) h = 'torch';
     else if (/Ścina|Bada drzewo|Bada palm|deski|Ciosa/i.test(lbl)) h = this.tools.ironAxe ? 'ironAxe' : 'axe';
     else if (/Kopie|skał|kamie|kopalni/i.test(lbl)) h = this.tools.ironPick ? 'ironPick' : 'pickaxe';
     else if (/Łowi|ryb/i.test(lbl) && this.tools.rod) h = 'rod';
     else if (/ptak/i.test(lbl) && this.tools.spear) h = 'spear';
     else h = this.tools.sword ? 'sword' : 'axe';
     this.held = h;
+    // lewa ręka: łuk trzyma się oburącz; w walce tarcza, a po zmroku pochodnia
+    const fight = !!this.fightBoar || /dzik/i.test(lbl);
+    if (this.asleep || h === 'bow') this.heldL = null;
+    else if (fight && this.tools.shield) this.heldL = 'shield';
+    else if (dark && this.torchBurn > 0) this.heldL = 'torch';
+    else this.heldL = null;
   }
 
   runTask(dt) {

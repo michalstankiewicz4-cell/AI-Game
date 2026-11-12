@@ -121,10 +121,10 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Ptaki:** upolowany ptak daje mięso i 2 pióra.
 - **Łuk:** ze strzałami trafia ptaka częściej niż włócznia (75% zamiast 50% na start). Postać z łukiem i strzałami może też walczyć z dzikiem i na niego polować.
 
-## Noc, pochodnie i przedmiot w ręku
+## Noc, pochodnie i przedmioty w rękach
 - **Widoczność:** w dzień postać widzi na 18 pól. W nocy widzi na ok. 1/4 tego (4–5 pól), a z płonącą pochodnią w ręku albo przy palącym się ognisku na połowę (9 pól). O zmierzchu i świcie zasięg zmienia się płynnie.
 - **Pochodnia:** robi się ją przy ognisku (zapas 2 sztuk). Po zmroku postać idzie do ogniska i od niego zapala pochodnię. Pali się tylko w ręku, w dzień postać ją gasi i chowa.
-- **W ręku:** postać trzyma jeden przedmiot z plecaka: po zmroku pochodnię, w walce z dzikiem miecz albo włócznię, przy ścinaniu siekierę, przy kopaniu kilof, przy łowieniu wędkę. Widać to na modelu postaci i w jej karcie („✋ W ręku”), razem z aktualnym zasięgiem wzroku.
+- **Dwie ręce:** w prawej postać trzyma narzędzie albo broń: w walce z dzikiem miecz, włócznię albo łuk, przy ścinaniu siekierę, przy kopaniu kilof, przy łowieniu wędkę, przy skórowaniu i drążeniu nóż, przy grządce motykę. W lewej trzyma po zmroku płonącą pochodnię, a w walce tarczę. Łuk trzyma oburącz, więc wtedy pochodnię odkłada (nie pali się). Widać to na modelu postaci i w jej karcie („✋ W prawej… w lewej…”), razem z aktualnym zasięgiem wzroku.
 - Model językowy dostaje informację, że jest ciemno i na ile kroków postać widzi.
 
 ## Budowanie z desek
