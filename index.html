@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wyspy AI – symulacja przetrwania</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.min.js" } }
+</script>
+</head>
+<body>
+<div id="app"></div>
+<div id="labels"></div>
+
+<!-- ekran startowy -->
+<div id="menu" class="overlay">
+  <div class="menu-card">
+    <h1>🏝️ Wyspy AI</h1>
+    <p class="sub">Symulacja przetrwania, w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.</p>
+    <div class="opt">
+      <div class="opt-label">Liczba AI</div>
+      <div class="seg" id="optAgents">
+        <button data-v="1">1</button><button data-v="2">2</button><button data-v="3" class="on">3</button><button data-v="4">4</button>
+      </div>
+    </div>
+    <div class="opt">
+      <div class="opt-label">Liczba wysp</div>
+      <div class="seg" id="optIslands">
+        <button data-v="1">1</button><button data-v="2" class="on">2</button><button data-v="3">3</button><button data-v="4">4</button>
+      </div>
+    </div>
+    <div class="opt">
+      <div class="opt-label">Ziarno świata</div>
+      <div class="seed-row"><input id="optSeed" type="number" min="1" max="999999"><button id="seedRnd" title="Losuj">🎲</button></div>
+    </div>
+    <div id="modeDesc" class="mode-desc"></div>
+    <button id="startBtn" class="primary">▶ Start</button>
+    <div class="help">
+      <b>Sterowanie:</b> lewy przycisk myszy obraca kamerę, prawy przesuwa, kółko przybliża. WASD / strzałki przesuwają kamerę.
+      Kliknij agenta, by go śledzić (F wyłącza śledzenie). V lub „👁️ Oczami AI” pokazuje stożek widzenia postaci i jej pamięć – czego nie widziała, jest we mgle. Spacja = pauza, 1–4 = prędkość.
+    </div>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div id="topwrap">
+  <div id="topbar">
+    <div class="clock"><span id="dayLbl">Dzień 1</span> <span id="timeLbl">07:00</span> <span id="phaseLbl"></span></div>
+    <div class="speed">
+      <button id="pauseBtn" title="Pauza (spacja)">⏸</button>
+      <button data-speed="1" class="on">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button><button data-speed="8">8×</button>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="tLabels" checked> Imiona</label>
+      <label><input type="checkbox" id="tBubbles" checked> Dymki</label>
+      <button id="aiViewBtn" title="Pokaż stożek widzenia i pamięć wybranej postaci (V)">👁️ Oczami AI</button>
+      <button id="menuBtn">☰ Menu</button>
+    </div>
+  </div>
+  <div id="bridgeBar"><span id="bridgeLbl"></span><div class="bar"><div id="bridgeFill"></div></div></div>
+  </div>
+
+  <div id="agents"></div>
+  <div id="detail" class="hidden"></div>
+
+  <div id="feed">
+    <div class="tabs"><button data-tab="chat" class="on">🎙️ Komentarze na żywo</button><button data-tab="log">📜 Dziennik</button><button id="feedMin" title="Zwiń">–</button></div>
+    <div id="chat" class="feed-body"></div>
+    <div id="log" class="feed-body hidden"></div>
+  </div>
+</div>
+
+<div id="gameover" class="overlay hidden">
+  <div class="menu-card">
+    <h1>💀 Koniec gry</h1>
+    <p id="goText"></p>
+    <button id="goRestart" class="primary">Nowa gra</button>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
