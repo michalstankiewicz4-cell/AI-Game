@@ -15,9 +15,11 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Percepcja i pamięć:** stożek widzenia (im dalej, tym węższy), pamięć tego, co widział; trzeba się rozejrzeć, by odświeżyć wiedzę. Tryb „👁️ Oczami AI” pokazuje stożek i mgłę niewiedzy.
 - **Rozmowy:** agenci spotykają się, wymieniają wiedzą o mapie, recepturami, doświadczeniem (umiejętności rosną z praktyką) i przedmiotami.
 - **Komentarze na żywo:** dymki z myślami postaci i narrator.
+- **Opcjonalnie Claude API:** w menu „Mózg postaci” można włączyć Claude (mowa albo decyzje + mowa). Klucz API wpisujesz w przeglądarce; zostaje tylko w localStorage i trafia wyłącznie do api.anthropic.com. Licznik tokenów z szacunkowym kosztem jest w górnym pasku, a po przekroczeniu limitu postacie wracają do lokalnego AI.
+- **Okienka:** „Postacie” (klik przenosi kamerę do postaci) i karta postaci dają się przesuwać za nagłówek.
 
 ## Sterowanie
-Lewy przycisk – obrót, prawy – przesuwanie, kółko – zoom, WASD/strzałki – ruch kamery. Klik na postać – śledzenie (F), V – oczami AI, spacja – pauza, 1–4 – prędkość.
+Lewy przycisk – obrót, prawy – przesuwanie, kółko – zoom, WASD/strzałki – ruch kamery. Klik na postać (na mapie lub w okienku „Postacie”) – przelot i śledzenie (F wyłącza), Tab – następna postać, V – oczami AI, spacja – pauza, 1–4 – prędkość.
 
 ## Struktura projektu
 ```
@@ -42,11 +44,12 @@ src/
     knowledge.js      ciekawość, eksperymenty, odkrywanie receptur
     social.js         rozmowy i wymiana wiedzy/przedmiotów
     commentary.js     myśli w dymkach i narrator
+    llm.js            opcjonalny tryb Claude API, licznik tokenów i kosztu
   render/
     renderer.js       scena 3D, światło, aktualizacja co klatkę
     models.js         modele low-poly
     terrain.js        teren, morze, mgła niewiedzy
-  ui/                 menu, panele, sterowanie, komentarze
+  ui/                 menu, panele, sterowanie, komentarze, ustawienia Claude
 ```
 
 ## Uruchomienie lokalne

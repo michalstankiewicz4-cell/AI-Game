@@ -34,11 +34,26 @@
       <div class="opt-label">Ziarno świata</div>
       <div class="seed-row"><input id="optSeed" type="number" min="1" max="999999"><button id="seedRnd" title="Losuj">🎲</button></div>
     </div>
+    <div class="opt">
+      <div class="opt-label">Mózg postaci</div>
+      <div class="seg" id="optLlm">
+        <button data-v="off" class="on">Lokalny</button><button data-v="talk">Claude: mowa</button><button data-v="decide">Claude: decyzje</button>
+      </div>
+    </div>
+    <div id="llmBox" class="llm-box hidden">
+      <div class="seed-row"><input id="llmKey" type="password" placeholder="Klucz API Anthropic (sk-ant-...)" autocomplete="off"><button id="llmKeyClear" title="Usuń klucz z przeglądarki">🗑️</button></div>
+      <div class="seed-row">
+        <select id="llmModel"></select>
+        <label class="budget">limit $<input id="llmBudget" type="number" min="0.05" step="0.05"></label>
+      </div>
+      <div class="llm-note">Klucz zostaje tylko w tej przeglądarce (localStorage) i idzie wyłącznie do api.anthropic.com. Każde zapytanie kosztuje według cennika Twojego konta, więc pilnuj licznika tokenów. Po osiągnięciu limitu postacie wracają do lokalnego AI.
+      „Mowa”: Claude układa wypowiedzi postaci. „Decyzje”: Claude dodatkowo wybiera działanie spośród opcji lokalnego AI (przy krytycznych potrzebach lokalne AI ma pierwszeństwo).</div>
+    </div>
     <div id="modeDesc" class="mode-desc"></div>
     <button id="startBtn" class="primary">▶ Start</button>
     <div class="help">
       <b>Sterowanie:</b> lewy przycisk myszy obraca kamerę, prawy przesuwa, kółko przybliża. WASD / strzałki przesuwają kamerę.
-      Kliknij agenta, by go śledzić (F wyłącza śledzenie). V lub „👁️ Oczami AI” pokazuje stożek widzenia postaci i jej pamięć – czego nie widziała, jest we mgle. Spacja = pauza, 1–4 = prędkość.
+      Kliknij agenta (na mapie albo w okienku „Postacie”), by do niego przelecieć i go śledzić; Tab przełącza postacie, F wyłącza śledzenie. Okienka chwytasz za nagłówek i przesuwasz. V lub „👁️ Oczami AI” pokazuje stożek widzenia postaci i jej pamięć – czego nie widziała, jest we mgle. Spacja = pauza, 1–4 = prędkość.
     </div>
   </div>
 </div>
@@ -56,13 +71,17 @@
       <label><input type="checkbox" id="tLabels" checked> Imiona</label>
       <label><input type="checkbox" id="tBubbles" checked> Dymki</label>
       <button id="aiViewBtn" title="Pokaż stożek widzenia i pamięć wybranej postaci (V)">👁️ Oczami AI</button>
+      <button id="tokBtn" class="hidden" title="Licznik tokenów Claude API (kliknij, by wyzerować)"></button>
       <button id="menuBtn">☰ Menu</button>
     </div>
   </div>
   <div id="bridgeBar"><span id="bridgeLbl"></span><div class="bar"><div id="bridgeFill"></div></div></div>
   </div>
 
-  <div id="agents"></div>
+  <div id="agentsWin">
+    <div class="win-h"><span>👥 Postacie</span><span class="hint">kliknij, by pokazać</span><button id="agentsMin" title="Zwiń">–</button></div>
+    <div id="agents"></div>
+  </div>
   <div id="detail" class="hidden"></div>
 
   <div id="feed">

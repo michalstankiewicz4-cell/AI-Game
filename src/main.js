@@ -7,6 +7,7 @@ import { addFeed, clearFeed, initFeed } from './ui/feed.js';
 import { initMenu, showMenu, rndSeed } from './ui/menu.js';
 import { initControls } from './ui/controls.js';
 import { buildAgentCards, renderDetail, updateHud } from './ui/panels.js';
+import { initLlmMenu, updateTokens, makeDraggable } from './ui/llmPanel.js';
 
 const state = {
   world: null, agents: [], narrator: null, social: null, speed: 1, paused: false, selected: null,
@@ -20,6 +21,7 @@ const feed = (target, html, cls) => addFeed(state.world, target, html, cls);
 function select(a) {
   state.selected = a;
   state.opts.follow = !!a;
+  if (a) renderer.flyTo();
   $('detail').classList.toggle('hidden', !a);
   document.querySelectorAll('.acard').forEach((c) => c.classList.toggle('sel', a && +c.dataset.id === a.id));
   if (a) renderDetail(state);
@@ -37,6 +39,10 @@ function toggleAiView() {
 
 initFeed();
 initMenu(state.cfg, startGame);
+initLlmMenu();
+makeDraggable($('detail'), 'h3');
+makeDraggable($('agentsWin'), '.win-h');
+$('agentsMin').onclick = (e) => { const w = $('agentsWin'); w.classList.toggle('min'); e.target.textContent = w.classList.contains('min') ? '+' : '–'; };
 const panCamera = initControls(state, renderer, { select, setSpeed, updatePause, toggleAiView });
 $('menuBtn').onclick = () => { state.paused = true; updatePause(); showMenu(); };
 $('goRestart').onclick = () => { $('gameover').classList.add('hidden'); rndSeed(); showMenu(); };
@@ -51,7 +57,7 @@ function startGame() {
   state.opts.follow = false;
   const world = game.world;
   clearFeed();
-  world.onChat = (a, text) => feed('chat', `<b style="color:${hex(a.color)}">${a.name}:</b> ${esc(text)}`);
+  world.onChat = (a, text, ai) => feed('chat', `<b style="color:${hex(a.color)}">${ai ? '🤖 ' : ''}${a.name}:</b> ${esc(text)}`);
   renderer.build(world);
   // kamera nad wyspą startową
   const c = world.islandDefs[0];
@@ -90,7 +96,7 @@ function loop(now) {
     panCamera(rdt);
     renderer.frame(w, state.agents, state.selected, now / 1000, state.opts);
     hudT -= rdt;
-    if (hudT <= 0) { hudT = 0.25; updateHud(state); }
+    if (hudT <= 0) { hudT = 0.25; updateHud(state); updateTokens(); }
   }
   requestAnimationFrame(loop);
 }

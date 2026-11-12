@@ -234,12 +234,22 @@ export class Renderer {
     // śledzenie wybranego agenta
     if (selected && opts.follow) {
       const target = new THREE.Vector3(selected.x, world.groundHeight(selected.x, selected.z), selected.z);
-      const delta = target.clone().sub(this.controls.target).multiplyScalar(0.08);
+      const flying = this.flyT > 0;
+      const delta = target.clone().sub(this.controls.target).multiplyScalar(flying ? 0.14 : 0.08);
       this.controls.target.add(delta); this.camera.position.add(delta);
+      if (flying) {
+        this.flyT -= 1 / 60;
+        // przy przelocie do postaci podjedź bliżej, jeśli kamera jest daleko
+        const off = this.camera.position.clone().sub(this.controls.target);
+        const d = off.length();
+        if (d > 38) this.camera.position.copy(this.controls.target).add(off.multiplyScalar((d - (d - 38) * 0.1) / d));
+      }
     }
     this.controls.update();
     this.renderer.render(scene, this.camera);
   }
+
+  flyTo() { this.flyT = 1.5; }
 
   pick(clientX, clientY) {
     const m = new THREE.Vector2(clientX / window.innerWidth * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);

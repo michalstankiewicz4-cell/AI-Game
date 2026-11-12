@@ -16,7 +16,7 @@ export function buildAgentCards(state, select) {
     </div>`).join('');
   document.querySelectorAll('.acard').forEach((c) => c.onclick = () => {
     const a = state.agents[+c.dataset.id];
-    select(state.selected === a ? null : a);
+    select(a); // ponowne kliknięcie znów centruje kamerę na postaci
   });
 }
 export function updateAgentCards(state) {
@@ -24,7 +24,7 @@ export function updateAgentCards(state) {
     const c = document.querySelector(`.acard[data-id="${a.id}"]`); if (!c) continue;
     c.querySelectorAll('i[data-k]').forEach((i) => { i.style.width = a[i.dataset.k] + '%'; });
     c.querySelector('.act').textContent = !a.alive ? '💀 Nie żyje' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔 Myśli...';
-    c.querySelector('.st').textContent = a.alive ? `🏝️${a.island + 1}` : '';
+    c.querySelector('.st').textContent = a.alive ? `${a.llmDriven ? '🤖 ' : ''}🏝️${a.island + 1}` : '';
     c.classList.toggle('dead', !a.alive);
   }
 }
@@ -39,7 +39,7 @@ export function renderDetail(state) {
     <button class="close" onclick="this.parentNode.classList.add('hidden')">✕</button>
     <h3 style="color:${hex(a.color)}">${a.name}</h3><div style="color:#9fb2c8">${a.role} · ${a.alive ? 'żyje' : 'nie żyje'} · wyspa ${a.island + 1}</div>
     <h4>Potrzeby</h4>${barsHtml(a)}
-    <h4>Teraz</h4><div>${!a.alive ? '💀' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔'}</div>
+    <h4>Teraz</h4><div>${!a.alive ? '💀' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔'}${a.llmDriven ? ' <span title="Wybór Claude">🤖</span>' : ''}</div>
     ${a.bubble ? `<div style="margin-top:4px;color:#cfe3f2">💬 „${esc(a.bubble.text)}”</div>` : ''}
     <h4>Wiedza</h4><div>🗺️ Zna ${(a.seenCount / (W * H) * 100).toFixed(0)}% mapy · 🧠 pamięta ${a.mem.size} miejsc z zasobami${a.memBirds.size ? ` · 🐦 ${a.memBirds.size} ptaków` : ''}</div>
     <h4>Rozważane decyzje (użyteczność)</h4><div class="util">${util}</div>

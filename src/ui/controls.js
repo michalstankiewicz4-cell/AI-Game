@@ -16,6 +16,12 @@ export function initControls(state, renderer, api) {
     if (e.key === ' ') { state.paused = !state.paused; api.updatePause(); e.preventDefault(); }
     if (['1', '2', '3', '4'].includes(e.key)) api.setSpeed([1, 2, 4, 8][+e.key - 1]);
     if (e.key.toLowerCase() === 'f') state.opts.follow = !state.opts.follow;
+    if (e.key === 'Tab' && state.agents.length) {
+      e.preventDefault();
+      const list = state.agents.filter((a) => a.alive).length ? state.agents.filter((a) => a.alive) : state.agents;
+      const k = list.indexOf(state.selected);
+      api.select(list[(k + (e.shiftKey ? list.length - 1 : 1)) % list.length]);
+    }
     if (e.key.toLowerCase() === 'v') api.toggleAiView();
     if (e.key === 'Escape') api.select(null);
   });
