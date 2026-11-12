@@ -3,6 +3,18 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.12.0] - 2026-11-12
+### Dodane
+- Klimat umiarkowany: temperatura powietrza zmienia się w ciągu doby (najzimniej ok. 4:00, najcieplej ok. 15:00) i z dnia na dzień, a na wzgórzach jest chłodniej. O świcie narrator podaje prognozę, a temperatura jest w górnym pasku.
+- Temperatura ciała postaci: wychłodzenie i przegrzanie odbierają zdrowie, zimno przyspiesza głód, a gorąco pragnienie. Temperatura jest w okienku „Postacie” i w karcie postaci.
+- Postacie same odkrywają, że przy ognisku i pod dachem jest cieplej. Dopiero wtedy ogrzewają się przy ogniu i chętniej budują ognisko lub szałas. Model językowy nie dostaje tej wiedzy wprost.
+### Zmienione
+- Domyślnie 1 wyspa i 1 AI.
+- Karta postaci odświeża się raz na sekundę zamiast czterech razy, bo pełne przebudowanie HTML było najcięższą częścią interfejsu.
+### Naprawione
+- Przełączniki „Imiona” i „Dymki” działają niezależnie: po wyłączeniu imion dymki nadal są widoczne.
+- Łowienie bez wędki jest zablokowane także w samym zadaniu, nie tylko w decyzjach.
+
 ## [0.11.0] - 2026-11-12
 ### Dodane
 - Loadery: przycisk Start pokazuje „Ładowanie gry…”, dopóki moduły się nie wczytają; po kliknięciu Start widać „Budowanie świata…” do pierwszej narysowanej klatki; w grze, na dole ekranu, pasek ładowania modelu w przeglądarce z procentem i nazwą pliku.
@@ -96,6 +108,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.12.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.12.0
 [0.11.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.11.0
 [0.10.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.10.0
 [0.9.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.9.0

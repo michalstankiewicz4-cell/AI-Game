@@ -241,13 +241,15 @@ export class Renderer {
       // etykieta
       const el = this.labels.get(a);
       v.set(a.x, gy + 1.25, a.z).project(this.camera);
-      const visible = v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1 && opts.labels && seenNow;
+      // dymek: wypowiedź, a gdy model właśnie myśli nad odpowiedzią – „💭”
+      const text = !a.alive ? '💀' : a.asleep ? 'Zzz...' : a.bubble ? a.bubble.text : a.llmBusy ? '💭 …' : '';
+      // imię i dymek włącza się niezależnie: etykieta jest widoczna, gdy pokazuje choć jedno z nich
+      const visible = v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1 && seenNow && (opts.labels || (opts.bubbles && !!text));
       el.style.display = visible ? '' : 'none';
       if (visible) {
         el.style.transform = `translate(-50%, -100%) translate(${(v.x * 0.5 + 0.5) * wpx}px, ${(-v.y * 0.5 + 0.5) * hpx}px)`;
         const bubble = el.firstChild;
-        // dymek: wypowiedź, a gdy model właśnie myśli nad odpowiedzią – „💭”
-        const text = !a.alive ? '💀' : a.asleep ? 'Zzz...' : a.bubble ? a.bubble.text : a.llmBusy ? '💭 …' : '';
+        el.lastChild.style.display = opts.labels ? '' : 'none';
         if (bubble.textContent !== text) bubble.textContent = text;
         bubble.classList.toggle('script', !!(a.bubble && a.bubble.script));
         bubble.style.display = text && opts.bubbles ? '' : 'none';

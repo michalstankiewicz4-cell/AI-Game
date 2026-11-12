@@ -61,6 +61,7 @@ export const tasksMethods = {
   },
 
   taskFish(spot) {
+    if (!this.tools.rod) return null; // bez wędki nie da się łowić
     const task = {
       fishSpot: spot, path: this.pathTo(spot.i, spot.j), face: spot.water, label: '🎣 Łowi ryby',
       act: (dt, t) => {
@@ -126,6 +127,14 @@ export const tasksMethods = {
         if (!this.world.isNight() && this.energy > 75) return 'done';
         return null;
       },
+    };
+  },
+
+  taskWarm(fire) {
+    const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
+    return {
+      path: this.pathTo(spot.i, spot.j), face: fire.s, label: '🔥 Grzeje się', warm: true,
+      act: (dt, t) => (this.bodyT >= 36.7 || t.elapsed > 30 ? 'done' : null),
     };
   },
 

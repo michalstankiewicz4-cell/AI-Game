@@ -24,7 +24,10 @@ export function updateAgentCards(state) {
     const c = document.querySelector(`.acard[data-id="${a.id}"]`); if (!c) continue;
     c.querySelectorAll('i[data-k]').forEach((i) => { i.style.width = a[i.dataset.k] + '%'; });
     c.querySelector('.act').textContent = !a.alive ? '💀 Nie żyje' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔 Myśli...';
-    c.querySelector('.st').textContent = a.alive ? `${a.llmDriven ? '🤖 ' : ''}🏝️${a.island + 1}` : '';
+    const st = c.querySelector('.st');
+    st.textContent = a.alive ? `${a.llmDriven ? '🤖 ' : ''}🌡️${a.bodyT.toFixed(1)}° 🏝️${a.island + 1}` : '';
+    st.classList.toggle('cold', a.alive && a.bodyT < 36);
+    st.classList.toggle('hot', a.alive && a.bodyT > 37.5);
     c.classList.toggle('dead', !a.alive);
   }
 }
@@ -45,6 +48,7 @@ export function renderDetail(state) {
   el.querySelector('.drole').textContent = `${a.role} · ${a.alive ? 'żyje' : 'nie żyje'} · wyspa ${a.island + 1}`;
   el.querySelector('.dbody').innerHTML = `
     <h4>Potrzeby</h4>${barsHtml(a)}
+    <div class="temp">🌡️ Ciało <b class="${a.bodyT < 36 ? 'cold' : a.bodyT > 37.5 ? 'hot' : ''}">${a.bodyT.toFixed(1)}°C</b> · odczuwalnie ${Math.round(a.feltT)}°C · powietrze ${Math.round(state.world.airTemp(a.i, a.j))}°C${a.bodyT < 35 ? ' · 🥶 wychłodzenie!' : a.bodyT < 36 ? ' · zimno' : a.bodyT > 39 ? ' · 🥵 przegrzanie!' : a.bodyT > 37.5 ? ' · gorąco' : ''}</div>
     <h4>Teraz</h4><div>${!a.alive ? '💀' : a.asleep ? '😴 Śpi' : a.task ? a.task.label : '🤔'}${a.llmDriven ? ' <span title="Wybór modelu językowego">🤖</span>' : ''}</div>
     ${a.llmIntent ? `<div class="intent">🤖 Zamiar: „${esc(a.llmIntent.text || '…')}” ${a.llmIntent.label ? `→ ${a.llmIntent.label}` : '<span class="no">(nie da się teraz)</span>'}</div>` : ''}
     ${a.bubble ? `<div style="margin-top:4px;color:#cfe3f2">💬 „${esc(a.bubble.text)}”</div>` : ''}
@@ -61,11 +65,13 @@ export function renderDetail(state) {
     </div>`;
 }
 
+let detailTick = 0;
 export function updateHud(state) {
   const w = state.world;
   $('dayLbl').textContent = `Dzień ${w.day()}`;
   $('timeLbl').textContent = w.clock();
-  $('phaseLbl').textContent = w.isNight() ? '🌙' : '☀️';
+  $('phaseLbl').textContent = `${w.isNight() ? '🌙' : '☀️'} 🌡️${Math.round(w.airTemp())}°C`;
+  $('phaseLbl').title = `Temperatura powietrza na poziomie morza: ${w.weatherWord(w.airTemp())}`;
   const { built, total } = w.bridgeTotals();
   $('bridgeBar').classList.toggle('hidden', total === 0);
   if (total) {
@@ -74,5 +80,6 @@ export function updateHud(state) {
     $('bridgeFill').style.width = (built / total * 100) + '%';
   }
   updateAgentCards(state);
-  if (state.selected && !$('detail').classList.contains('hidden')) renderDetail(state);
+  // karta postaci jest ciężka (pełne HTML), więc odświeża się raz na sekundę, a nie przy każdym odświeżeniu HUD
+  if (state.selected && !$('detail').classList.contains('hidden') && (detailTick = (detailTick + 1) % 4) === 0) renderDetail(state);
 }

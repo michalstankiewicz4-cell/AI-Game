@@ -14,6 +14,7 @@ const KEYWORDS = [
   ['Spać', ['spac', 'span', 'spie', 'sen', 'drzem', 'zasn', 'nocleg', 'polozyc']],
   ['Odpocząć', ['odpocz', 'odsap', 'relaks', 'usiad', 'zmecz']],
   ['Upiec jedzenie', ['piec', 'upiec', 'gotow', 'smaz', 'ugotow']],
+  ['Ogrzać się przy ognisku', ['ogrz', 'grzac', 'grzej', 'ciepl', 'zimn', 'marzn', 'zmarz']],
   ['Rozpalić ognisko', ['ognisk', 'ogien', 'ognia', 'rozpal']],
   ['Ścinać drzewo', ['scin', 'scia', 'drzew', 'drewn', 'rab', 'klod', 'siekier']],
   ['Ciosać deski', ['desk', 'cios']],
@@ -71,7 +72,9 @@ export function describeFree(a) {
     feel(a.thirst, ['zasycha ci w gardle, musisz natychmiast się napić', 'bardzo chce ci się pić', 'chce ci się pić']),
     feel(a.energy, ['padasz z nóg', 'jesteś bardzo zmęczony(a)', 'czujesz zmęczenie']),
     feel(a.health, ['czujesz, że umierasz', 'jest ci bardzo źle', 'nie czujesz się najlepiej']),
+    a.bodyT < 35.3 ? 'trzęsiesz się z zimna i drętwieją ci ręce' : a.bodyT < 36.1 ? 'jest ci zimno' : a.bodyT > 38.3 ? 'jest ci bardzo gorąco, kręci ci się w głowie' : a.bodyT > 37.5 ? 'jest ci gorąco' : null,
   ].filter(Boolean);
+  lines.push(`Na zewnątrz jest ${w.weatherWord(w.airTemp(a.i, a.j))}.`);
   lines.push(feels.length ? 'Czujesz: ' + feels.join(', ') + '.' : 'Czujesz się dobrze.');
   // co pamięta w pobliżu
   const near = new Map();

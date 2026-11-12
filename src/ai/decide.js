@@ -74,8 +74,13 @@ export const decideMethods = {
       if (w.isNight() && e < 85) s = Math.max(s, 0.5 + (1 - e / 100) * 0.4);
       if (s > 0) add(s, '😴 Spać', () => this.taskSleep(bfs));
     }
-    // --- gotowanie ---
+    // --- ciepło ---
     const fire = this.nearestStructure(bfs, 'campfire');
+    const cold = clamp((36.4 - this.bodyT) / 1.4, 0, 1); // 0 przy 36,4°C, 1 przy 35°C
+    if (cold > 0 && this.known.has('warmFire') && fire && fire.d < 40 && !this.nearStructure('campfire', 2.6)) {
+      add(cold * 1.3 + (this.bodyT < 35.3 ? 0.9 : 0) - fire.d * 0.004, '🔥 Ogrzać się przy ognisku', () => this.taskWarm(fire));
+    }
+    // --- gotowanie ---
     if (this.rawCount() > 0 && fire && fire.d < 40 && this.known.has('cook')) {
       add(0.42 + this.rawCount() * 0.05 + (this.hunger < 50 ? 0.15 : 0) - fire.d * 0.004, '🔥 Upiec jedzenie', () => this.taskCook(fire));
     }
@@ -88,8 +93,8 @@ export const decideMethods = {
     const myShelter = shelter && shelter.d < 25;
     if (!tools.rod && K('rod') && has(RECIPES.rod)) add(0.62 * this.w.fish, '🎣 Zrobić wędkę', () => this.taskCraft('rod', RECIPES.rod, 'robi wędkę z gałęzi i liny 🎣', true));
     if (!tools.spear && K('spear') && has(RECIPES.spear)) add(0.58 * this.w.hunt, '🔱 Zrobić włócznię', () => this.taskCraft('spear', RECIPES.spear, 'robi włócznię 🔱', true));
-    if (!myFire && K('campfire') && has(RECIPES.campfire)) add(0.7, '🔥 Rozpalić ognisko', () => this.taskBuild('campfire', RECIPES.campfire));
-    if (myFire && !myShelter && K('shelter') && has(RECIPES.shelter)) add(0.45, '🛖 Zbudować szałas', () => this.taskBuild('shelter', RECIPES.shelter));
+    if (!myFire && K('campfire') && has(RECIPES.campfire)) add(0.7 + (this.known.has('warmFire') ? cold * 0.5 : 0), '🔥 Rozpalić ognisko', () => this.taskBuild('campfire', RECIPES.campfire));
+    if (myFire && !myShelter && K('shelter') && has(RECIPES.shelter)) add(0.45 + (this.known.has('warmRoof') ? cold * 0.3 : 0), '🛖 Zbudować szałas', () => this.taskBuild('shelter', RECIPES.shelter));
     if (fire && fire.d < 30 && K('ironTool') && has(RECIPES.ironTool)) {
       if (!tools.ironPick) add(0.5 * this.w.mine, '⛏️ Wykuć żelazny kilof', () => this.taskForge('ironPick', fire));
       else if (!tools.ironAxe) add(0.48, '🪓 Wykuć żelazną siekierę', () => this.taskForge('ironAxe', fire));

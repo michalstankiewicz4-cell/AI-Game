@@ -6,8 +6,8 @@ Wyspy AI to symulacja: gracz nie steruje postaciami, tylko patrzy, jak rozbitkow
 Przycisk Start działa, gdy gra się wczyta (do tego czasu pokazuje „Ładowanie gry…”). Po kliknięciu widać „Budowanie świata…”, dopóki scena się nie zbuduje.
 
 W menu wybierasz:
-- **Liczbę AI:** od 1 do 4.
-- **Liczbę wysp:** od 1 do 4, w dowolnej kombinacji z liczbą AI.
+- **Liczbę AI:** od 1 do 4 (domyślnie 1).
+- **Liczbę wysp:** od 1 do 4 (domyślnie 1), w dowolnej kombinacji z liczbą AI.
 - **Ziarno świata:** ta sama liczba daje ten sam świat.
 - **Mózg postaci:** model w przeglądarce albo Claude API, opisane w [modele-jezykowe.md](modele-jezykowe.md).
 
@@ -21,6 +21,12 @@ Każda wyspa ma mniej więcej rozmiar ekranu. Przy kilku wyspach:
 - Zasoby: drzewa i palmy (odrastają po ścięciu), skały, krzaki z jagodami (owoce odrastają), wodorosty przy brzegu, a na wzgórzu kopalnia.
 - Zwierzęta: ptaki do polowania i ławice ryb do łowienia.
 - Cykl dnia i nocy: doba trwa 180 s czasu gry (`DAY_LENGTH`). W nocy postacie chętniej śpią.
+- Klimat umiarkowany (`world.airTemp`):
+  - średnia temperatura dnia to 7–21°C i zmienia się płynnie z dnia na dzień (cieplejsze i chłodniejsze dni),
+  - w ciągu doby temperatura waha się o ±3–6°C: najzimniej jest ok. 4:00, najcieplej ok. 15:00,
+  - na wzgórzach jest chłodniej,
+  - o świcie narrator podaje prognozę, a przed zimną nocą ostrzega.
+  - Temperaturę powietrza widać w górnym pasku.
 
 ## Potrzeby
 Każda postać ma cztery paski w skali 0–100, gdzie 100 oznacza stan najlepszy:
@@ -31,6 +37,17 @@ Każda postać ma cztery paski w skali 0–100, gdzie 100 oznacza stan najlepszy
 | 💧 Pragnienie | najszybciej | woda ze stawu |
 | ⚡ Energia | przy pracy | sen; szałas i ognisko przyspieszają |
 | ❤️ Zdrowie | gdy któryś pasek spadnie do 0 | samo wraca, gdy potrzeby są zaspokojone; w szałasie szybciej |
+
+### 🌡️ Temperatura ciała
+Normalna temperatura ciała to 36,6°C. Ciało powoli dąży do temperatury odczuwalnej:
+- **Odczuwalna temperatura:** powietrze, do tego ognisko w pobliżu (+14°C), dach szałasu (+7°C) i praca (+4°C), a we śnie −2°C.
+- **Poniżej 36°C:** szybciej rośnie głód.
+- **Poniżej 35°C:** wychłodzenie, które odbiera zdrowie.
+- **Powyżej 37,5°C:** szybciej rośnie pragnienie.
+- **Powyżej 39°C:** przegrzanie, które odbiera zdrowie.
+- **Zdrowie nie wraca,** gdy postać jest wychłodzona.
+
+Temperaturę ciała widać w okienku „Postacie” i w karcie postaci, razem z temperaturą odczuwalną.
 
 Postać ginie, gdy zdrowie spadnie do zera. Gra kończy się, gdy zginą wszyscy.
 

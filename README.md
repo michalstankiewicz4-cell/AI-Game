@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.11.0 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.12.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -12,9 +12,10 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - [Rozwój](docs/rozwoj.md): uruchomienie lokalne, testy, wersjonowanie
 
 ## Co jest w grze
-- **Tryby:** 1–4 AI × 1–4 wysp (dowolna kombinacja), ziarno świata.
+- **Tryby:** 1–4 AI × 1–4 wysp (dowolna kombinacja, domyślnie 1 × 1), ziarno świata.
 - **Świat:** ocean, duże wyspy low-poly, drzewa (odrastają), palmy, skały, krzaki z jagodami, wodorosty, stawy ze słodką wodą, kopalnia z rudą żelaza, ptaki, ryby, cykl dnia i nocy.
-- **Potrzeby:** głód, pragnienie, energia, zdrowie.
+- **Potrzeby:** głód, pragnienie, energia, zdrowie i temperatura ciała.
+- **Klimat umiarkowany:** temperatura zmienia się w ciągu doby i z dnia na dzień. To, że ogień i dach grzeją, postacie odkrywają same.
 - **Rzemiosło:** drzewo → kłody + gałęzie, kłoda → deski (toporkiem), wodorosty → lina, gałęzie + lina → wędka, włócznia, ognisko, szałas, żelazne narzędzia.
 - **Mosty:** budowane segment po segmencie (2 deski + 1 lina), od obu brzegów.
 - **AI:** decyzje oparte na użyteczności (utility AI) – w panelu postaci widać, co rozważa. Każdy agent ma charakter.
