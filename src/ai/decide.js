@@ -134,8 +134,8 @@ export const decideMethods = {
     if (!tools.spear && K('spear') && has(RECIPES.spear)) add(0.58 * this.w.hunt, '🔱 Zrobić włócznię', () => this.taskCraft('spear', RECIPES.spear, 'robi włócznię 🔱', true));
     if (fire && fire.d < 30 && !fire.s.grill && K('grill') && has(RECIPES.grill)) add(0.36 + (this.rawCount() ? 0.08 : 0), '🍢 Zrobić ruszt', () => this.taskGrill(fire, RECIPES.grill));
     if (!myRoof && K('tent') && has(RECIPES.tent)) add(0.5 + (this.known.has('warmRoof') ? cold * 0.3 : 0) + (w.isNight() ? 0.1 : 0), '⛺ Rozbić namiot', () => this.taskBuild('tent', RECIPES.tent));
-    if (!myBench && K('workbench') && has(RECIPES.workbench)) add(0.4, '🛠️ Zrobić stół rzemieślniczy', () => this.taskBuild('workbench', RECIPES.workbench));
-    if (myRoof && !(bedN && bedN.d < 25) && K('bed') && has(RECIPES.bed)) add(0.42, '🛏️ Zrobić łóżko', () => this.taskBuild('bed', RECIPES.bed));
+    if (!myBench && K('workbench') && has(RECIPES.workbench)) add(0.5, '🛠️ Zrobić stół rzemieślniczy', () => this.taskBuild('workbench', RECIPES.workbench));
+    if (myRoof && myBench && !(bedN && bedN.d < 25) && K('bed') && has(RECIPES.bed)) add(0.48, '🛏️ Zrobić łóżko', () => this.taskBuild('bed', RECIPES.bed));
     const chestN = this.nearestStructure(bfs, 'chest');
     const myChest = chestN && chestN.d < 25;
     const stashes = w.structures.filter((s) => s.kind === 'stash' && this.knownStructs.has(s.id) && s.items && Object.values(s.items).some((v) => v > 0)).length;
@@ -149,7 +149,7 @@ export const decideMethods = {
       this.buildQueue.length = 0;
       if (K('planks') && (myFire || myRoof || myChest)) {
         plankOp = this.scriptBuildOp();
-        if (plankOp && inv.planks >= 1) add(0.1 + 0.06 * this.w.build + Math.min(0.15, this.buildDrive() * 0.03) + (inv.planks >= 4 ? 0.04 : 0) - (w.isNight() ? 0.08 : 0), BUILD_LABEL, () => this.taskPlank(plankOp));
+        if (plankOp && inv.planks >= 1) add(0.1 + 0.06 * this.w.build + Math.min(0.15, this.buildDrive() * 0.03) + (inv.planks >= 4 ? 0.04 : 0) + (myFire && myRoof ? 0.12 : 0) - (w.isNight() ? 0.08 : 0), BUILD_LABEL, () => this.taskPlank(plankOp));
       }
     }
     // --- pochodnie: zrobić zapas przy ognisku, po zmroku zapalić ---
@@ -159,8 +159,8 @@ export const decideMethods = {
     }
     const danger = K('boarDanger') ? 0.2 : 0;
     if (!tools.sword && K('sword') && has(RECIPES.sword) && fire && fire.d < 30) add(0.42 + danger, '🗡️ Wykuć miecz', () => this.taskForgeSword(fire, RECIPES.sword));
-    if (!tools.shield && K('shield') && has(RECIPES.shield)) add(0.36 + danger, '🛡️ Zrobić tarczę', () => this.taskCraft('shield', RECIPES.shield, 'robi drewnianą tarczę 🛡️', true));
-    if (!tools.clothes && K('clothes') && has(RECIPES.clothes)) add(0.42 + cold * 0.4, '👕 Uszyć ubranie', () => this.taskCraft('clothes', RECIPES.clothes, 'szyje ubranie z liści i liny 👕', true));
+    if (!tools.shield && myBench && K('shield') && has(RECIPES.shield)) add(0.36 + danger, '🛡️ Zrobić tarczę', () => this.taskCraft('shield', RECIPES.shield, 'robi drewnianą tarczę 🛡️', true));
+    if (!tools.clothes && myBench && K('clothes') && has(RECIPES.clothes)) add(0.42 + cold * 0.4, '👕 Uszyć ubranie', () => this.taskCraft('clothes', RECIPES.clothes, 'szyje ubranie z liści i liny 👕', true));
     if (!myFire && K('campfire') && has(RECIPES.campfire)) add(0.7 + (this.known.has('warmFire') ? cold * 0.5 : 0), '🔥 Rozpalić ognisko', () => this.taskBuild('campfire', RECIPES.campfire));
     if (myFire && !myShelter && K('shelter') && has(RECIPES.shelter)) add(0.45 + (this.known.has('warmRoof') ? cold * 0.3 : 0), '🛖 Zbudować szałas', () => this.taskBuild('shelter', RECIPES.shelter));
     if (fire && fire.d < 30 && K('ironTool') && has(RECIPES.ironTool)) {
@@ -181,12 +181,13 @@ export const decideMethods = {
     if (!myBench && K('workbench')) wish(RECIPES.workbench);
     else if (myRoof && !(bedN && bedN.d < 25) && K('bed')) wish(RECIPES.bed);
     if (fire && !fire.s.grill && K('grill')) wish(RECIPES.grill);
-    if (!tools.clothes && K('clothes')) wish(RECIPES.clothes);
-    if (!tools.shield && K('shield')) wish(RECIPES.shield);
+    // rzeczy ze stołu i z ognia zbiera dopiero, gdy stół albo ogień już stoją, żeby nie zapchać plecaka
+    if (!tools.clothes && myBench && K('clothes')) wish(RECIPES.clothes);
+    if (!tools.shield && myBench && K('shield')) wish(RECIPES.shield);
     if (!tools.sword && K('sword')) want.planks += 1;
     if (!myChest && (myFire || myRoof) && K('chest')) wish(RECIPES.chest);
     if (plankOp) want.planks += 2; // zapas desek na budowę
-    if (K('torch') && inv.torch < 2) wish(RECIPES.torch);
+    if (K('torch') && inv.torch < 2 && myFire) wish(RECIPES.torch);
     if (myFire) want.sticks += 2; // zapas na podsycanie ogniska
     // zapas do eksperymentów, dopóki są nieodkryte receptury
     if (Object.keys(RECIPES).some((r) => !K(r))) {
@@ -201,27 +202,33 @@ export const decideMethods = {
     const missRope = Math.max(0, want.rope - inv.rope);
     if (K('planks')) want.logs += Math.ceil(missPlanks / 2);
     if (K('rope')) want.seaweed += missRope * 2;
-    const room = this.roomFor(3);
+    const room = this.roomFor(2, 3); // miejsce na kłodę albo kilka drobnych rzeczy
     // --- składziki: weź to, czego brakuje, albo odłóż nadmiar ---
     {
+      // ze składziku bierze najwyżej po 4 deski i kamienie naraz (resztę na most dobierze później), żeby nie zapchać plecaka
+      const keep = { ...want, planks: Math.min(want.planks, 4), stone: Math.min(want.stone, 4) };
       let best = null;
       for (const s of w.structures) {
         if (!STORES.has(s.kind) || !this.knownStructs.has(s.id) || !s.items) continue;
         let gain = 0;
-        for (const k in want) if (want[k] > inv[k] && s.items[k] > 0) gain += Math.min(s.items[k], want[k] - inv[k]);
+        for (const k in keep) if (keep[k] > inv[k] && s.items[k] > 0) gain += Math.min(s.items[k], keep[k] - inv[k]);
         if (!gain) continue;
         const d = distOf(s.i, s.j);
         if (d >= 0 && d < 30 && (!best || gain - d * 0.1 > best.gain - best.d * 0.1)) best = { s, d, gain, i: s.i, j: s.j };
       }
-      if (best && this.roomFor(1)) add(Math.min(0.56, 0.24 + best.gain * 0.05) - best.d * 0.003, '📦 Wziąć z zapasów', () => this.taskTakeStash(best, want));
+      if (best && this.roomFor(2, 3)) add(Math.min(0.56, 0.24 + best.gain * 0.05) - best.d * 0.003, '📦 Wziąć z zapasów', () => this.taskTakeStash(best, keep));
       const load = this.invWeight() / MAX_WEIGHT;
       const extra = MATS.reduce((t, k) => t + Math.max(0, inv[k] - (want[k] || 0)) * WEIGHT[k], 0);
-      if (load > 0.55 && extra > 3) {
+      // plecak pełny, a brakuje czegoś do celów: zostaw zbędne rzeczy, żeby zrobić miejsce
+      // (deski i kamienie na zapas, np. na most, zostawia wtedy w składziku, przy sobie trzyma najwyżej po 4)
+      const spare = MATS.reduce((t, k) => t + Math.max(0, inv[k] - (keep[k] || 0)) * WEIGHT[k], 0);
+      const blocked = !room && MATS.some((k) => (want[k] || 0) > inv[k]) && spare > 0.5;
+      if ((load > 0.55 && extra > 3) || blocked) {
         const home = fire || anyFire || shelter || tentN;
         // skrzynia wygrywa z kupką na ziemi (liczona jak bliższa o 8 kafelków)
         const st = [...w.structures].filter((s) => STORES.has(s.kind) && this.knownStructs.has(s.id)).map((s) => ({ s, d: distOf(s.i, s.j), i: s.i, j: s.j })).filter((x) => x.d >= 0 && x.d < (x.s.kind === 'chest' ? 28 : 20)).sort((a, b) => (a.d - (a.s.kind === 'chest' ? 8 : 0)) - (b.d - (b.s.kind === 'chest' ? 8 : 0)))[0];
         const target = st || (home && home.d < 25 ? home : null);
-        add(0.22 + (load - 0.55) * 1.5 - (target ? target.d * 0.003 : 0), '📦 Odłożyć zapasy', () => this.taskStore(target, want));
+        add(Math.max(blocked ? 0.38 : 0, 0.22 + (load - 0.55) * 1.5) - (target ? target.d * 0.003 : 0), '📦 Odłożyć zapasy', () => this.taskStore(target, blocked ? keep : want));
       } else if (myChest && chestN.d < 8) {
         // przy skrzyni: schowaj nadmiar jedzenia i zbędne materiały
         const spare = Object.keys(FOOD).reduce((t, k) => t + Math.max(0, inv[k] - 2), 0) + (extra > 2 ? 2 : 0);
@@ -244,7 +251,7 @@ export const decideMethods = {
     }
     if (inv.stone < want.stone && room) {
       const rock = this.nearestRes(bfs, (r) => r.kind === 'rock', taken);
-      if (rock) add(Math.min(0.48, 0.15 + (want.stone - inv.stone) * 0.05) - rock.d * 0.003, '🪨 Zbierać kamienie', () => this.taskStone(rock.r));
+      if (rock) add(Math.min(0.48, 0.15 + (want.stone - inv.stone) * 0.05) + (!myFire && K('campfire') ? 0.15 : 0) - rock.d * 0.003, '🪨 Zbierać kamienie', () => this.taskStone(rock.r));
       else unknownNeed = Math.max(unknownNeed, 0.25);
     }
     // --- pomysł na most: zna deski i linę, widzi wodę między wyspami ---
@@ -299,12 +306,12 @@ export const decideMethods = {
     }
     // --- eksperymenty: łączenie materiałów ---
     {
-      const combo = this.nextExperiment();
+      const combo = this.omniscient ? null : this.nextExperiment();
       const unknown = Object.keys(RECIPES).filter((r) => !this.known.has(r)).length;
       if (combo && unknown) add(0.26 + unknown * 0.02 + (this.hunger > 50 && this.thirst > 50 ? 0.08 : 0), '🧪 Eksperymentować', () => this.taskExperiment(combo));
       // przy stole rzemieślniczym wychodzą rzeczy, których nie da się zrobić na kolanach
       if (myBench && unknown && !this.nearStructure('workbench', 3)) {
-        const at = this.nextExperiment({ fire: false, bench: true });
+        const at = this.omniscient ? null : this.nextExperiment({ fire: false, bench: true });
         if (at && at.key.includes('@stół')) add(0.3 + unknown * 0.02, '🧪 Eksperymentować przy stole', () => this.taskExperiment(at, this.pathTo(bench.i, bench.j) || []));
       }
     }

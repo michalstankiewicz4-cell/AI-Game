@@ -26,10 +26,11 @@ src/
   ui/                 menu, panele, sterowanie, czat, wiki (wiki.js: katalog i skan odkryć do world.wikiFound)
     llmPanel.js       ustawienia modeli w menu, licznik tokenów, przesuwanie okienek
     errors.js         zakładka „⚠️ Błędy”: zbieranie i kopiowanie błędów
+    perf.js           pomiar wydajności: czasy części klatki, licznik czasu GPU, przycięcia, raport
 ```
 
 ## Przepływ
-1. `main.js` wywołuje `initErrors` (przechwytuje błędy strony i konsoli), `initMenu` i `initLlmMenu`. Po kliknięciu „Start” `createGame(cfg)` tworzy `World`, agentów, narratora i `Social`, a `Renderer.build(world)` buduje scenę.
+1. `main.js` wywołuje `initErrors` (przechwytuje błędy strony i konsoli), `initPerf` (podpina pomiar wydajności), `initMenu` i `initLlmMenu`. Po kliknięciu „Start” `createGame(cfg)` tworzy `World`, agentów (przy `cfg.knowledge === 'all'` z pełną wiedzą przez `knowAll()`), narratora i `Social`, a `Renderer.build(world)` buduje scenę.
 2. W pętli `requestAnimationFrame` czas rzeczywisty mnożony przez prędkość trafia do akumulatora. `stepGame` wykonuje stałe kroki `STEP = 0.1 s`, najwyżej 100 na klatkę.
 3. `stepGame` po kolei:
    - wywołuje `world.update`, czyli przyrodę i mosty,
@@ -53,6 +54,13 @@ src/
 - **Jakość grafiki** (przycisk 🎨 w górnym pasku): wysoka ma cienie i rozdzielczość do 1,5×, niska wyłącza cienie i zmniejsza rozdzielczość. Licznik FPS stoi obok.
 - **Mgła niewiedzy:** płaszczyzna z `DataTexture`, aktualizowana w trybie „Oczami AI”.
 - **Etykiety i dymki:** elementy DOM nakładane na obraz.
+
+## Pomiar wydajności (`src/ui/perf.js`)
+- `timed(kategoria, fn)` mierzy fragment pętli. Tak są owinięte `world.update`, pętla agentów i `social`/`narrator` w `stepGame`, `Renderer.frame` oraz odświeżanie interfejsu w `main.js`.
+- `initPerf` owija metody `Agent.prototype.decide`, `pathTo` i `see`, a także `renderer.render` z three.js. Zagnieżdżone wywołania liczą się raz, do zewnętrznej kategorii.
+- Czas karty graficznej: `EXT_disjoint_timer_query_webgl2`, jeśli przeglądarka go udostępnia. Bez niego co 15. klatkę `gl.finish()` mierzy, ile karta jeszcze rysuje.
+- `frameStart()` i `frameEnd(interval, steps)` zbierają pomiary klatki. Część „poza kodem gry” to przerwa między klatkami minus praca gry i budżet 16,7 ms.
+- Gdy okienko jest zamknięte, owinięte funkcje od razu wołają oryginały, więc pomiar nic nie kosztuje.
 
 ## Podgląd do testów
 `window.__game` to stan gry (świat, agenci, `social`, `narrator`), a `window.__renderer` to renderer (np. `renderer.info` z liczbą wywołań rysowania). Testy przewijają symulację, wywołując te same funkcje co `stepGame`.

@@ -10,7 +10,7 @@ Moduły ES nie działają z `file://`, więc potrzebny jest dowolny serwer HTTP.
 ## Testy
 Gra nie ma frameworka testowego. Sprawdza się ją w przeglądarce bez okna (Playwright + Chromium):
 - **Chromium:** uruchom z flagami `--use-gl=swiftshader --enable-unsafe-swiftshader`, żeby WebGL działał bez karty graficznej.
-- **Start gry:** kliknij `#optIslands button[data-v=N]`, `#optAgents button[data-v=N]`, a potem `#startBtn`. Świat buduje się dwie klatki po kliknięciu (najpierw rysuje się loader `#loading`), więc przed użyciem `window.__game.world` odczekaj chwilę.
+- **Start gry:** kliknij `#optIslands button[data-v=N]`, `#optAgents button[data-v=N]`, opcjonalnie `#optKnow button[data-v=all]` (tryb „Wie wszystko”), a potem `#startBtn`. Świat buduje się dwie klatki po kliknięciu (najpierw rysuje się loader `#loading`), więc przed użyciem `window.__game.world` odczekaj chwilę.
 - **Przewijanie symulacji:** postaw `window.__game.paused = true` i w pętli wywołuj `world.update(0.1)`, `agent.update(0.1)` oraz `social.update(0.1)`. Gdy `world.shoresDirty` jest ustawione, wywołaj `computeShores(world)` z `./src/ai/agent.js`.
 - **Co sprawdzać:** czy postacie przeżywają kilka dni w różnych konfiguracjach, czy w konsoli nie ma błędów i jak wyglądają zrzuty ekranu.
 - **Modele językowe:** podstaw odpowiedzi przez `page.route`:
@@ -19,7 +19,7 @@ Gra nie ma frameworka testowego. Sprawdza się ją w przeglądarce bez okna (Pla
   - `navigator.gpu` ustaw przez `addInitScript`,
   - błąd gramatyki JSON sprawdzisz, rzucając w sztucznym `chat.completions.create` wyjątek przy `response_format`,
   - pełną swobodę włączysz, zaznaczając `#optFree` przed startem.
-- **Wydajność:** `window.__renderer.renderer.info.render.calls` podaje liczbę wywołań rysowania w ostatniej klatce.
+- **Wydajność:** `window.__renderer.renderer.info.render.calls` podaje liczbę wywołań rysowania w ostatniej klatce. Klawisz P włącza pomiar, a `(await import('./src/ui/perf.js')).report()` zwraca raport tekstowy. W SwiftShaderze rysowanie odbywa się na procesorze, więc prawie cały czas klatki ląduje w „poza kodem gry”; miarodajne wyniki daje dopiero prawdziwa karta graficzna.
 - **Błędy:** zakładka „⚠️ Błędy” (`#feed .tabs button[data-tab=errors]`) powinna pokazywać „Brak błędów.”.
 
 ## Wersjonowanie
