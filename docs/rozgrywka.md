@@ -66,5 +66,6 @@ Plecak mieści 30 rzeczy (`INV_CAP`). Nadmiar postać odkłada.
 | Pauza | spacja |
 | Prędkość 1×, 2×, 4×, 8× | 1–4 |
 | Jakość grafiki (cienie) | przycisk 🎨 w górnym pasku |
+| Błędy do skopiowania | zakładka „⚠️ Błędy” pod czatem |
 
 Okienko „Postacie” i kartę postaci przesuwasz, chwytając za nagłówek.
