@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.8.1 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.9.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -22,7 +22,7 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Percepcja i pamięć:** stożek widzenia (im dalej, tym węższy), pamięć tego, co widział; trzeba się rozejrzeć, by odświeżyć wiedzę. Tryb „👁️ Oczami AI” pokazuje stożek i mgłę niewiedzy.
 - **Rozmowy:** agenci spotykają się, wymieniają wiedzą o mapie, recepturami, doświadczeniem (umiejętności rosną z praktyką) i przedmiotami.
 - **Komentarze na żywo:** gdy model działa, postacie mówią jego słowami (🤖), a nad myślącą postacią widać „💭 …”. Gdy model się ładuje albo nie działa, mówi za nie skrypt (dymek kursywą, 📜). Narrator komentuje sytuację.
-- **Mózg postaci (menu):** model językowy decyduje, co postać robi, i układa jej wypowiedzi. Do wyboru darmowy model z Hugging Face w przeglądarce (WebLLM na WebGPU: Qwen2.5 0.5B, Llama 3.2 1B lub Qwen2.5 1.5B; pobiera się raz, potem z pamięci przeglądarki; po przeciążeniu karty gra sama schodzi na lżejszy model) albo Claude API. Chodzenie, zbieranie i odruchy przy krytycznych potrzebach wykonuje kod gry, więc postacie żyją także, gdy model się ładuje.
+- **Mózg postaci (menu):** model językowy decyduje, co postać robi, i układa jej wypowiedzi. Do wyboru darmowy model z Hugging Face w przeglądarce (WebLLM na WebGPU: Qwen2.5 0.5B, Llama 3.2 1B lub Qwen2.5 1.5B; pobiera się raz, potem z pamięci przeglądarki; liczy w osobnym wątku, żeby nie przycinać gry; po przeciążeniu karty gra sama schodzi na lżejszy model) albo Claude API. Chodzenie, zbieranie i odruchy przy krytycznych potrzebach wykonuje kod gry, więc postacie żyją także, gdy model się ładuje.
 - **Pełna swoboda (przełącznik w menu):** model dostaje tylko to, co postać czuje, widzi, pamięta i ma, i sam wymyśla zamiar, który gra tłumaczy na działanie.
 - **Grafika:** zasoby rysowane przez instancjonowanie, przełącznik jakości 🎨 (cienie, rozdzielczość) i licznik FPS w górnym pasku.
 - **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli; „📋 Kopiuj wszystko” kopiuje je z wersją gry i nazwą karty graficznej.
@@ -61,6 +61,7 @@ src/
     social.js         rozmowy i wymiana wiedzy/przedmiotów
     commentary.js     myśli w dymkach i narrator
     llm.js            mózg z modelem językowym: WebLLM lub Claude API, licznik tokenów
+    llmWorker.js      wątek roboczy dla modelu w przeglądarce
     intent.js         pełna swoboda: opis zmysłów i tłumaczenie zamiaru na działanie
   render/
     renderer.js       scena 3D, światło, aktualizacja co klatkę

@@ -18,6 +18,7 @@ src/
   world/              świat (kafelki, generowanie, mosty, przyroda)
   ai/                 postacie (stan, decyzje, zadania, percepcja, wiedza, rozmowy, komentarze)
     llm.js            modele językowe: WebLLM i Claude API, limity zapytań, licznik tokenów
+    llmWorker.js      Web Worker z silnikiem WebLLM
     intent.js         pełna swoboda: opis zmysłów, mapIntent (zamiar → działanie)
   render/             Three.js: scena, modele low-poly, teren, mgła
     instances.js      Instancer: InstancedMesh dla zasobów
