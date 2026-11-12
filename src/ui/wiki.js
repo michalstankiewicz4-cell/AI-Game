@@ -65,6 +65,9 @@ const WORLD = [
   ['bird', '🐦', 'Ptaki', 'Siadają na ziemi. Włócznią można je upolować.'],
   ['boar', '🐗', 'Dzik', 'Zwykle spokojny, ale potrafi zaszarżować. Bez broni lepiej uciekać. Daje dużo mięsa.'],
   ['bridge', '🌉', 'Most', 'Budowany z desek i liny między wyspami.'],
+  ['piece_floor', '🟫', 'Podłoga z desek', 'Pojedyncza deska położona płasko na ziemi albo wyżej, oparta o ściany. Ma własną nazwę.'],
+  ['piece_wall', '🧱', 'Ściana z desek', 'Deska postawiona pionowo na krawędzi pola. Wyżej da się ją postawić tylko na innej ścianie.'],
+  ['piece_slope', '📐', 'Skos z desek', 'Deska położona pod skosem, np. na ścianach. Postacie mogą ją zdjąć, przenieść i przemianować.'],
   ['stash', '📦', 'Składzik', 'Kupka rzeczy odłożonych, gdy plecak jest za ciężki. Można po nie wrócić.'],
 ];
 const EXPERIENCE = [
@@ -124,6 +127,7 @@ export function scanDiscoveries(world) {
     if (s.items) for (const k in s.items) if (s.items[k] > 0) add((FOOD[k] ? 'food:' : 'item:') + k);
   }
   if (world.bridges && world.bridges.some((b) => b.planks > 0)) add('world:bridge');
+  for (const p of world.pieces || []) add('world:piece_' + p.type);
   return f;
 }
 

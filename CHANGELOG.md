@@ -3,6 +3,15 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.19.0] - 2026-11-12
+### Dodane
+- Budowanie z pojedynczych desek (`src/world/pieces.js`, `src/ai/building.js`): podłoga, ściana i skos, poziomy 0–2, przyciąganie do siatki pól i krawędzi, zasady podpór.
+- Każda deska ma nazwę (domyślnie „podłoga 1”, „ściana 3”…). Postać może deskę zdjąć, przenieść i przemianować.
+- Analiza kształtu budowy: podłoga, ściany na obwodzie z lukami, pola przykryte i odkryte. Trafia do opisu dla modelu językowego razem z listą desek i ponumerowanymi wolnymi miejscami.
+- Model może odpowiedzieć polem `"deska"` z poleceniami (połóż, podnieś, przenieś, nazwij). Bez nich postać majsterkuje sama: zwarta podłoga, ściany z wejściem, dach ze skosów.
+- Przykryte i obudowane pole grzeje (do +7°C odczuwalnej) i liczy się jako dach. Postać, która odkryła, że pod dachem cieplej, śpi w takim domu.
+- Model 3D desek, podpis po najechaniu myszą, wpisy w wiki.
+
 ## [0.18.0] - 2026-11-12
 ### Dodane
 - Skrzynia (4 deski + 2 gałęzie): nowa receptura do odkrycia. Postać zbija ją przy ognisku albo pod dachem i chowa w niej nadmiar materiałów oraz jedzenia (przy sobie zostawia po 2 sztuki).
@@ -156,6 +165,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.19.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.19.0
 [0.18.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.18.0
 [0.17.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.17.0
 [0.16.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.16.0

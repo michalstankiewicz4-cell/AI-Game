@@ -2,6 +2,7 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import { llm } from './llm.js';
+import { BUILD_LABEL } from './building.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp,
@@ -139,6 +140,18 @@ export const decideMethods = {
     const myChest = chestN && chestN.d < 25;
     const stashes = w.structures.filter((s) => s.kind === 'stash' && this.knownStructs.has(s.id) && s.items && Object.values(s.items).some((v) => v > 0)).length;
     if (!myChest && (myFire || myRoof) && K('chest') && has(RECIPES.chest)) add(0.3 + Math.min(0.15, stashes * 0.05) + (this.invWeight() / MAX_WEIGHT > 0.6 ? 0.08 : 0), '📦 Zrobić skrzynię', () => this.taskBuild('chest', RECIPES.chest));
+    // --- deski: polecenia modelu albo własne majsterkowanie przy obozie ---
+    let plankOp = null;
+    if (this.buildQueue.length && w.time - (this.buildQueueT || 0) < 120) {
+      const cmd = this.buildQueue[0];
+      add(0.55, BUILD_LABEL, () => this.taskPlank(cmd));
+    } else {
+      this.buildQueue.length = 0;
+      if (K('planks') && (myFire || myRoof || myChest)) {
+        plankOp = this.scriptBuildOp();
+        if (plankOp && inv.planks >= 1) add(0.12 + 0.07 * this.w.build + (inv.planks >= 4 ? 0.05 : 0) - (w.isNight() ? 0.08 : 0), BUILD_LABEL, () => this.taskPlank(plankOp));
+      }
+    }
     const danger = K('boarDanger') ? 0.2 : 0;
     if (!tools.sword && K('sword') && has(RECIPES.sword) && fire && fire.d < 30) add(0.42 + danger, '🗡️ Wykuć miecz', () => this.taskForgeSword(fire, RECIPES.sword));
     if (!tools.shield && K('shield') && has(RECIPES.shield)) add(0.36 + danger, '🛡️ Zrobić tarczę', () => this.taskCraft('shield', RECIPES.shield, 'robi drewnianą tarczę 🛡️', true));
@@ -167,6 +180,7 @@ export const decideMethods = {
     if (!tools.shield && K('shield')) wish(RECIPES.shield);
     if (!tools.sword && K('sword')) want.planks += 1;
     if (!myChest && (myFire || myRoof) && K('chest')) wish(RECIPES.chest);
+    if (plankOp) want.planks += 2; // zapas desek na budowę
     if (myFire) want.sticks += 2; // zapas na podsycanie ogniska
     // zapas do eksperymentów, dopóki są nieodkryte receptury
     if (Object.keys(RECIPES).some((r) => !K(r))) {

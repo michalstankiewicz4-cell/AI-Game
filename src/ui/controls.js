@@ -1,6 +1,7 @@
 // Sterowanie: klawiatura, przyciski prędkości, wybór postaci kliknięciem, przesuwanie kamery WASD.
 import { $ } from './dom.js';
 import { W, H } from '../world/world.js';
+import { PIECE_TYPES, SIDE_NAMES } from '../world/pieces.js';
 
 export function initControls(state, renderer, api) {
   document.querySelectorAll('.speed button[data-speed]').forEach((b) => b.onclick = () => api.setSpeed(+b.dataset.speed));
@@ -37,6 +38,21 @@ export function initControls(state, renderer, api) {
     const a = renderer.pick(e.clientX, e.clientY);
     if (a) api.select(a);
   });
+
+  // podpis deski pod kursorem: nazwa, rodzaj, poziom i kto ją położył
+  const tip = document.getElementById('pieceTip');
+  let tipT = 0;
+  canvas.addEventListener('pointermove', (e) => {
+    const now = performance.now();
+    if (!tip || now - tipT < 80) return;
+    tipT = now;
+    const p = e.buttons ? null : renderer.pickPiece(e.clientX, e.clientY);
+    if (!p) { tip.classList.add('hidden'); return; }
+    tip.textContent = `„${p.name}” · ${PIECE_TYPES[p.type]}${p.side ? ' (' + SIDE_NAMES[p.side] + ')' : ''} · poziom ${p.lvl}${p.byName ? ' · położył(a) ' + p.byName : ''}`;
+    tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 12) + 'px';
+    tip.classList.remove('hidden');
+  });
+  canvas.addEventListener('pointerleave', () => tip && tip.classList.add('hidden'));
 
   // przesuwanie kamery klawiszami (wywoływane co klatkę)
   return function panCamera(dt) {

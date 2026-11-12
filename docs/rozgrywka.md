@@ -103,6 +103,18 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Skrzynia:** postać, która odkryje skrzynię, zbija ją przy obozie. Do skrzyni trafia nadmiar materiałów (ma pierwszeństwo przed kupką na ziemi) i nadmiar jedzenia (przy sobie zostają po 2 sztuki). Głodna postać bez jedzenia w plecaku idzie po nie do skrzyni, a jedzenie w skrzyni liczy się do zapasu, więc postacie nie zbierają jagód bez końca.
 - **Wiedza o składzikach:** postacie mówią sobie o nich w rozmowach. Pusty składzik znika z mapy.
 
+## Budowanie z desek
+Postać, która zna deski, może kłaść je pojedynczo. Każda deska to osobny element z własną nazwą, np. „podłoga deska 1”.
+
+- **Rodzaje:** podłoga (płasko), ściana (pionowo, na krawędzi pola) i skos (pod kątem, wznosi się w stronę N, E, S albo W). Poziomy od 0 (ziemia) do 2.
+- **Przyciąganie:** deski przyskakują do siatki pól i krawędzi, więc dwie deski nigdy nie zajmą tego samego miejsca.
+- **Podpory:** ściana wyżej musi stać na ścianie, a podłoga albo skos nad ziemią muszą opierać się o ścianę pod spodem albo o deskę obok. Deski, na której coś się opiera, nie da się zdjąć.
+- **Zmiany:** postać może deskę zdjąć (wraca do plecaka), przenieść w inne miejsce i zmienić jej nazwę.
+- **Analiza kształtu:** gra liczy największy kawałek podłogi, ile krawędzi jego obwodu ma ściany i które pola są przykryte z góry. Postać widzi z tego, czego brakuje (luki w ścianach, odkryte pola).
+- **Dom wychodzi sam:** gra nie ma „przepisu na dom”. Liczy się tylko, czy pole jest przykryte i jak bardzo obudowane. Przykryte i obudowane pole grzeje prawie jak szałas, a postać, która odkryła, że pod dachem cieplej, chętnie w nim śpi. Ściany nie blokują przejścia.
+- **Bez poleceń modelu:** postać majsterkuje sama przy obozie: najpierw zwarta podłoga, potem ściany (jedna luka zostaje na wejście), na końcu skosy dachu.
+- **Podgląd:** najechanie myszą na deskę pokazuje jej nazwę, rodzaj, poziom i to, kto ją położył.
+
 ## Mosty
 - Gra wyznacza najkrótsze przesmyki między wyspami. Mosty tworzą minimalne drzewo rozpinające, więc każda wyspa jest osiągalna.
 - Most buduje się segment po segmencie, a każdy segment kosztuje 2 deski i 1 linę.

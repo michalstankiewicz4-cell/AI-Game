@@ -12,6 +12,7 @@ import { perceptionMethods } from './perception.js';
 import { knowledgeMethods } from './knowledge.js';
 import { decideMethods } from './decide.js';
 import { tasksMethods } from './tasks.js';
+import { buildingMethods, BUILD_LABEL } from './building.js';
 
 export { PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MAT_NAMES, KIND_NAMES, VIEW_RANGE, VIEW_NEAR, viewHalfAngle } from './data.js';
 export { ITEM_LABELS, TOOL_LABELS } from './data.js';
@@ -59,6 +60,7 @@ export class Agent {
     this.tried = new Set();      // wypróbowane kombinacje materiałów
     this.triedKinds = new Set(); // rodzaje zasobów, które już badał
     this.saltKnown = false;      // wie, że morska woda nie gasi pragnienia
+    this.buildQueue = [];         // polecenia budowy z desek od modelu językowego
     this.memBoars = new Map(); // id -> { b, i, j, t } gdzie widział dziki
     this.memAgents = new Map(); // id -> { a, i, j, t } gdzie ostatnio widział innych          // łowiska, gdzie nic nie brało
     this.visionT = 0;
@@ -139,8 +141,10 @@ export class Agent {
   }
   event(key, ctx) { this.speak(eventLine(key, ctx), true); }
   // odpowiedź modelu językowego
-  onLLM({ label, thought, intent, at }) {
+  onLLM({ label, thought, intent, at, build }) {
     if (!this.alive) return;
+    // polecenia dla desek: nazwy od razu, kładzenie i przenoszenie jako zadanie
+    if (build && build.length && this.applyBuildOps(build)) label = BUILD_LABEL;
     if (intent != null) { // pełna swoboda: przetłumacz zamiar na dostępne działanie
       label = intent ? mapIntent(intent, this.allLabels || []) : null;
       this.llmIntent = { text: intent, label, t: this.world.time };
@@ -178,8 +182,10 @@ export class Agent {
     if (isl >= 0 && !this.visited.has(isl)) { this.visited.add(isl); this.event('newIsland'); this.say(`dociera na wyspę ${isl + 1}! 🏝️`, 'big'); }
     // temperatura: ciało dąży do stanu wynikającego z odczuwalnej temperatury otoczenia
     const warmFire = this.nearStructure('campfire', 2.6), hut = this.nearStructure('shelter', 1.5), tent = !hut && this.nearStructure('tent', 1.3);
-    const roof = hut || tent;
-    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + (hut ? 7 : tent ? 5 : 0) + (this.tools.clothes ? 4 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
+    // dom z desek: gra liczy tylko przykrycie i ściany wokół pola, na którym stoi postać
+    const house = w.pieces.length ? w.shelterAt(this.i, this.j) : null;
+    const roof = hut || tent || (house && house.roof && house.closed >= 0.5);
+    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + Math.max(hut ? 7 : tent ? 5 : 0, house ? house.warm : 0) + (this.tools.clothes ? 4 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
     const targetT = clamp(36.8 + (this.feltT < 18 ? (this.feltT - 18) * 0.12 : (this.feltT - 18) * 0.06), 33, 39.5);
     this.bodyT += (targetT - this.bodyT) * Math.min(1, 0.03 * dt);
     // doświadczenie: zmarznięta postać sama zauważa, że przy ogniu albo pod dachem robi się cieplej
@@ -346,4 +352,4 @@ export function computeShores(world) {
   }
 }
 
-Object.assign(Agent.prototype, perceptionMethods, knowledgeMethods, decideMethods, tasksMethods);
+Object.assign(Agent.prototype, perceptionMethods, knowledgeMethods, decideMethods, tasksMethods, buildingMethods);

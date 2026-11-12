@@ -26,6 +26,26 @@ Gdy model się ładuje, ma błąd albo brakuje klucza, za postacie mówi skrypt:
 
 Odpowiedź modelu jest czytana łagodnie: inne nazwy kluczy (`thought`, `intent`) albo zwykły tekst zamiast JSON-a też zostaną użyte.
 
+## Budowanie z desek
+Gdy postać ma deski albo stoi przy swojej budowie, model dostaje dodatkowy opis:
+- kształt budowy (podłoga, ściany na obwodzie, luki, pola przykryte i odkryte),
+- listę desek z numerami i nazwami,
+- ponumerowane wolne miejsca, do których deska przyskoczy.
+
+W odpowiedzi może dodać pole `"deska"` z listą do 4 poleceń:
+
+```json
+{"wybor": 1, "mysl": "Postawię sobie chatkę!", "deska": [
+  {"akcja": "poloz", "miejsce": 1, "nazwa": "podłoga deska 1"},
+  {"akcja": "poloz", "typ": "sciana", "x": 1, "y": 0, "poziom": 0, "strona": "E", "nazwa": "ściana kuchni"},
+  {"akcja": "przenies", "id": 3, "miejsce": 2},
+  {"akcja": "podnies", "id": 5},
+  {"akcja": "nazwij", "id": 3, "nazwa": "drzwi"}
+]}
+```
+
+Nazwy zmieniają się od razu, a resztę postać wykonuje po kolei jako zadanie „🪵 Budować z desek”. Opis nie mówi, do czego służy dach ani ściany: to postać ma odkryć sama.
+
 ## Pełna swoboda (przełącznik w menu)
 Model nie dostaje listy działań ani notatek ze skryptu, tylko to, co postać:
 - **czuje:** potrzeby opisane słowami, np. „bardzo chce ci się pić”,

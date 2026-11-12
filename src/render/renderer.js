@@ -7,6 +7,7 @@ import { VIEW_RANGE, VIEW_NEAR, viewHalfAngle } from '../ai/data.js';
 import { modelsMethods } from './models.js';
 import { Instancer } from './instances.js';
 import { terrainMethods } from './terrain.js';
+import { PIECE_LH } from '../world/pieces.js';
 
 
 export class Renderer {
@@ -82,6 +83,7 @@ export class Renderer {
     this.fishMeshes = new Map();
     this.birdMeshes = new Map();
     this.boarMeshes = new Map();
+    this.pieceGroup = new THREE.Group(); scene.add(this.pieceGroup); world.piecesChanged = true;
     this.agentMeshes = new Map();
     this.labelLayer.innerHTML = '';
     this.labels = new Map();
@@ -161,6 +163,7 @@ export class Renderer {
       world.structuresChanged = false;
       for (const s of world.structures) if (!this.structMeshes.has(s)) this.addStructure(s);
     }
+    if (world.piecesChanged) { world.piecesChanged = false; this.buildPieces(world); }
     if (world.bridgeChanged) {
       world.bridgeChanged = false;
       for (const br of world.bridges) br.tiles.forEach((t) => { if (world.type[idx(t.i, t.j)] === T.BRIDGE) this.addBridgeTile(t.i, t.j, br); });
@@ -313,6 +316,50 @@ export class Renderer {
   }
 
   flyTo() { this.flyT = 1.5; }
+
+  // deski z budowy: przebudowa całej grupy przy każdej zmianie (to tylko kilkadziesiąt prostych brył)
+  buildPieces(world) {
+    const g = this.pieceGroup;
+    while (g.children.length) g.remove(g.children[0]);
+    if (!this.pieceGeo) {
+      this.pieceGeo = {
+        floor: new THREE.BoxGeometry(0.98, 0.06, 0.98),
+        wallX: new THREE.BoxGeometry(1.0, PIECE_LH, 0.07), wallZ: new THREE.BoxGeometry(0.07, PIECE_LH, 1.0),
+        slopeZ: new THREE.BoxGeometry(1.02, 0.06, Math.hypot(1, 0.6)), slopeX: new THREE.BoxGeometry(Math.hypot(1, 0.6), 0.06, 1.02),
+      };
+    }
+    const G = this.pieceGeo, A = Math.atan(0.6);
+    const land = (i, j) => world.land(i, j);
+    for (const p of world.pieces) {
+      const c = toWorld(p.i, p.j);
+      let m;
+      if (p.type === 'floor') {
+        m = new THREE.Mesh(G.floor, this.mat.plank);
+        m.position.set(c.x, world.tileY(p.i, p.j) + p.lvl * PIECE_LH + 0.04, c.z);
+      } else if (p.type === 'wall') {
+        const ni = p.side === 'W' ? p.i - 1 : p.i, nj = p.side === 'N' ? p.j - 1 : p.j;
+        const base = Math.max(land(p.i, p.j) ? world.tileY(p.i, p.j) : -9, land(ni, nj) ? world.tileY(ni, nj) : -9, 0);
+        m = new THREE.Mesh(p.side === 'N' ? G.wallX : G.wallZ, this.mat.plank);
+        m.position.set(p.side === 'W' ? c.x - 0.5 : c.x, base + p.lvl * PIECE_LH + PIECE_LH / 2, p.side === 'N' ? c.z - 0.5 : c.z);
+      } else {
+        const alongZ = p.side === 'N' || p.side === 'S';
+        m = new THREE.Mesh(alongZ ? G.slopeZ : G.slopeX, this.mat.post);
+        if (p.side === 'N') m.rotation.x = A; else if (p.side === 'S') m.rotation.x = -A;
+        else if (p.side === 'E') m.rotation.z = A; else m.rotation.z = -A;
+        m.position.set(c.x, world.tileY(p.i, p.j) + p.lvl * PIECE_LH + 0.3, c.z);
+      }
+      m.castShadow = true; m.receiveShadow = true;
+      m.userData.piece = p;
+      g.add(m);
+    }
+  }
+  pickPiece(clientX, clientY) {
+    if (!this.pieceGroup || !this.pieceGroup.children.length) return null;
+    const m = new THREE.Vector2(clientX / window.innerWidth * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);
+    this.raycaster.setFromCamera(m, this.camera);
+    const hits = this.raycaster.intersectObjects(this.pieceGroup.children, false);
+    return hits.length ? hits[0].object.userData.piece : null;
+  }
 
   pick(clientX, clientY) {
     const m = new THREE.Vector2(clientX / window.innerWidth * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);

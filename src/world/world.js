@@ -4,6 +4,7 @@ import { generateMethods } from './generate.js';
 import { bridgesMethods } from './bridges.js';
 import { natureMethods } from './nature.js';
 import { boarMethods } from './boars.js';
+import { piecesMethods } from './pieces.js';
 
 export let W = 96;
 export let H = 64;
@@ -53,6 +54,7 @@ export class World {
     this.events = []; // komunikaty do dziennika
     this.changed = new Set(); // zasoby do odświeżenia w renderze
     this.nextId = 1;
+    this.initPieces();
     this.generate();
   }
 
@@ -180,4 +182,4 @@ export function heightToY(h, t) {
   return 0.25 + h * 0.75;
 }
 
-Object.assign(World.prototype, generateMethods, bridgesMethods, natureMethods, boarMethods);
+Object.assign(World.prototype, generateMethods, bridgesMethods, natureMethods, boarMethods, piecesMethods);
