@@ -166,3 +166,27 @@ h1 .ver { font-size: 14px; font-weight: 600; color: #8fd0f0; background: rgba(63
 .cold { color: #8fd0ff; }
 .hot { color: #ffae6b; }
 #detail .temp { margin-top: 4px; color: #cfe3f2; }
+
+/* wiki w grze */
+#wiki { z-index: 15; }
+.wiki-card { width: min(760px, 100%); max-height: calc(100vh - 32px); display: flex; flex-direction: column; background: rgba(16,28,48,.95); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 18px 20px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.wiki-h { display: flex; align-items: center; gap: 12px; }
+.wiki-h h2 { margin: 0; font-size: 22px; flex: 1; }
+#wikiSum { color: #9fb2c8; font-size: 13px; }
+#wikiClose { background: none; border: 0; color: #9fb2c8; font-size: 18px; }
+.wiki-note { margin: 6px 0 10px; color: #9fb2c8; font-size: 12.5px; }
+#wikiTabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+#wikiTabs button small { opacity: .7; }
+#wikiList { overflow-y: auto; min-height: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px; padding-right: 4px; }
+.wentry { display: flex; gap: 10px; padding: 9px 10px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); font-size: 12.5px; }
+.wentry.ok { background: rgba(60,160,90,.10); border-color: rgba(90,200,120,.35); }
+.wicon { font-size: 24px; line-height: 1; width: 30px; text-align: center; flex: none; }
+.wentry:not(.ok) .wicon { filter: grayscale(.7); opacity: .75; }
+.wtext { min-width: 0; }
+.wtext b { font-size: 13.5px; }
+.wdesc { color: #cfe3f2; margin-top: 2px; }
+.wmeta { color: #8aa0b6; margin-top: 3px; font-size: 11.5px; }
+.wcheck { display: inline-block; color: #111; background: #5fd38a; border-radius: 50%; width: 16px; height: 16px; line-height: 16px; text-align: center; font-size: 11px; font-weight: 700; }
+@media (max-width: 520px) { #wikiList { grid-template-columns: 1fr; } }
+#wikiTabs button { padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: #eef3f8; font-size: 13px; }
+#wikiTabs button.on { background: #3fa7d6; border-color: #3fa7d6; }

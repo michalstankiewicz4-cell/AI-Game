@@ -22,6 +22,7 @@ export const tasksMethods = {
       urgent: true, path: this.pathTo(spot.i, spot.j), face: spot.water,
       act: (dt, t) => {
         this.thirst = clamp(this.thirst + 35 * dt, 0, 100);
+        this.drankPond = true;
         return this.thirst >= 100 || t.elapsed > 4 ? 'done' : null;
       },
     };

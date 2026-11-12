@@ -23,7 +23,8 @@ export function initControls(state, renderer, api) {
       api.select(list[(k + (e.shiftKey ? list.length - 1 : 1)) % list.length]);
     }
     if (e.key.toLowerCase() === 'v') api.toggleAiView();
-    if (e.key === 'Escape') api.select(null);
+    if (e.key.toLowerCase() === 'k') api.toggleWiki();
+    if (e.key === 'Escape') { if (api.wikiOpen()) api.toggleWiki(false); else api.select(null); }
   });
   window.addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
   window.addEventListener('blur', () => keys.clear());

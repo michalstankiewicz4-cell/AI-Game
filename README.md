@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.15.0 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.16.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -29,10 +29,11 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Pełna swoboda (przełącznik w menu):** model dostaje tylko to, co postać czuje, widzi, pamięta i ma, i sam wymyśla zamiar, który gra tłumaczy na działanie.
 - **Grafika:** zasoby rysowane przez instancjonowanie, przełącznik jakości 🎨 (cienie, rozdzielczość) i licznik FPS w górnym pasku.
 - **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli; „📋 Kopiuj wszystko” kopiuje je z wersją gry i nazwą karty graficznej.
+- **Wiki w grze (📖, klawisz K):** receptury, budowle, materiały, jedzenie, narzędzia, obiekty świata i doświadczenia w kategoriach. Widać wszystko, a to, co odkryła któraś postać, ma znaczek ✓. Postacie wiki nie widzą.
 - **Okienka:** „Postacie” (klik przenosi kamerę do postaci) i karta postaci dają się przesuwać za nagłówek.
 
 ## Sterowanie
-Lewy przycisk – obrót, prawy – przesuwanie, kółko – zoom, WASD/strzałki – ruch kamery. Klik na postać (na mapie lub w okienku „Postacie”) – przelot i śledzenie (F wyłącza), Tab / Shift+Tab – następna / poprzednia postać, V – oczami AI, spacja – pauza, 1–4 – prędkość, 🎨 – jakość grafiki.
+Lewy przycisk – obrót, prawy – przesuwanie, kółko – zoom, WASD/strzałki – ruch kamery. Klik na postać (na mapie lub w okienku „Postacie”) – przelot i śledzenie (F wyłącza), Tab / Shift+Tab – następna / poprzednia postać, V – oczami AI, K – wiki, spacja – pauza, 1–4 – prędkość, 🎨 – jakość grafiki.
 
 ## Struktura projektu
 ```

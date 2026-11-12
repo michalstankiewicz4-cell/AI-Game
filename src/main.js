@@ -9,6 +9,7 @@ import { initControls } from './ui/controls.js';
 import { buildAgentCards, renderDetail, updateHud } from './ui/panels.js';
 import { VERSION } from './version.js';
 import { initErrors } from './ui/errors.js';
+import { initWiki, toggleWiki, wikiOpen, scanDiscoveries } from './ui/wiki.js';
 import { initLlmMenu, updateTokens, makeDraggable, prepareLlm } from './ui/llmPanel.js';
 
 const state = {
@@ -59,8 +60,9 @@ initLlmMenu();
 makeDraggable($('detail'), '.dhead');
 makeDraggable($('agentsWin'), '.win-h');
 $('agentsMin').onclick = (e) => { const w = $('agentsWin'); w.classList.toggle('min'); e.target.textContent = w.classList.contains('min') ? '+' : '–'; };
-const panCamera = initControls(state, renderer, { select, setSpeed, updatePause, toggleAiView });
-$('menuBtn').onclick = () => { state.paused = true; updatePause(); showMenu(); };
+const panCamera = initControls(state, renderer, { select, setSpeed, updatePause, toggleAiView, toggleWiki, wikiOpen });
+initWiki(() => state.world);
+$('menuBtn').onclick = () => { toggleWiki(false); state.paused = true; updatePause(); showMenu(); };
 $('goRestart').onclick = () => { $('gameover').classList.add('hidden'); rndSeed(); showMenu(); };
 
 // ---------- start gry ----------
@@ -126,7 +128,7 @@ function loop(now) {
     renderer.frame(w, state.agents, state.selected, now / 1000, state.opts);
     if (firstFrame) { firstFrame(); firstFrame = null; }
     hudT -= rdt;
-    if (hudT <= 0) { hudT = 0.25; updateHud(state); updateTokens(); $('fpsLbl').textContent = Math.round(fps) + ' FPS'; }
+    if (hudT <= 0) { hudT = 0.25; updateHud(state); updateTokens(); scanDiscoveries(w); $('fpsLbl').textContent = Math.round(fps) + ' FPS'; }
   }
   requestAnimationFrame(loop);
 }
