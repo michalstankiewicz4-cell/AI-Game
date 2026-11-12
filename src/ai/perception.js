@@ -17,7 +17,7 @@ export const perceptionMethods = {
     if (this.torchLit() || this.nearStructure('campfire', 3)) night = TORCH.light;
     return night + (1 - night) * day;
   },
-  torchLit() { return this.held === 'torch' && this.torchBurn > 0; },
+  torchLit() { return this.heldL === 'torch' && this.torchBurn > 0; },
 
   see(full = false, range = null) {
     const w = this.world;

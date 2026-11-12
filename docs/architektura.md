@@ -54,6 +54,7 @@ src/
 - **Jakość grafiki** (przycisk 🎨 w górnym pasku): wysoka ma cienie i rozdzielczość do 1,5×, niska wyłącza cienie i zmniejsza rozdzielczość. Licznik FPS stoi obok.
 - **Mgła niewiedzy:** płaszczyzna z `DataTexture`, aktualizowana w trybie „Oczami AI”.
 - **Etykiety i dymki:** elementy DOM nakładane na obraz.
+- **Ręce postaci:** `makeAgentMesh` ma grupy `arm` (prawa: `h_axe`, `h_pickaxe`, `h_sword`, `h_spear`, `h_rod`, `h_knife`, `h_hoe`, `h_bow`) i `armL` (lewa: `h_torch`, `h_shield`). Pokazuje się wariant z `agent.held` i `agent.heldL`, które ustawia `updateHeld()`.
 - **Płynny ruch:** `stepGame` zapisuje poprzednie pozycje postaci, dzików, ptaków i ryb (`_px`, `_py`, `_pz`, `_pf`), a `main.js` ustawia `world.alpha` (ułamek drogi do następnego kroku, `acc / STEP`). `Renderer.frame` rysuje pozycję i obrót pomiędzy poprzednim a bieżącym krokiem. Skok o więcej niż 3 pola rysuje od razu bez wygładzania.
 
 ## Pomiar wydajności (`src/ui/perf.js`)
