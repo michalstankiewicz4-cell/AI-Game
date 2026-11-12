@@ -3,7 +3,7 @@
 import { T, idx, toWorld, toTile } from './world.js';
 
 // szarża jest wolniejsza niż bieg postaci (2,6), więc ucieczka się udaje, jeśli zacznie się na czas
-export const BOAR = { hp: 40, speed: 1.1, charge: 2.4, sight: 4, hit: 7, hitCd: 2, respawn: 300, meat: 3 };
+export const BOAR = { hp: 40, speed: 0.8, charge: 1.75, sight: 4, hit: 7, hitCd: 2, respawn: 300, meat: 3 };
 
 export const boarMethods = {
   spawnBoars() {

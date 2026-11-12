@@ -21,7 +21,7 @@ export const modelsMethods = {
       berry: new THREE.IcosahedronGeometry(0.06, 0), plank: new THREE.BoxGeometry(1.02, 0.08, 1.15), post: new THREE.CylinderGeometry(0.05, 0.05, 1.2, 5),
       fish: new THREE.ConeGeometry(0.09, 0.35, 5), birdBody: new THREE.IcosahedronGeometry(0.13, 0), wing: new THREE.BoxGeometry(0.32, 0.02, 0.13),
       palmLeaf: new THREE.ConeGeometry(0.16, 0.9, 4), weed: new THREE.ConeGeometry(0.06, 0.7, 4), ghost: new THREE.BoxGeometry(0.9, 0.04, 0.9),
-      stalk: new THREE.CylinderGeometry(0.012, 0.016, 0.6, 4), ear: new THREE.ConeGeometry(0.035, 0.16, 5), petal: new THREE.IcosahedronGeometry(0.07, 0),
+      stalk: new THREE.CylinderGeometry(0.012, 0.016, 0.6, 4), ear: new THREE.ConeGeometry(0.028, 0.13, 5), petal: new THREE.IcosahedronGeometry(0.07, 0),
       flowerMid: new THREE.IcosahedronGeometry(0.035, 0), stem: new THREE.CylinderGeometry(0.01, 0.012, 0.3, 4),
     };
   },
@@ -282,6 +282,7 @@ export const modelsMethods = {
       const arc = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.016, 4, 10, Math.PI * 0.9), this.mat.post); arc.rotation.z = Math.PI / 2 + Math.PI * 0.05; arc.position.y = 0.08; h.add(arc);
       const str = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.5, 0.005), this.mat.dark); str.position.set(0, 0.08, 0); h.add(str);
     });
+    held('shovel', (h) => { const s = stick(h, 0.6); s.position.y = 0.08; const b = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.15, 0.02), this.mat.stone); b.position.set(0, -0.26, 0); h.add(b); });
     held('rod', (h) => { const s = stick(h, 0.8); s.position.y = 0.15; s.scale.set(0.6, 1, 0.6); });
     held('shield', (h) => {
       const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.03, 10), this.mat.plank); sh.rotation.z = Math.PI / 2; sh.rotation.y = Math.PI / 2; sh.position.set(-0.04, 0.05, 0.06); h.add(sh);

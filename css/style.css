@@ -101,6 +101,12 @@ button { font: inherit; cursor: pointer; }
 .feed-body .m.death { color: #ff8a8a; }
 .feed-body .m.learn { color: #e6b3ff; }
 .feed-body .m.talk { color: #9fd3ff; }
+/* rozmowa między postaciami: zielonkawe tło w czacie i w dymku */
+.feed-body .m.dialog { background: rgba(120, 220, 170, .1); border-left: 3px solid #7fdcae; padding-left: 6px; border-radius: 4px; }
+.feed-body .m.dialog .say { color: #b6f5d2; }
+.feed-body .m.dialog .to { color: #7fdcae; font-weight: 500; }
+.agent-label .bubble.dialog { background: #d9fbe8; color: #12402a; }
+.agent-label .bubble.dialog::after { border-top-color: #d9fbe8; }
 
 @media (max-width: 1100px) { #topwrap { left: 10px; right: 256px; } }
 @media (max-width: 760px) {

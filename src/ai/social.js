@@ -189,6 +189,7 @@ export class Social {
     // obaj zatrzymują się na czas rozmowy
     const dur = at + 0.5;
     for (const [me, other] of [[a, b], [b, a]]) {
+      me.talkWith = other; me.talkUntil = w.time + dur + 2; // to, co powie w tym czasie, jest rozmową (inny kolor w czacie i w dymku)
       me.task = { talk: true, path: [], rest: true, label: `💬 Rozmawia z ${other.name}`, face: other, act: (dt, t) => (t.elapsed > dur ? 'done' : null) };
     }
     const learned = g1 + g2;

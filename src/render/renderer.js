@@ -86,6 +86,7 @@ export class Renderer {
     this.birdMeshes = new Map();
     this.boarMeshes = new Map();
     this.pieceGroup = new THREE.Group(); scene.add(this.pieceGroup); world.piecesChanged = true;
+    this.roadMesh = null; world.roadChanged = true;
     this.agentMeshes = new Map();
     this.labelLayer.innerHTML = '';
     this.labels = new Map();
@@ -168,6 +169,7 @@ export class Renderer {
       for (const s of world.structures) if (!this.structMeshes.has(s)) this.addStructure(s);
     }
     if (world.piecesChanged) { world.piecesChanged = false; this.buildPieces(world); }
+    if (world.roadChanged) { world.roadChanged = false; this.buildRoads(world); }
     if (world.bridgeChanged) {
       world.bridgeChanged = false;
       for (const br of world.bridges) br.tiles.forEach((t) => { if (world.type[idx(t.i, t.j)] === T.BRIDGE) this.addBridgeTile(t.i, t.j, br); });
@@ -340,6 +342,7 @@ export class Renderer {
         el.lastChild.style.display = opts.labels ? '' : 'none';
         if (bubble.textContent !== text) bubble.textContent = text;
         bubble.classList.toggle('script', !!(a.bubble && a.bubble.script));
+        bubble.classList.toggle('dialog', !!(a.bubble && a.bubble.dialog));
         bubble.style.display = text && opts.bubbles ? '' : 'none';
         el.classList.toggle('dead', !a.alive);
         el.classList.toggle('sel', a === selected);
@@ -418,5 +421,24 @@ export class Renderer {
     return hits.length ? hits[0].object.userData.agent : null;
   }
 }
+
+// drogi: płaskie pola ubitej ziemi z kamyczkami, jedna siatka instancji na całą mapę
+Renderer.prototype.buildRoads = function (world) {
+  if (this.roadMesh) { this.scene.remove(this.roadMesh); this.roadMesh.dispose(); this.roadMesh = null; }
+  const tiles = [];
+  for (let k = 0; k < W * H; k++) if (world.road[k]) tiles.push(k);
+  if (!tiles.length) return;
+  this.roadGeo = this.roadGeo || new THREE.BoxGeometry(1.0, 0.05, 1.0);
+  this.roadMat = this.roadMat || new THREE.MeshStandardMaterial({ color: 0xa08560, roughness: 1, flatShading: true });
+  const m = new THREE.InstancedMesh(this.roadGeo, this.roadMat, tiles.length);
+  const mx = new THREE.Matrix4();
+  tiles.forEach((k, n) => {
+    const i = k % W, j = Math.floor(k / W), p = toWorld(i, j);
+    mx.makeTranslation(p.x, world.tileY(i, j) + 0.01, p.z);
+    m.setMatrixAt(n, mx);
+  });
+  m.receiveShadow = true;
+  this.roadMesh = m; this.scene.add(m);
+};
 
 Object.assign(Renderer.prototype, modelsMethods, terrainMethods);

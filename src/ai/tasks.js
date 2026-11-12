@@ -749,6 +749,51 @@ export const tasksMethods = {
       },
     };
   },
+  // drogi: łopatą ubija wydeptane pola przy obozie; pień na drodze najpierw wyrywa
+  roadSpot(home) {
+    const w = this.world, bfs = this.bfsCache;
+    let best = null;
+    for (let dj = -22; dj <= 22; dj++) for (let di = -22; di <= 22; di++) {
+      const i = home.i + di, j = home.j + dj;
+      if (!w.inBounds(i, j)) continue;
+      const k = idx(i, j);
+      if (w.traffic[k] < 6 || w.road[k] || !w.walkable(i, j) || w.type[k] === T.BRIDGE || bfs.dist[k] < 0) continue;
+      const r = w.res[k];
+      if (r && !this.isStump(r)) continue;
+      if (w.structures.some((s) => s.i === i && s.j === j) || w.pieces.some((p) => p.i === i && p.j === j)) continue;
+      const s = Math.min(w.traffic[k], 40) - Math.hypot(di, dj) * 0.5 - bfs.dist[k] * 0.2;
+      if (!best || s > best.s) best = { i, j, s, stump: r };
+    }
+    return best;
+  },
+  isStump(r) { return (r.kind === 'tree' || r.kind === 'palm') && r.growth < 0.5 && !r.removed; },
+  taskRoad(spot) {
+    const w = this.world;
+    return {
+      targetId: 'r' + idx(spot.i, spot.j), path: this.pathTo(spot.i, spot.j), label: '🛤️ Ubija drogę łopatą',
+      act: (dt, t) => {
+        if (t.elapsed < 3) return null;
+        if (w.res[idx(spot.i, spot.j)] || !this.tools.shovel || !w.addRoad(spot.i, spot.j)) return 'fail';
+        if (!t.said && !(w.roadBy && w.roadBy.has(this.id))) { (w.roadBy || (w.roadBy = new Set())).add(this.id); this.say('wyrównuje łopatą wydeptaną ścieżkę: będzie droga 🛤️'); }
+        return 'done';
+      },
+    };
+  },
+  // wyrwanie pnia kilofem albo łopatą: kawałek drewna, ale drzewo już nie odrośnie
+  taskUproot(tree) {
+    const per = this.tools.shovel ? 3 : 5;
+    return {
+      targetId: tree.id, path: this.pathTo(tree.i, tree.j), face: tree, label: `🪵 Wyrywa pień ${this.tools.shovel ? 'łopatą' : 'kilofem'}`,
+      act: (dt, t) => {
+        if (tree.removed || !this.isStump(tree)) return 'fail';
+        if (t.elapsed < per) return null;
+        this.world.removeResource(tree);
+        this.inv.logs += 1; this.stats.wood += 1;
+        if (!this.uprooted) { this.uprooted = true; this.say('wyrywa pień z korzeniami. Kawałek drewna się przyda, ale tu już nic nie odrośnie 🪵'); }
+        return 'done';
+      },
+    };
+  },
   // dzikie żyto: kłosy dają ziarno do siewu
   taskRye(r) {
     return {

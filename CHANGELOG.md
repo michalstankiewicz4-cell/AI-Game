@@ -3,6 +3,15 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.25.0] - 2026-11-12
+### Dodane
+- Łopata (deska + gałąź + kamień) i drogi: postacie liczą, którędy chodzą, a łopatą ubijają drogę na wydeptanych ścieżkach przy obozie (do 22 pól od ogniska albo dachu). Po drodze chodzi się o połowę szybciej. W trybie „Odkrywa sam” postać zauważa to przy pierwszym kroku po drodze.
+- Wyrywanie pni: pień ściętego drzewa można wyrwać kilofem (5 s) albo łopatą (3 s). Daje kłodę, ale drzewo już nie odrośnie. Postacie wyrywają pnie w obozie, na drodze i wtedy, gdy brakuje drzew, a potrzebne są kłody.
+- Rozmowy między postaciami mają własny kolor: w czacie zielonkawe tło i zapis „Ada → Bruno”, a dymek nad głową jest jasnozielony.
+- Model łopaty w ręku, drogi na mapie, wpisy w wiki, słowa kluczowe pełnej swobody, fakty dla trybu „Wie wszystko”.
+### Zmienione
+- Postacie chodzą wolniej (1,9 zamiast 2,6 kafelka/s). Dziki zwolniły w tej samej proporcji, więc ucieczka przed szarżą nadal się udaje.
+
 ## [0.24.0] - 2026-11-12
 ### Dodane
 - Podlewanie: posadzone rośliny trzeba podlewać wodą z miski albo doniczki. Podlana grządka rośnie normalnie (ok. półtorej doby), sucha prawie trzy razy wolniej, a doniczka bez wody wcale. Ziemia trzyma wodę ok. 220 s i ciemnieje po podlaniu. Że woda przyspiesza wzrost, postać odkrywa przy zbiorze z podlewanej rośliny.
@@ -232,6 +241,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.25.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.25.0
 [0.24.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.24.0
 [0.23.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.23.1
 [0.23.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.23.0
