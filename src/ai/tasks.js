@@ -297,6 +297,11 @@ export const tasksMethods = {
   // ucieczka przed dzikiem: kilka kafelków dalej, w przeciwną stronę
   taskFlee(b) {
     const w = this.world;
+    // schody albo drabina tuż obok: na piętro (pewnie, gdy już wie, że dzik tam nie wejdzie; inaczej czasem)
+    if (w.pieces.length && !(this.lvl > 0)) {
+      const r = this.climbRoutes(null).find((c) => c.d <= (this.known.has('boarUp') ? 7 : 4));
+      if (r && (this.known.has('boarUp') || Math.random() < 0.4)) { const t = this.taskClimb(r, 'boar'); if (t.path.length || (this.i === r.foot.i && this.j === r.foot.j)) return t; }
+    }
     const ang = Math.atan2(this.z - b.z, this.x - b.x);
     let target = null;
     for (let r = 8; r >= 3 && !target; r--) for (const da of [0, 0.5, -0.5, 1, -1]) {

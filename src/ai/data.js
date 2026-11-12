@@ -66,7 +66,7 @@ export const FIRE_COMBOS = new Set([...FIRE_RECIPES].map((r) => comboKey(Object.
 export const TORCH = { burn: 70, light: 0.5, night: 0.25 }; // pochodnia: s palenia; zasięg wzroku w nocy z pochodnią i bez (część dziennego)
 // tryb „wie wszystko”: fakty, które w trybie odkrywania postać musi sama sprawdzić
 export const WORLD_FACTS = 'Znasz ten świat: ogień krzesze się krzemieniem (leży na plażach) i bez niego nie rozpalisz ogniska, przy ognisku i pod dachem (szałas, namiot, deski nad głową i ściany wokół) jest cieplej, w łóżku lepiej się śpi, '
-  + 'morska woda nie gasi pragnienia (pij ze stawu), surowe mięso i ryba mogą zaszkodzić (lepiej upiec), dziki atakują (miecz, włócznia, tarcza pomagają), '
+  + 'morska woda nie gasi pragnienia (pij ze stawu), surowe mięso i ryba mogą zaszkodzić (lepiej upiec), dziki atakują (miecz, włócznia, tarcza pomagają), ale na piętro po schodach czy drabinie nie wejdą, a z piętra widać dalej, '
   + 'pochodnię zapala się od ogniska, a w nocy z nią widać dalej, nożem skóruje się upolowanego dzika (mięso i skóra), z ptaków są mięso i pióra, '
   + 'w jagodach są nasiona: motyką przygotowuje się ziemię i sadzi je, a po ok. półtorej doby wyrasta krzak z jagodami, miskę można napełnić wodą ze stawu i pić z niej z dala od wody, łuk ze strzałami poluje z daleka, '
   + 'podlana roślina rośnie szybciej (sucha grządka rośnie wolno, a doniczka bez wody wcale), dziko rośnie żyto: jego ziarno to nasiona, '
