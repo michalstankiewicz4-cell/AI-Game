@@ -80,10 +80,11 @@ export const buildingMethods = {
     this.buildSnap = { origin: o, slots, t: w.time };
     const L = ['Budowanie z desek: każda deska to jeden element (podłoga, ściana albo skos), który przyciąga się do siatki pól. x rośnie na wschód, y na południe, poziom 0 to ziemia, strona N/E/S/W to krawędź pola.'];
     if (site) {
-      const miss = site.missingWalls.slice(0, 5).map((m) => `${rel(m.i, m.j)} strona ${m.side}`).join(', ');
-      const unr = site.unroofed.slice(0, 5).map((t) => rel(t.i, t.j)).join(', ');
-      L.push(`Twoja budowa: podłoga ${site.floor.length} pól (obrys ${site.w}×${site.h}). Ściany na obwodzie podłogi: ${site.walls} z ${site.perim}${miss ? `, luki: ${miss}${site.missingWalls.length > 5 ? '…' : ''}` : ''}. `
-        + `Pola podłogi przykryte z góry: ${site.roofed} z ${site.floor.length}${unr ? `, odkryte: ${unr}${site.unroofed.length > 5 ? '…' : ''}` : ''}.`);
+      // same liczby, bez ocen typu „brakuje” albo „luka”
+      const cnt = { floor: 0, wall: 0, slope: 0 };
+      for (const p of site.pieces) cnt[p.type]++;
+      L.push(`Twoja budowa: ${site.pieces.length} desek (podłoga ${cnt.floor}, ściana ${cnt.wall}, skos ${cnt.slope}). Największa spójna podłoga: ${site.floor.length} pól, obrys ${site.w}×${site.h}; `
+        + `jej krawędzie zewnętrzne ze ścianą: ${site.walls} z ${site.perim}; jej pola z deską nad głową: ${site.roofed} z ${site.floor.length}.`);
       L.push('Deski: ' + site.pieces.slice(0, 8).map((p) => `#${p.id} „${p.name}” ${PIECE_TYPES[p.type]} ${rel(p.i, p.j)} poziom ${p.lvl}${p.side ? ' strona ' + p.side : ''}`).join('; ') + (site.pieces.length > 8 ? '; …' : '') + '.');
     }
     if (slots.length) L.push('Wolne miejsca: ' + slots.map((s, n) => `${n + 1}) ${PIECE_TYPES[s.type]} ${rel(s.i, s.j)} poziom ${s.lvl}${s.side ? ' strona ' + s.side : ''}`).join('; ') + '.');
@@ -120,25 +121,27 @@ export const buildingMethods = {
     return queue.length > 0;
   },
 
-  // co dołożyć bez podpowiedzi modelu: mała podłoga, potem ściany (jedna luka zostaje na wejście), potem przykrycie
+  // bez poleceń modelu: próba i błąd. Postać kładzie deskę w losowym miejscu przy innych deskach,
+  // a częściej wybiera rodzaj deski (podłoga/ściana/skos na danym poziomie), po którym wcześniej poczuła, że przy budowie mniej wieje.
   scriptBuildOp() {
     const w = this.world;
     const c = this.siteCenter();
-    const site = w.analyzeSite(c.i, c.j);
-    const slots = w.snapSlots(c.i, c.j, 16);
+    if (w.pieces.filter((p) => Math.abs(p.i - c.i) <= 7 && Math.abs(p.j - c.j) <= 7).length >= 40) return null;
+    const slots = w.snapSlots(c.i, c.j, 40);
     if (!slots.length) return null;
-    if (!site) return { op: 'place', spec: slots[0] };
-    // podłoga jak najbardziej zwarta (2×2); gdy nie ma miejsca, zostaje mniejsza
-    const fl = site.floor.length < 4 ? slots.filter((s) => s.type === 'floor' && s.lvl === 0) : [];
-    if (fl.length) {
-      const dims = (s) => [Math.max(site.origin.i + site.w - 1, s.i) - Math.min(site.origin.i, s.i) + 1, Math.max(site.origin.j + site.h - 1, s.j) - Math.min(site.origin.j, s.j) + 1];
-      const rank = (s) => { const [a, b] = dims(s); return Math.max(a, b) * 10 + a * b; }; // najpierw kwadrat
-      fl.sort((a, b) => rank(a) - rank(b));
-      return { op: 'place', spec: fl[0] };
+    const pref = this.buildPref || (this.buildPref = {});
+    let best = null, bestV = -1e9;
+    if (Math.random() < 0.3) best = slots[0]; // czasem zupełnie na próbę
+    else for (const s of slots) {
+      const v = (pref[s.type + s.lvl] || 0) + Math.random() * 0.8;
+      if (v > bestV) { bestV = v; best = s; }
     }
-    if (site.missingWalls.length > 1) { const s = slots.find((x) => x.type === 'wall' && x.lvl === 0); if (s) return { op: 'place', spec: s }; }
-    if (site.unroofed.length) { const s = slots.find((x) => x.type === 'slope' || (x.type === 'floor' && x.lvl === 1)); if (s) return { op: 'place', spec: s }; }
-    return null;
+    return { op: 'place', spec: { ...best }, from: 'script' };
+  },
+  // jak bardzo opłaca się dalej majsterkować (najlepsze dotąd doświadczenie)
+  buildDrive() {
+    const pref = this.buildPref || {};
+    return Math.max(0, ...Object.values(pref));
   },
 
   // jedno polecenie: podejść do miejsca i położyć, zdjąć albo przenieść deskę
@@ -177,7 +180,14 @@ export const buildingMethods = {
         const why = w.placeProblem(spec);
         if (why) { if (cmd.from === 'llm') this.speak(`Tu deska nie wejdzie: ${why}.`); return 'fail'; }
         this.inv.planks--;
+        const before = w.shelterSum(spec.i, spec.j);
         const p = w.placePiece(spec, this);
+        // doświadczenie: czy przy budowie zrobiło się zaciszniej? (zapamiętane dla rodzaju deski i poziomu)
+        const gain = w.shelterSum(spec.i, spec.j) - before;
+        const pref = this.buildPref || (this.buildPref = {});
+        const k = p.type + p.lvl;
+        pref[k] = (pref[k] || 0) + 0.35 * (gain - (pref[k] || 0));
+        if (gain > 1.5 && Math.random() < 0.5) this.speak(['O, tu jakby mniej wieje.', 'Jakoś tu przytulniej się zrobiło.', 'Hm, za tym mniej ciągnie chłodem.'][Math.floor(Math.random() * 3)], true);
         this.say(`${cmd.op === 'move' ? 'przekłada' : 'kładzie'} deskę „${p.name}” (${PIECE_TYPES[p.type]}${p.lvl ? ', poziom ' + p.lvl : ''}) 🪵`);
         this.joy = Math.min(30, this.joy + 2);
         return 'done';

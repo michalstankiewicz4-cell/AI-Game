@@ -110,9 +110,9 @@ Postać, która zna deski, może kłaść je pojedynczo. Każda deska to osobny 
 - **Przyciąganie:** deski przyskakują do siatki pól i krawędzi, więc dwie deski nigdy nie zajmą tego samego miejsca.
 - **Podpory:** ściana wyżej musi stać na ścianie, a podłoga albo skos nad ziemią muszą opierać się o ścianę pod spodem albo o deskę obok. Deski, na której coś się opiera, nie da się zdjąć.
 - **Zmiany:** postać może deskę zdjąć (wraca do plecaka), przenieść w inne miejsce i zmienić jej nazwę.
-- **Analiza kształtu:** gra liczy największy kawałek podłogi, ile krawędzi jego obwodu ma ściany i które pola są przykryte z góry. Postać widzi z tego, czego brakuje (luki w ścianach, odkryte pola).
-- **Dom wychodzi sam:** gra nie ma „przepisu na dom”. Liczy się tylko, czy pole jest przykryte i jak bardzo obudowane. Przykryte i obudowane pole grzeje prawie jak szałas, a postać, która odkryła, że pod dachem cieplej, chętnie w nim śpi. Ściany nie blokują przejścia.
-- **Bez poleceń modelu:** postać majsterkuje sama przy obozie: najpierw zwarta podłoga, potem ściany (jedna luka zostaje na wejście), na końcu skosy dachu.
+- **Analiza kształtu:** gra liczy deski każdego rodzaju, największy kawałek podłogi, ile krawędzi jego obwodu ma ściany i ile pól ma deskę nad głową. Model dostaje same liczby, bez ocen w rodzaju „brakuje” albo „luka”, i wolne miejsca w losowej kolejności.
+- **Dom wychodzi sam albo wcale:** gra nie ma „przepisu na dom”. Liczy się tylko, czy pole jest przykryte (deska nad głową; niski skos na ziemi daje połowę) i jak bardzo obudowane. Takie miejsce grzeje prawie jak szałas, a postać, która odkryła, że pod dachem cieplej, chętnie w nim śpi. Ściany nie blokują przejścia.
+- **Bez poleceń modelu: próba i błąd.** Postać kładzie deskę w losowym wolnym miejscu przy innych deskach i sprawdza, czy przy budowie zrobiło się zaciszniej. Zapamiętuje to dla rodzaju deski i poziomu (np. „ściana na ziemi”, „podłoga na poziomie 1”) i później częściej wybiera to, co pomogło, a co trzecią deskę kładzie zupełnie na próbę. Z tego wychodzą różne budowle: osłony od wiatru przy ognisku, budki ze ścian, daszki; czasem coś podobnego do domu, czasem nic.
 - **Podgląd:** najechanie myszą na deskę pokazuje jej nazwę, rodzaj, poziom i to, kto ją położył.
 
 ## Mosty

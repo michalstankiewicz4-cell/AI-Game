@@ -28,9 +28,9 @@ Odpowiedź modelu jest czytana łagodnie: inne nazwy kluczy (`thought`, `intent`
 
 ## Budowanie z desek
 Gdy postać ma deski albo stoi przy swojej budowie, model dostaje dodatkowy opis:
-- kształt budowy (podłoga, ściany na obwodzie, luki, pola przykryte i odkryte),
+- kształt budowy w samych liczbach (ile desek każdego rodzaju, największa podłoga, ile krawędzi jej obwodu ma ściany, ile pól ma deskę nad głową),
 - listę desek z numerami i nazwami,
-- ponumerowane wolne miejsca, do których deska przyskoczy.
+- ponumerowane wolne miejsca, do których deska przyskoczy, w losowej kolejności.
 
 W odpowiedzi może dodać pole `"deska"` z listą do 4 poleceń:
 
