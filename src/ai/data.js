@@ -1,0 +1,56 @@
+// Dane i stałe agentów: osobowości, jedzenie, receptury, nazwy, parametry.
+
+export const PERSONAS = [
+  { name: 'Ada', role: 'Budowniczka', color: 0xe74c3c, w: { build: 1.5, fish: 0.9, gather: 1.0, mine: 0.8, hunt: 0.9 } },
+  { name: 'Bruno', role: 'Rybak', color: 0x3498db, w: { build: 0.9, fish: 1.6, gather: 0.9, mine: 0.7, hunt: 0.8 } },
+  { name: 'Celina', role: 'Zbieraczka', color: 0x2ecc71, w: { build: 1.0, fish: 0.8, gather: 1.5, mine: 0.7, hunt: 0.9 } },
+  { name: 'Dawid', role: 'Górnik', color: 0xf1c40f, w: { build: 1.2, fish: 0.8, gather: 0.9, mine: 1.7, hunt: 0.8 } },
+  { name: 'Ewa', role: 'Myśliwa', color: 0x9b59b6, w: { build: 1.0, fish: 0.9, gather: 0.9, mine: 0.8, hunt: 1.7 } },
+  { name: 'Filip', role: 'Wszechstronny', color: 0xe67e22, w: { build: 1.1, fish: 1.1, gather: 1.1, mine: 1.1, hunt: 1.1 } },
+];
+
+export const FOOD = {
+  berries: { val: 12, name: 'jagody' },
+  rawFish: { val: 16, name: 'surowa ryba' },
+  cookedFish: { val: 38, name: 'pieczona ryba' },
+  rawMeat: { val: 20, name: 'surowe mięso' },
+  cookedMeat: { val: 45, name: 'pieczone mięso' },
+};
+
+// przepisy rzemieślnicze
+export const RECIPES = {
+  planks: { logs: 1 },                        // toporkiem: 1 kłoda → 2 deski
+  rope: { seaweed: 2 },                       // 2 wodorosty → 1 lina
+  rod: { sticks: 2, rope: 1 },                // wędka
+  spear: { sticks: 2, stone: 1, rope: 1 },    // włócznia
+  campfire: { sticks: 3, logs: 1, stone: 4 }, // ognisko
+  shelter: { logs: 2, planks: 4, rope: 2 },   // szałas
+  ironTool: { iron: 2, sticks: 1 },           // żelazne narzędzie (przy ognisku)
+};
+
+export const RECIPE_NAMES = {
+  planks: 'deski', rope: 'lina', rod: 'wędka', spear: 'włócznia', campfire: 'ognisko', shelter: 'szałas', ironTool: 'żelazne narzędzia',
+};
+export const MATS = ['logs', 'sticks', 'planks', 'seaweed', 'rope', 'stone', 'iron'];
+export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda' };
+export const comboKey = (types) => [...types].sort().join('+');
+export const RECIPE_BY_COMBO = new Map(Object.entries(RECIPES).map(([k, r]) => [comboKey(Object.keys(r)), k]));
+export const KIND_NAMES = { tree: 'drzewo', palm: 'palmę', rock: 'skałę', bush: 'krzak', seaweed: 'wodorosty', mine: 'kopalnię' };
+
+export const ITEM_LABELS = {
+  logs: '🪵 Kłody', sticks: '🥢 Gałęzie', planks: '🟫 Deski', seaweed: '🌿 Wodorosty', rope: '🪢 Lina',
+  stone: '🪨 Kamień', iron: '⛏️ Ruda żelaza',
+  berries: '🫐 Jagody', rawFish: '🐟 Ryba', cookedFish: '🍣 Piecz. ryba', rawMeat: '🍗 Mięso', cookedMeat: '🍖 Piecz. mięso',
+};
+export const TOOL_LABELS = {
+  axe: '🪓 Siekiera', pickaxe: '⛏️ Kilof', rod: '🎣 Wędka', spear: '🔱 Włócznia', ironAxe: '🪓 Żel. siekiera', ironPick: '⛏️ Żel. kilof',
+};
+
+export const SPEED = 2.6; // kafelki / s
+// pole widzenia: im dalej, tym węższy stożek
+export const VIEW_RANGE = 18;
+export const VIEW_NEAR = 2.5; // tuż obok widzi dookoła
+export function viewHalfAngle(d) { return d <= VIEW_NEAR ? Math.PI : Math.max(0.12, 1.25 * (1 - d / VIEW_RANGE)); }
+export const wrapAng = (a) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
+export const INV_CAP = 30;
+export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

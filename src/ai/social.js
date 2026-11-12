@@ -1,6 +1,6 @@
 // Rozmowy między agentami: wymiana wiedzy (pamięci mapy), doświadczenia i przedmiotów.
-import { idx, toWorld, T } from './world.js';
-import { FOOD } from './agent.js';
+import { idx, toWorld, T } from '../world/world.js';
+import { FOOD, RECIPES, RECIPE_NAMES, MAT_NAMES } from './data.js';
 
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const TALK_RANGE = 2.6;
@@ -47,6 +47,11 @@ function news(a, b, world) {
   if (birds.length) out.push({ v: 2, text: `Widziałem ptaki ${direction(b, birds[0].b.x, birds[0].b.z)}.` });
   const newIsl = [...a.visited].filter((i) => !b.visited.has(i));
   if (newIsl.length) out.push({ v: 4, text: `Byłem na wyspie ${newIsl[0] + 1}. Warto tam zajrzeć!` });
+  const recipe = [...a.known].find((r) => RECIPES[r] && !b.known.has(r));
+  if (recipe) out.push({ v: 7, text: `Odkryłem, że z ${Object.keys(RECIPES[recipe]).map((k) => MAT_NAMES[k]).join(' i ')} da się zrobić: ${RECIPE_NAMES[recipe]}!` });
+  const food = [...a.edible].find(([k, v]) => v && !b.edible.has(k));
+  if (food) out.push({ v: 5, text: `${FOOD[food[0]].name[0].toUpperCase() + FOOD[food[0]].name.slice(1)} jest jadalne, sprawdziłem.` });
+  if (a.saltKnown && !b.saltKnown) out.push({ v: 4.5, text: 'Nie pij morskiej wody, jest słona. Sprawdziłem na sobie.' });
   out.sort((x, y) => y.v - x.v);
   return out[0] || null;
 }
@@ -63,6 +68,10 @@ function shareKnowledge(from, to) {
     }
   }
   for (const s of from.knownStructs) to.knownStructs.add(s);
+  for (const r of from.known) if (RECIPES[r] ? to.learn(r, from) : !to.known.has(r) && to.known.add(r)) gained++;
+  for (const [k, v] of from.edible) if (!to.edible.has(k)) to.edible.set(k, v);
+  if (from.saltKnown) to.saltKnown = true;
+  for (const k of from.triedKinds) to.triedKinds.add(k);
   for (const [id, m] of from.memBirds) if (!to.memBirds.has(id)) to.memBirds.set(id, { ...m });
   to.memFish.push(...from.memFish.slice(-20));
   return gained;

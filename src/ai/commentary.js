@@ -30,6 +30,8 @@ const THOUGHTS = {
   '⛏️ Kopać w kopalni': ['Do kopalni! Może trafię na żelazo.', 'Głębiej i głębiej...', 'Kilof w dłoń, idę kopać.'],
   '🚶 Pospacerować': ['Przejdę się trochę.', 'Hmm, co by tu zrobić...'],
   '💬 Porozmawiać': ['Pogadam z kimś, może wie coś, czego ja nie wiem.', 'Idę się dowiedzieć, co nowego.'],
+  '🧪 Eksperymentować': ['Spróbuję połączyć to, co mam...', 'Ciekawe, co z tego wyjdzie.', 'Czas na eksperyment!'],
+  '🌊 Napić się z morza': ['Tyle wody dookoła... może da się ją pić?', 'Nie znam żadnego źródła, spróbuję morskiej.'],
   '🪑 Odpocząć': ['Chwila odpoczynku.', 'Usiądę na moment.'],
 };
 
@@ -56,6 +58,12 @@ const EVENTS = {
   night: ['Robi się ciemno...', 'Noc nadchodzi, trzeba się zbierać.'],
   morning: ['Dzień dobry, wyspo!', 'Nowy dzień, nowe szanse.'],
   forge: ['Żelazne narzędzie w ręku! ⚒️'],
+  discover: ['Eureka! Wiem, jak zrobić: {what}!', 'Udało się! Tak powstaje {what}!', 'Hej, z tego wychodzi {what}! 💡'],
+  expFail: ['{what}... nic z tego nie wyszło.', 'Hmm, {what} to chyba ślepa uliczka.', 'Nie, {what} to nie to.'],
+  tasteGood: ['Mmm, {food} jest jadalne!', 'Smakuje! {food} nadaje się do jedzenia.'],
+  stomach: ['Auć, brzuch mnie boli... trzeba było to upiec.', 'Ugh, surowe mi zaszkodziło.'],
+  saltWater: ['Bleh! Słone! Morskiej wody nie da się pić.', 'Fuj, od tej wody tylko bardziej chce się pić.'],
+  bridgeIdea: ['A gdyby tak z desek i liny zbudować most?', 'Mam pomysł! Most na drugą wyspę!'],
 };
 
 export function thought(label) { return THOUGHTS[label] ? pick(THOUGHTS[label]) : null; }
