@@ -13,7 +13,10 @@ export const decideMethods = {
   // ---------- decyzje ----------
   decide() {
     const w = this.world;
-    const bfs = w.bfs(this.i, this.j, this.seen);
+    // stojące w pobliżu postacie zajmują pole: trasa je omija (a do celu, na którym ktoś stoi, podchodzi obok)
+    const avoid = new Set();
+    for (const a of w.agents) if (a !== this && a.alive && Math.abs(a.i - this.i) + Math.abs(a.j - this.j) < 14 && (!(a.task && a.task.path && a.task.path.length) || this.avoidUntil > w.time)) avoid.add(idx(a.i, a.j));
+    const bfs = w.bfs(this.i, this.j, this.seen, false, avoid);
     this.bfsCache = bfs;
     // stare wspomnienia o ptakach i rybach blakną
     for (const [id, m] of this.memBirds) if (w.time - m.t > 45) this.memBirds.delete(id);
@@ -156,7 +159,8 @@ export const decideMethods = {
     if (fire && fire.d < 30 && !fire.s.grill && K('grill') && has(RECIPES.grill)) add(0.36 + (this.rawCount() ? 0.08 : 0), '🍢 Zrobić ruszt', () => this.taskGrill(fire, RECIPES.grill));
     if (!myRoof && K('tent') && has(RECIPES.tent)) add(0.5 + (this.known.has('warmRoof') ? cold * 0.3 : 0) + (w.isNight() ? 0.1 : 0), '⛺ Rozbić namiot', () => this.taskBuild('tent', RECIPES.tent));
     if (!myBench && K('workbench') && has(RECIPES.workbench)) add(0.5, '🛠️ Zrobić stół rzemieślniczy', () => this.taskBuild('workbench', RECIPES.workbench));
-    if (myRoof && myBench && !(bedN && bedN.d < 25) && K('bed') && has(RECIPES.bed)) add(0.48, '🛏️ Zrobić łóżko', () => this.taskBuild('bed', RECIPES.bed));
+    const ownBed = w.structures.some((s) => s.kind === 'bed' && this.knownStructs.has(s.id) && (s.owner === this.id || !w.agents.some((a) => a.id === s.owner && a.alive)) && distOf(s.i, s.j) >= 0 && distOf(s.i, s.j) < 25);
+    if (myRoof && myBench && !ownBed && K('bed') && has(RECIPES.bed)) add(0.48, '🛏️ Zrobić łóżko', () => this.taskBuild('bed', RECIPES.bed));
     const chestN = this.nearestStructure(bfs, 'chest');
     const myChest = chestN && chestN.d < 25;
     const stashes = w.structures.filter((s) => s.kind === 'stash' && this.knownStructs.has(s.id) && s.items && Object.values(s.items).some((v) => v > 0)).length;
@@ -257,7 +261,7 @@ export const decideMethods = {
     if (bridgesLeft) wish(BRIDGE_COST, Math.max(1, Math.round(2 * this.w.build)));
     if (!myRoof && K('tent') && !K('shelter')) wish(RECIPES.tent);
     if (!myBench && K('workbench')) wish(RECIPES.workbench);
-    else if (myRoof && !(bedN && bedN.d < 25) && K('bed')) wish(RECIPES.bed);
+    else if (myRoof && !ownBed && K('bed')) wish(RECIPES.bed);
     if (fire && !fire.s.grill && K('grill')) wish(RECIPES.grill);
     // rzeczy ze stołu i z ognia zbiera dopiero, gdy stół albo ogień już stoją, żeby nie zapchać plecaka
     if (!tools.clothes && myBench && K('clothes')) wish(RECIPES.clothes);

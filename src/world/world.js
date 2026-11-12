@@ -135,29 +135,80 @@ export class World {
     return this.tileY(t.i, t.j);
   }
 
-  // BFS po kafelkach lądu; zwraca odległości i rodziców
-  bfs(si, sj, mask) {
+  // pole zajęte przez duży obiekt: drzewo (bez pnia), skała, krzak, ognisko, stół, skrzynia
+  solid(k) {
+    const r = this.res[k];
+    if (r && (r.kind === 'rock' || r.kind === 'bush' || ((r.kind === 'tree' || r.kind === 'palm') && r.growth >= 0.5))) return true;
+    return !!(this.solidStruct && this.solidStruct[k]);
+  }
+  // ściany z desek na parterze jako bity krawędzi pola: 1 = krawędź północna, 2 = zachodnia
+  wallBits() {
+    if (this._wallVer === this.pieceVer && this._walls) return this._walls;
+    const b = this._walls || (this._walls = new Uint8Array(W * H));
+    b.fill(0);
+    for (const p of this.pieces || []) {
+      if (p.type !== 'wall' || p.lvl !== 0) continue;
+      const i = p.side === 'S' ? p.i : p.side === 'E' ? p.i + 1 : p.i, j = p.side === 'S' ? p.j + 1 : p.j;
+      if (this.inBounds(i, j)) b[idx(i, j)] |= p.side === 'N' || p.side === 'S' ? 1 : 2;
+    }
+    // pole zamknięte ze wszystkich stron ma drzwi od południa
+    for (let k = 0; k < W * H; k++) {
+      if (!(b[k] & 1) || !(b[k] & 2)) continue;
+      const s = k + W, e = k + 1;
+      if (s < W * H && (b[s] & 1) && (b[e] & 2)) b[s] &= ~1;
+    }
+    this._wallVer = this.pieceVer;
+    return b;
+  }
+  // czy da się przejść z pola c o krok (di, dj) w osi
+  edgeOpen(b, c, di, dj) {
+    if (dj === -1) return !(b[c] & 1);
+    if (dj === 1) return !(b[c + W] & 1);
+    if (di === -1) return !(b[c] & 2);
+    return !(b[c + 1] & 2);
+  }
+
+  // BFS po kafelkach lądu; zwraca odległości i rodziców.
+  // Ściany zatrzymują, a pola z dużymi obiektami dostają odległość (da się do nich podejść), ale nie da się przez nie przejść.
+  bfs(si, sj, mask, loose = false, avoid = null) {
     const dist = new Int32Array(W * H).fill(-1);
     const parent = new Int32Array(W * H).fill(-1);
+    const walls = loose ? null : this.wallBits();
     const s = idx(si, sj);
     dist[s] = 0;
     const q = [s];
+    let solids = 0;
     for (let h = 0; h < q.length; h++) {
       const c = q[h], ci = c % W, cj = (c / W) | 0;
+      if (h > 0 && !loose && (this.solid(c) || (avoid && avoid.has(c)))) { solids++; continue; } // do obiektu da się podejść, ale nie przez niego przejść
       for (const [di, dj] of DIRS8) {
         const ni = ci + di, nj = cj + dj;
         if (!this.walkable(ni, nj)) continue;
         if (mask && !mask[idx(ni, nj)]) continue;
-        // bez ścinania rogów po przekątnej
-        if (di !== 0 && dj !== 0 && (!this.walkable(ci + di, cj) || !this.walkable(ci, cj + dj))) continue;
         const n = idx(ni, nj);
         if (dist[n] >= 0) continue;
+        if (di !== 0 && dj !== 0) {
+          // bez ścinania rogów po przekątnej (teren, obiekty i ściany)
+          const a = idx(ci + di, cj), b2 = idx(ci, cj + dj);
+          if (!this.walkable(ci + di, cj) || !this.walkable(ci, cj + dj)) continue;
+          if (!loose && (this.solid(a) || this.solid(b2) || this.solid(n))) continue;
+          if (walls && !(this.edgeOpen(walls, c, di, 0) && this.edgeOpen(walls, a, 0, dj) && this.edgeOpen(walls, c, 0, dj) && this.edgeOpen(walls, b2, di, 0))) continue;
+        } else if (walls && !this.edgeOpen(walls, c, di, dj)) continue;
         dist[n] = dist[c] + 1;
         parent[n] = c;
         q.push(n);
       }
     }
-    return { dist, parent };
+    // zamknięta w ścianach albo między obiektami: lepiej przejść niż utknąć na zawsze
+    if (!loose && q.length - solids < 25) return this.bfs(si, sj, mask, true);
+    return { dist, parent, loose, avoid };
+  }
+  // pole zablokowane (np. wyrosło drzewo albo stanęła ściana) - trasę trzeba przeliczyć
+  stepBlocked(ci, cj, ni, nj) {
+    if (this.solid(idx(ni, nj))) return true;
+    const di = ni - ci, dj = nj - cj;
+    if (Math.abs(di) + Math.abs(dj) !== 1) return false;
+    return !this.edgeOpen(this.wallBits(), idx(ci, cj), di, dj);
   }
 
   pathFrom(bfsRes, ti, tj) {
@@ -180,6 +231,8 @@ export class World {
     const p = toWorld(i, j);
     const s = { id: this.nextId++, kind, i, j, x: p.x, z: p.z, owner, island: this.island[idx(i, j)], fuel: kind === 'campfire' ? 100 : 0, grill: false };
     if (kind === 'stash' || kind === 'chest') s.items = {};
+    // duże budowle zajmują pole: nie da się przez nie przejść
+    if (kind === 'campfire' || kind === 'workbench' || kind === 'chest') (this.solidStruct || (this.solidStruct = new Uint8Array(W * H)))[idx(i, j)] = 1;
     // grządka i doniczka: co rośnie (crop), etap, wzrost 0..1 i wilgoć ziemi 0..1
     if (kind === 'field') { s.stage = 'tilled'; s.growth = 0; s.berries = 0; s.crop = null; s.water = 0; }
     if (kind === 'planter') { s.stage = 'empty'; s.growth = 0; s.crop = null; s.water = 0; s.vessel = 'pot'; }

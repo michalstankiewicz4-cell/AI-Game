@@ -141,7 +141,16 @@ export const tasksMethods = {
     const sh = this.nearestStructure(bfs, 'shelter') || this.nearestStructure(bfs, 'tent');
     const fi = this.nearestStructure(bfs, 'campfire');
     // łóżko: z ciekawości raz spróbuje, a potem wybiera je, bo wie, że lepiej się w nim śpi
-    const bed = (this.known.has('bedRest') || !this.bedTried) && this.nearestStructure(bfs, 'bed');
+    // łóżko: najpierw własne, potem wolne (na jednym łóżku śpi jedna postać)
+    let bed = null;
+    if (this.known.has('bedRest') || !this.bedTried) {
+      const taken = (s) => this.world.agents.some((a) => a !== this && a.alive && ((a.task && a.task.bedId === s.id) || (a.asleep && a.i === s.i && a.j === s.j)));
+      for (const s of this.world.structures) {
+        if (s.kind !== 'bed' || !this.knownStructs.has(s.id) || taken(s)) continue;
+        const d = bfs.dist[idx(s.i, s.j)] - (s.owner === this.id ? 10 : 0);
+        if (bfs.dist[idx(s.i, s.j)] >= 0 && (!bed || d < bed.dd)) bed = { s, i: s.i, j: s.j, d: bfs.dist[idx(s.i, s.j)], dd: d };
+      }
+    }
     // dom z desek: postać, która wie, że pod dachem cieplej, wybiera najlepiej osłonięte pole
     let house = null;
     if (this.known.has('warmRoof') && this.world.pieces.length) {
@@ -162,7 +171,7 @@ export const tasksMethods = {
     else if (fi && fi.d < 30) target = this.freeTileNear(fi.i, fi.j, bfs) || fi;
     const path = target ? this.pathTo(target.i, target.j) : [];
     return {
-      urgent: this.energy < 15, path: path || [], rest: true, label: '😴 Śpi',
+      urgent: this.energy < 15, path: path || [], rest: true, label: '😴 Śpi', bedId: target && target === bed ? bed.s.id : null,
       act: () => {
         this.asleep = true;
         if (this.thirst < 12 || this.hunger < 10) return 'done';

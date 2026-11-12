@@ -128,6 +128,12 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Ptaki:** upolowany ptak daje mięso i 2 pióra.
 - **Łuk:** ze strzałami trafia ptaka częściej niż włócznia (75% zamiast 50% na start). Postać z łukiem i strzałami może też walczyć z dzikiem i na niego polować.
 
+## Kolizje
+- **Duże obiekty:** drzewa (pnie już nie), skały, krzaki, ogniska, stoły rzemieślnicze i skrzynie zajmują pole. Postać nie przechodzi przez nie, tylko obchodzi, a żeby coś z nimi zrobić, staje obok.
+- **Ściany:** ściana z desek na parterze zamyka krawędź pola. Pole otoczone ścianami ze wszystkich stron ma drzwi od południa. Postać, która mimo to utknie (np. w większym zamkniętym domu), wychodzi awaryjnie przez ścianę.
+- **Postacie:** nie przechodzą przez siebie. Stojącą postać trasa omija; gdy dwie idą na siebie, ta z wyższym numerem czeka, a po chwili szuka innej drogi.
+- **Łóżka:** na jednym łóżku śpi jedna postać. Postać idzie najpierw do swojego łóżka, potem do wolnego, i robi sobie własne. Lepszy sen liczy się tylko na łóżku.
+
 ## Drogi i pnie
 - **Wydeptane ścieżki:** gra liczy, ile razy postacie przeszły przez każde pole. Pole, przez które przeszły co najmniej 6 razy, nadaje się na drogę.
 - **Droga:** postać z łopatą ubija drogę na wydeptanych polach do 22 pól od obozu (ok. 3 s na pole, za dnia). Po drodze chodzi się o połowę szybciej (postacie chodzą 1,9 kafelka/s, po drodze ok. 2,85).
@@ -147,7 +153,7 @@ Postać, która zna deski, może kłaść je pojedynczo. Każda deska to osobny 
 - **Podpory:** ściana wyżej musi stać na ścianie, a podłoga albo skos nad ziemią muszą opierać się o ścianę pod spodem albo o deskę obok. Deski, na której coś się opiera, nie da się zdjąć.
 - **Zmiany:** postać może deskę zdjąć (wraca do plecaka), przenieść w inne miejsce i zmienić jej nazwę.
 - **Analiza kształtu:** gra liczy deski każdego rodzaju, największy kawałek podłogi, ile krawędzi jego obwodu ma ściany i ile pól ma deskę nad głową. Model dostaje same liczby, bez ocen w rodzaju „brakuje” albo „luka”, i wolne miejsca w losowej kolejności.
-- **Dom wychodzi sam albo wcale:** gra nie ma „przepisu na dom”. Liczy się tylko, czy pole jest przykryte (deska nad głową; niski skos na ziemi daje połowę) i jak bardzo obudowane. Takie miejsce grzeje prawie jak szałas, a postać, która odkryła, że pod dachem cieplej, chętnie w nim śpi. Ściany nie blokują przejścia.
+- **Dom wychodzi sam albo wcale:** gra nie ma „przepisu na dom”. Liczy się tylko, czy pole jest przykryte (deska nad głową; niski skos na ziemi daje połowę) i jak bardzo obudowane. Takie miejsce grzeje prawie jak szałas, a postać, która odkryła, że pod dachem cieplej, chętnie w nim śpi. Ściany na parterze blokują przejście; budka zamknięta ze wszystkich stron ma drzwi od południa.
 - **Bez poleceń modelu: próba i błąd.** Postać kładzie deskę w losowym wolnym miejscu przy innych deskach i sprawdza, czy przy budowie zrobiło się zaciszniej. Zapamiętuje to dla rodzaju deski i poziomu (np. „ściana na ziemi”, „podłoga na poziomie 1”) i później częściej wybiera to, co pomogło, a co trzecią deskę kładzie zupełnie na próbę. Z tego wychodzą różne budowle: osłony od wiatru przy ognisku, budki ze ścian, daszki; czasem coś podobnego do domu, czasem nic.
 - **Podgląd:** najechanie myszą na deskę pokazuje jej nazwę, rodzaj, poziom i to, kto ją położył.
 

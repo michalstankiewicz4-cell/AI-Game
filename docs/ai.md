@@ -61,6 +61,11 @@ Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie t
 - `pickCrop()` wybiera nasiona rośliny, której najmniej rośnie. Opcje: „💧 Podlać rośliny” (doniczki najpierw), „🥣 Nabrać wody do miski” (także gdy rośliny są suche), „🪴 Posadzić w doniczce / w misce” (gdy ma co najmniej 2 naczynia), „🧱 Nabrać gliny”, „🏺 Wypalić doniczkę”, „🌾 Zebrać żyto”, „🌼 Zerwać kwiaty”.
 - `VESSELS` łączy puste i pełne naczynia (`bowl`/`waterBowl`, `pot`/`waterPot`). Doświadczenia `watering` (przy zbiorze z podlewanej rośliny) i `clay` (przy piciu ze stawu, 15%) trafiają do `known`. Ziarno, nasiona kwiatów i kwiaty to drobiazgi spoza plecaka (limity w `POCKET_CAP`).
 
+## Kolizje (`world.js`, `agent.js`)
+- `world.solid(k)`: zasób (drzewo od `growth` 0,5, skała, krzak) albo budowla z `solidStruct` (ognisko, stół, skrzynia). `bfs` nadaje takim polom odległość, ale z nich nie rusza dalej, więc `nearestRes` działa jak dawniej, a `pathTo` zdejmuje ostatni krok (postać staje obok).
+- Ściany parteru to bity krawędzi z `wallBits()` (przeliczane, gdy zmieni się `pieceVer`); `edgeOpen` sprawdza krok, a po przekątnej oba narożniki. Gdy z miejsca postaci da się dojść do mniej niż 25 pól, `bfs` liczy trasę bez przeszkód (`loose`) i ta trasa może przejść przez ścianę.
+- Postacie: `decide` przekazuje do `bfs` zbiór `avoid` z polami stojących w pobliżu postaci. W `runTask` postać czeka przed polem zajętym przez stojącą postać (albo idącą z niższym numerem), a po 1,2 s przelicza trasę. `taskSleep` wybiera łóżko, którego nie zajmuje inna postać (`task.bedId`).
+
 ## Drogi i pnie (`tasks.js`, `world.js`)
 - `world.traffic` liczy przejścia przez pola, a `world.road` trzyma drogi (`addRoad`). W `runTask` krok na drodze jest dłuższy o `ROAD_SPEED` (1,5).
 - `roadSpot(home)` szuka w promieniu 22 pól od obozu pola z co najmniej 6 przejściami, bez zasobu (albo z pniem) i bez budowli. Opcje: „🛤️ Budować drogę” (łopata, za dnia), „🪵 Wyrwać pień” (pień na drodze, w obozie albo brak drzew przy potrzebie kłód), „🪏 Zrobić łopatę”.
