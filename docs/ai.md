@@ -3,7 +3,7 @@
 Zachowanie postaci ma dwie warstwy:
 
 1. **Kod gry (utility AI)**: liczy, które działania mają teraz sens, i je wykonuje. Obejmuje chodzenie, zbieranie, budowę i odruchy przy krytycznych potrzebach.
-2. **Model językowy**: co kilka sekund wybiera jedno z tych działań i mówi, co postać myśli. Szczegóły w [modele-jezykowe.md](modele-jezykowe.md).
+2. **Model językowy**: co kilkanaście sekund wybiera jedno z tych działań i mówi, co postać myśli. W trybie „Pełna swoboda” nie dostaje listy działań, tylko sam wymyśla zamiar, a gra (`src/ai/intent.js`) dopasowuje go do możliwego działania. Szczegóły w [modele-jezykowe.md](modele-jezykowe.md).
 
 Dzięki takiemu podziałowi postacie żyją także wtedy, gdy model się ładuje albo nie działa.
 
@@ -45,4 +45,4 @@ Postacie, które spotkają się bliżej niż 2,6 kafelka, mogą porozmawiać. Ta
 - **Dymki:** myśli przy zmianie zajęcia, okrzyki przy krytycznych potrzebach, reakcje na zdarzenia.
 - **Narrator:** co ok. 30 s podsumowuje sytuację, np. kto jest w tarapatach albo jak idzie budowa mostu.
 
-Postacie mówią wyłącznie przez model językowy, a ich wypowiedzi są w czacie oznaczone 🤖. Szablony z `commentary.js` służą modelowi tylko jako notatki o tym, co się stało. Narrator nadal korzysta z szablonów.
+Gdy model działa, postacie mówią jego słowami, a ich wypowiedzi są w czacie oznaczone 🤖. Szablony z `commentary.js` służą wtedy modelowi tylko jako notatki o tym, co się stało. Gdy model się ładuje, ma błąd albo brakuje klucza, szablony trafiają wprost do dymków (kursywą, w czacie 📜). Kiedy model liczy odpowiedź, nad postacią widać „💭 …”. Narrator zawsze korzysta z szablonów.

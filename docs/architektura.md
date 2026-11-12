@@ -9,19 +9,25 @@ css/style.css         wygląd interfejsu
 lib/                  Three.js r160 + OrbitControls (licencja MIT)
 tools/version.py      wersjonowanie i kontrola spójności
 docs/                 dokumentacja
+.github/workflows/    static.yml (Pages), version-check.yml (PR), release.yml (tagi i wydania)
 src/
   version.js          wersja gry (semver), jedno źródło prawdy
   main.js             punkt wejścia: pętla klatek, spina grę, render i UI
   game.js             createGame(cfg), stepGame(game) – symulacja bez DOM
   core/rng.js         losowość z ziarnem (mulberry32), szum fbm
   world/              świat (kafelki, generowanie, mosty, przyroda)
-  ai/                 postacie (stan, decyzje, zadania, percepcja, wiedza, rozmowy, komentarze, modele językowe)
+  ai/                 postacie (stan, decyzje, zadania, percepcja, wiedza, rozmowy, komentarze)
+    llm.js            modele językowe: WebLLM i Claude API, limity zapytań, licznik tokenów
+    intent.js         pełna swoboda: opis zmysłów, mapIntent (zamiar → działanie)
   render/             Three.js: scena, modele low-poly, teren, mgła
-  ui/                 menu, panele, sterowanie, czat, ustawienia modeli
+    instances.js      Instancer: InstancedMesh dla zasobów
+  ui/                 menu, panele, sterowanie, czat
+    llmPanel.js       ustawienia modeli w menu, licznik tokenów, przesuwanie okienek
+    errors.js         zakładka „⚠️ Błędy”: zbieranie i kopiowanie błędów
 ```
 
 ## Przepływ
-1. `main.js` wywołuje `initMenu` i `initLlmMenu`. Po kliknięciu „Start” `createGame(cfg)` tworzy `World`, agentów, narratora i `Social`, a `Renderer.build(world)` buduje scenę.
+1. `main.js` wywołuje `initErrors` (przechwytuje błędy strony i konsoli), `initMenu` i `initLlmMenu`. Po kliknięciu „Start” `createGame(cfg)` tworzy `World`, agentów, narratora i `Social`, a `Renderer.build(world)` buduje scenę.
 2. W pętli `requestAnimationFrame` czas rzeczywisty mnożony przez prędkość trafia do akumulatora. `stepGame` wykonuje stałe kroki `STEP = 0.1 s`, najwyżej 100 na klatkę.
 3. `stepGame` po kolei:
    - wywołuje `world.update`, czyli przyrodę i mosty,
@@ -39,13 +45,12 @@ src/
 
 ## Render
 - **Teren:** jedna siatka z kolorami w wierzchołkach.
-- **Morze:** animowane fale.
 - **Obiekty:** modele low-poly z `models.js`. Zasoby (drzewa, palmy, skały, krzaki, wodorosty) nie trafiają do sceny jako osobne siatki. `instances.js` zbiera ich części w `InstancedMesh` pogrupowane po geometrii i materiale, co daje ok. 110 wywołań rysowania zamiast ok. 1500. Ukrycie części albo całego zasobu zeruje jego macierz.
 - **Ogniska:** świecą trzema stałymi `PointLight`, przypisanymi do ognisk najbliżej kamery. Nowe ognisko nie wymusza więc przekompilowania materiałów.
-- **Morze:** fale liczone są co drugą klatkę.
+- **Morze:** animowane fale, liczone co drugą klatkę na siatce 64 × 64 segmenty.
 - **Jakość grafiki** (przycisk 🎨 w górnym pasku): wysoka ma cienie i rozdzielczość do 1,5×, niska wyłącza cienie i zmniejsza rozdzielczość. Licznik FPS stoi obok.
 - **Mgła niewiedzy:** płaszczyzna z `DataTexture`, aktualizowana w trybie „Oczami AI”.
 - **Etykiety i dymki:** elementy DOM nakładane na obraz.
 
 ## Podgląd do testów
-`window.__game` to stan gry (świat, agenci, `social`, `narrator`). Testy przewijają symulację, wywołując te same funkcje co `stepGame`.
+`window.__game` to stan gry (świat, agenci, `social`, `narrator`), a `window.__renderer` to renderer (np. `renderer.info` z liczbą wywołań rysowania). Testy przewijają symulację, wywołując te same funkcje co `stepGame`.

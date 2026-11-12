@@ -16,15 +16,15 @@ Model odpowiada obiektem JSON:
 {"wybor": 2, "mysl": "Nazbieram jagód, zanim zrobi się ciemno."}
 ```
 
+Po odpowiedzi:
+- `mysl` trafia do dymka i do czatu z oznaczeniem 🤖,
+- `wybor` przerywa bieżące zadanie (o ile nie jest pilne) i przy następnej decyzji wygrywa, chyba że kod gry widzi krytyczną potrzebę.
+
 Gdy model działa, mówi tylko on. Teksty z szablonów (myśli, reakcje na zdarzenia, rozmowy) nie trafiają wtedy do dymków. Postać zbiera je jako notatki, które model dostaje w następnym zapytaniu i opisuje własnymi słowami. Ważne zdarzenie przyspiesza zapytanie, a rozmowy z szablonów widać w dzienniku.
 
 Gdy model się ładuje, ma błąd albo brakuje klucza, za postacie mówi skrypt: dymki są wtedy kursywą, a w czacie mają znak 📜. Kiedy model liczy odpowiedź, nad postacią widać „💭 …”.
 
 Odpowiedź modelu jest czytana łagodnie: inne nazwy kluczy (`thought`, `intent`) albo zwykły tekst zamiast JSON-a też zostaną użyte.
-
-Wtedy:
-- `mysl` trafia do dymka i do czatu z oznaczeniem 🤖,
-- `wybor` przerywa bieżące zadanie (o ile nie jest pilne) i przy następnej decyzji wygrywa, chyba że kod gry widzi krytyczną potrzebę.
 
 ## Pełna swoboda (przełącznik w menu)
 Model nie dostaje listy działań ani notatek ze skryptu, tylko to, co postać:
@@ -49,7 +49,7 @@ Działa przez [WebLLM](https://github.com/mlc-ai/web-llm) 0.2.86 ładowane z CDN
 | Qwen2.5 1.5B | ~1 GB | ~1,6 GB |
 
 - **Laptop z dwiema kartami:** Chrome bywa przypięty do słabszej karty zintegrowanej, a WebLLM nie może tego zmienić na Windows. Wejdź w Ustawienia › System › Ekran › Grafika i ustaw Chrome na „Wysoka wydajność” (np. NVIDIA RTX).
-- **Wymagania:** Chrome lub Edge na komputerze z WebGPU. Bez WebGPU gra pokazuje komunikat, a postacie działają na samym kodzie gry.
+- **Wymagania:** Chrome lub Edge na komputerze z WebGPU. Bez WebGPU gra pokazuje komunikat, a postacie działają na samym kodzie gry i mówi za nie skrypt (📜).
 - **Odpowiedź:** wymuszony JSON (`response_format: json_object` ze schematem przekazanym jako tekst), okno kontekstu 1536 tokenów. Jeśli wymuszony JSON nie działa, gra przechodzi na zwykły tekst.
 - **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli. „📋 Kopiuj wszystko” kopiuje je razem z wersją gry i nazwą karty graficznej.
 - **Utrata karty graficznej** (np. `DXGI_ERROR_DEVICE_HUNG` na Windows): gra przełącza się na lżejszy model i zapamiętuje go. Chrome po takim resecie blokuje WebGPU, dopóki strona się nie odświeży, więc gra prosi o F5.
