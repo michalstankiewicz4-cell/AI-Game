@@ -9,9 +9,10 @@ export const MODELS = {
   'claude-haiku-5-5': { name: 'Claude Haiku 5.5', inp: 0.10, out: 0.50 },
 };
 export const WEB_MODELS = {
-  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': { name: 'Qwen2.5 1.5B', size: '~1 GB', vram: '1,6 GB' },
-  'Llama-3.2-1B-Instruct-q4f16_1-MLC': { name: 'Llama 3.2 1B', size: '~0,7 GB', vram: '0,9 GB' },
+  // od najlżejszego; po utracie karty graficznej gra schodzi na lżejszy
   'Qwen2.5-0.5B-Instruct-q4f16_1-MLC': { name: 'Qwen2.5 0.5B (najlżejszy)', size: '~0,4 GB', vram: '0,9 GB' },
+  'Llama-3.2-1B-Instruct-q4f16_1-MLC': { name: 'Llama 3.2 1B', size: '~0,7 GB', vram: '0,9 GB' },
+  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': { name: 'Qwen2.5 1.5B (najmądrzejszy)', size: '~1 GB', vram: '1,6 GB' },
 };
 const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.86/+esm';
 const LS = 'wyspyai.llm';
@@ -30,20 +31,19 @@ class LLM {
     let s = {};
     try { s = JSON.parse(load(LS, '{}')) || {}; } catch { s = {}; }
     // zgodność ze starszym zapisem (mode: off/talk/decide)
-    this.provider = ['local', 'claude', 'web'].includes(s.provider) ? s.provider : (s.mode === 'talk' || s.mode === 'decide') ? 'claude' : 'local';
-    this.mode = s.mode === 'talk' ? 'talk' : 'decide';
+    this.provider = s.provider === 'claude' ? 'claude' : 'web';
     this.model = MODELS[s.model] ? s.model : 'claude-opus-5-5';
-    this.webModel = WEB_MODELS[s.webModel] ? s.webModel : 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
+    this.webModel = WEB_MODELS[s.webModel] ? s.webModel : 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
     this.budget = +s.budget > 0 ? +s.budget : 1;
     this.key = load(LS_KEY, '');
-    this.web = { engine: null, id: null, loading: false, progress: 0, text: '', error: '' };
+    this.web = { engine: null, id: null, loading: false, progress: 0, text: '', error: '', note: '', lost: 0 };
     this.usage = { input: 0, output: 0, calls: 0, errors: 0, cost: 0 };
     this.inflight = 0;
     this.lastCall = -1e9;
     this.lastError = '';
     this.paused = false; // wstrzymane po przekroczeniu budżetu lub błędzie klucza
   }
-  persist() { save(LS, JSON.stringify({ provider: this.provider, mode: this.mode, model: this.model, webModel: this.webModel, budget: this.budget })); }
+  persist() { save(LS, JSON.stringify({ provider: this.provider, model: this.model, webModel: this.webModel, budget: this.budget })); }
   setKey(k) { this.key = (k || '').trim(); save(LS_KEY, this.key); this.paused = false; this.lastError = ''; }
   get webReady() { return !!this.web.engine && this.web.id === this.webModel; }
   get active() {
@@ -52,7 +52,7 @@ class LLM {
     if (this.provider === 'web') return this.webReady;
     return false;
   }
-  get decides() { return this.active && this.mode === 'decide'; }
+  get decides() { return this.active; }
   resetUsage() { this.usage = { input: 0, output: 0, calls: 0, errors: 0, cost: 0 }; this.paused = false; this.lastError = ''; }
 
   // pobranie i uruchomienie modelu w przeglądarce (za pierwszym razem pobiera pliki z Hugging Face, potem z pamięci podręcznej)
@@ -60,7 +60,7 @@ class LLM {
     const W = this.web;
     if (this.webReady || W.loading) return;
     W.error = '';
-    if (!hasWebGPU()) { W.error = 'Ta przeglądarka nie obsługuje WebGPU (spróbuj Chrome lub Edge na komputerze). Postacie używają lokalnego AI.'; return; }
+    if (!hasWebGPU()) { W.error = 'Ta przeglądarka nie obsługuje WebGPU (spróbuj Chrome lub Edge na komputerze).'; return; }
     W.loading = true; W.progress = 0; W.text = 'Ładowanie biblioteki WebLLM...';
     try {
       if (W.engine) { try { await W.engine.unload(); } catch { /* ignoruj */ } W.engine = null; W.id = null; }
@@ -68,11 +68,39 @@ class LLM {
       const id = this.webModel;
       const engine = await webllm.CreateMLCEngine(id, {
         initProgressCallback: (r) => { W.progress = r.progress || 0; W.text = r.text || ''; },
-      });
+      }, { context_window_size: 1536 }); // mniejsza pamięć podręczna = mniej VRAM
       W.engine = engine; W.id = id; W.progress = 1; W.text = 'Model gotowy';
     } catch (e) {
-      W.error = 'Nie udało się uruchomić modelu: ' + String(e.message || e).slice(0, 200);
+      W.loading = false;
+      if (!this.webLost(e)) W.error = 'Nie udało się uruchomić modelu: ' + String(e.message || e).slice(0, 200);
     } finally { W.loading = false; }
+  }
+
+  // karta graficzna „zgubiła” urządzenie (za mało pamięci, przeciążenie): zejdź na lżejszy model i spróbuj ponownie
+  webLost(e) {
+    const msg = String((e && e.message) || e || '');
+    const W = this.web;
+    // po resecie karty Chrome blokuje WebGPU dla tej strony aż do odświeżenia
+    if (/compatible GPU|adapter/i.test(msg)) {
+      W.engine = null; W.id = null;
+      W.error = W.lost > 0
+        ? `Po resecie karty graficznej przeglądarka blokuje WebGPU do odświeżenia strony. Odśwież stronę (F5), gra zapamiętała lżejszy model: ${WEB_MODELS[this.webModel].name}.`
+        : 'Przeglądarka nie znalazła karty graficznej z WebGPU. Sprawdź, czy w Chrome/Edge jest włączona akceleracja sprzętowa, albo wybierz Claude API.';
+      return true;
+    }
+    if (!/device|lost|hung|memory|not loaded|unload/i.test(msg)) return false;
+    W.engine = null; W.id = null; W.lost++;
+    const ids = Object.keys(WEB_MODELS);
+    const k = ids.indexOf(this.webModel);
+    if (k > 0) {
+      this.webModel = ids[k - 1]; this.persist();
+      W.note = `Karta graficzna nie udźwignęła modelu, przełączam na lżejszy: ${WEB_MODELS[this.webModel].name}.`;
+    } else if (W.lost > 2) {
+      W.error = 'Karta graficzna nie daje rady nawet z najmniejszym modelem. Spróbuj Claude API albo zamknij inne karty i odśwież stronę.';
+      return true;
+    } else W.note = 'Karta graficzna się zresetowała, ponownie uruchamiam model...';
+    setTimeout(() => this.loadWeb(), 3000);
+    return true;
   }
 
   // czy postać może teraz zapytać model
@@ -92,7 +120,7 @@ class LLM {
     agent.llmNext = agent.world.time + AGENT_CD[this.provider];
     this.lastCall = performance.now();
     this.inflight++;
-    const decide = this.mode === 'decide';
+    const decide = true; // model zawsze decyduje i mówi
     const sys = `Grasz postacią w symulacji przetrwania na tropikalnych wyspach. Odpowiadasz wyłącznie jednym obiektem JSON, bez żadnego innego tekstu. `
       + (decide ? 'Format: {"wybor": <numer opcji>, "mysl": "<krótka wypowiedź>"}. ' : 'Format: {"mysl": "<krótka wypowiedź>"}. ')
       + 'Wypowiedź to jedno zdanie po polsku (do 14 słów), mówione na głos w pierwszej osobie, zgodnie z charakterem postaci, jak komentarz streamera. Bez cudzysłowów w środku.';
@@ -119,12 +147,15 @@ class LLM {
   async callWeb(system, user, maxTokens) {
     const engine = this.web.engine;
     if (!engine) throw new Error('Model nie jest załadowany');
-    const r = await engine.chat.completions.create({
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-      max_tokens: maxTokens,
-      temperature: 0.7,
-      response_format: { type: 'json_object' },
-    });
+    let r;
+    try {
+      r = await engine.chat.completions.create({
+        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+        max_tokens: maxTokens,
+        temperature: 0.7,
+        response_format: { type: 'json_object' },
+      });
+    } catch (e) { this.webLost(e); throw e; }
     const u = r.usage || {};
     this.usage.input += u.prompt_tokens || 0; this.usage.output += u.completion_tokens || 0; this.usage.calls++;
     return r.choices?.[0]?.message?.content || '';

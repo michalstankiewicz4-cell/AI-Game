@@ -15,7 +15,7 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Percepcja i pamięć:** stożek widzenia (im dalej, tym węższy), pamięć tego, co widział; trzeba się rozejrzeć, by odświeżyć wiedzę. Tryb „👁️ Oczami AI” pokazuje stożek i mgłę niewiedzy.
 - **Rozmowy:** agenci spotykają się, wymieniają wiedzą o mapie, recepturami, doświadczeniem (umiejętności rosną z praktyką) i przedmiotami.
 - **Komentarze na żywo:** dymki z myślami postaci i narrator.
-- **Mózg postaci (menu):** lokalny skrypt (domyślnie), darmowy model z Hugging Face w przeglądarce (WebLLM na WebGPU: Qwen2.5 1.5B, Llama 3.2 1B lub Qwen2.5 0.5B; pobiera się raz, potem z pamięci przeglądarki; bez WebGPU gra wraca do skryptu) albo Claude API. Każdy model może tylko mówić albo też wybierać działania. Klucz API wpisujesz w przeglądarce; zostaje tylko w localStorage i trafia wyłącznie do api.anthropic.com. Licznik tokenów z szacunkowym kosztem jest w górnym pasku, a po przekroczeniu limitu postacie wracają do lokalnego AI.
+- **Mózg postaci (menu):** model językowy decyduje, co postać robi, i układa jej wypowiedzi. Do wyboru darmowy model z Hugging Face w przeglądarce (WebLLM na WebGPU: Qwen2.5 0.5B, Llama 3.2 1B lub Qwen2.5 1.5B; pobiera się raz, potem z pamięci przeglądarki; po przeciążeniu karty gra sama schodzi na lżejszy model) albo Claude API. Chodzenie, zbieranie i odruchy przy krytycznych potrzebach wykonuje kod gry, więc postacie żyją także, gdy model się ładuje.
 - **Okienka:** „Postacie” (klik przenosi kamerę do postaci) i karta postaci dają się przesuwać za nagłówek.
 
 ## Sterowanie
