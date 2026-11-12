@@ -229,7 +229,7 @@ export class World {
 
   addStructure(kind, i, j, owner) {
     const p = toWorld(i, j);
-    const s = { id: this.nextId++, kind, i, j, x: p.x, z: p.z, owner, island: this.island[idx(i, j)], fuel: kind === 'campfire' ? 100 : 0, grill: false };
+    const s = { id: this.nextId++, kind, i, j, x: p.x, z: p.z, owner, island: this.island[idx(i, j)], fuel: kind === 'campfire' ? 100 : 0, grill: false, t: this.time };
     if (kind === 'stash' || kind === 'chest') s.items = {};
     // duże budowle zajmują pole: nie da się przez nie przejść
     if (kind === 'campfire' || kind === 'workbench' || kind === 'chest') (this.solidStruct || (this.solidStruct = new Uint8Array(W * H)))[idx(i, j)] = 1;

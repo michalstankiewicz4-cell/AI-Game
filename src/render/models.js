@@ -182,11 +182,19 @@ export const modelsMethods = {
       for (const sx of [-0.22, 0.22]) { const band = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.36, 0.44), m.post); band.position.set(sx, 0.19, 0); g.add(band); }
     } else if (s.kind === 'field') {
       // grządka: spulchniona ziemia w bruzdach, na niej sadzonka, która rośnie, i plon, gdy dojrzeje
-      const soil = this.mat.soil || (this.mat.soil = new THREE.MeshStandardMaterial({ color: 0x6b4a2b, roughness: 1, flatShading: true }));
+      // każda grządka ma własny kolor ziemi: sucha jest jasna i spękana, podlana ciemna i błyszcząca
+      const soil = new THREE.MeshStandardMaterial({ color: 0x9a7b52, roughness: 1, flatShading: true }); g.userData.soil = soil;
       const bed = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.06, 0.92), soil); bed.position.y = 0.02; bed.receiveShadow = true; g.add(bed);
       for (const z of [-0.28, 0, 0.28]) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.05, 0.1), soil); r.position.set(0, 0.07, z); g.add(r); }
-      // mokra ziemia po podlaniu jest ciemniejsza
-      const wet = new THREE.Mesh(new THREE.BoxGeometry(0.93, 0.061, 0.93), this.wetSoil()); wet.position.y = 0.021; wet.name = 'wet'; g.add(wet);
+      // spękania suchej ziemi i kałuże po podlaniu
+      const cracks = new THREE.Group(); cracks.name = 'cracks';
+      const crackMat = this.mat.crack || (this.mat.crack = new THREE.MeshBasicMaterial({ color: 0x5a4126 }));
+      for (const [x, z, r] of [[-0.3, -0.14, 0.4], [0.15, 0.14, -0.6], [0.32, -0.15, 1.1], [-0.12, 0.42, 0.2]]) { const c = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.004, 0.015), crackMat); c.position.set(x, 0.052, z); c.rotation.y = r; cracks.add(c); }
+      g.add(cracks);
+      const wet = new THREE.Group(); wet.name = 'wet';
+      const pud = this.mat.puddle || (this.mat.puddle = new THREE.MeshStandardMaterial({ color: 0x4a6f8c, roughness: 0.1, metalness: 0.3, transparent: true, opacity: 0.75 }));
+      for (const [x, z, s2] of [[-0.3, 0.14, 1], [0.25, -0.14, 0.8], [0.05, 0.42, 0.6]]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.09 * s2, 0.09 * s2, 0.004, 8), pud); p.position.set(x, 0.053, z); wet.add(p); }
+      g.add(wet);
       this.cropGroups(g, [[-0.25, -0.28], [0.2, 0], [-0.1, 0.28], [0.3, 0.28], [-0.3, 0]], 0.1, 1);
     } else if (s.kind === 'planter') {
       // doniczka z gliny albo drewniana miska z ziemią, w niej mała roślina
@@ -194,9 +202,9 @@ export const modelsMethods = {
       const pot = new THREE.Mesh(clay ? new THREE.CylinderGeometry(0.17, 0.12, 0.26, 8) : new THREE.CylinderGeometry(0.22, 0.14, 0.12, 9), clay ? m.clay : m.plank);
       pot.position.y = clay ? 0.13 : 0.06; pot.castShadow = true; g.add(pot);
       const top = clay ? 0.25 : 0.11;
-      const soil = this.mat.soil || (this.mat.soil = new THREE.MeshStandardMaterial({ color: 0x6b4a2b, roughness: 1, flatShading: true }));
+      const soil = new THREE.MeshStandardMaterial({ color: 0x9a7b52, roughness: 1, flatShading: true }); g.userData.soil = soil;
       const dirt = new THREE.Mesh(new THREE.CylinderGeometry(clay ? 0.15 : 0.19, 0.15, 0.02, 8), soil); dirt.position.y = top; g.add(dirt);
-      const wet = new THREE.Mesh(new THREE.CylinderGeometry(clay ? 0.152 : 0.192, 0.15, 0.021, 8), this.wetSoil()); wet.position.y = top; wet.name = 'wet'; g.add(wet);
+      const wet = new THREE.Group(); wet.name = 'wet'; g.add(wet); const cracks = new THREE.Group(); cracks.name = 'cracks'; g.add(cracks);
       this.cropGroups(g, [[0, 0], [0.07, 0.06], [-0.07, 0.04]], top, 0.55);
     } else if (s.kind === 'bed') {
       const frame = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.14, 0.95), m.plank); frame.position.y = 0.09; frame.castShadow = true; g.add(frame);
@@ -207,7 +215,6 @@ export const modelsMethods = {
     this.structMeshes.set(s, g);
   },
 
-  wetSoil() { return this.mat.wetSoil || (this.mat.wetSoil = new THREE.MeshStandardMaterial({ color: 0x3e2a18, roughness: 0.6, flatShading: true })); },
   // rośliny na grządce i w doniczce: krzak z jagodami, żyto z kłosami, kwiaty; renderer pokazuje tę, która rośnie
   cropGroups(g, spots, y, sc) {
     const m = this.mat, G = this.geo;

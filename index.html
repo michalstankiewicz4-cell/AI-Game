@@ -5,49 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wyspy AI – symulacja przetrwania</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏝️</text></svg>">
-<link rel="stylesheet" href="css/style.css?v=0.28.0">
+<link rel="stylesheet" href="css/style.css?v=0.29.0">
 <!-- importmap:begin -->
 <script type="importmap">
 {
  "imports": {
-  "three": "./lib/three.module.min.js?v=0.28.0",
-  "./src/ai/agent.js": "./src/ai/agent.js?v=0.28.0",
-  "./src/ai/building.js": "./src/ai/building.js?v=0.28.0",
-  "./src/ai/commentary.js": "./src/ai/commentary.js?v=0.28.0",
-  "./src/ai/data.js": "./src/ai/data.js?v=0.28.0",
-  "./src/ai/decide.js": "./src/ai/decide.js?v=0.28.0",
-  "./src/ai/intent.js": "./src/ai/intent.js?v=0.28.0",
-  "./src/ai/knowledge.js": "./src/ai/knowledge.js?v=0.28.0",
-  "./src/ai/llm.js": "./src/ai/llm.js?v=0.28.0",
-  "./src/ai/llmWorker.js": "./src/ai/llmWorker.js?v=0.28.0",
-  "./src/ai/memory.js": "./src/ai/memory.js?v=0.28.0",
-  "./src/ai/perception.js": "./src/ai/perception.js?v=0.28.0",
-  "./src/ai/social.js": "./src/ai/social.js?v=0.28.0",
-  "./src/ai/tasks.js": "./src/ai/tasks.js?v=0.28.0",
-  "./src/core/rng.js": "./src/core/rng.js?v=0.28.0",
-  "./src/game.js": "./src/game.js?v=0.28.0",
-  "./src/main.js": "./src/main.js?v=0.28.0",
-  "./src/render/instances.js": "./src/render/instances.js?v=0.28.0",
-  "./src/render/models.js": "./src/render/models.js?v=0.28.0",
-  "./src/render/renderer.js": "./src/render/renderer.js?v=0.28.0",
-  "./src/render/terrain.js": "./src/render/terrain.js?v=0.28.0",
-  "./src/ui/controls.js": "./src/ui/controls.js?v=0.28.0",
-  "./src/ui/dom.js": "./src/ui/dom.js?v=0.28.0",
-  "./src/ui/errors.js": "./src/ui/errors.js?v=0.28.0",
-  "./src/ui/feed.js": "./src/ui/feed.js?v=0.28.0",
-  "./src/ui/llmPanel.js": "./src/ui/llmPanel.js?v=0.28.0",
-  "./src/ui/menu.js": "./src/ui/menu.js?v=0.28.0",
-  "./src/ui/panels.js": "./src/ui/panels.js?v=0.28.0",
-  "./src/ui/perf.js": "./src/ui/perf.js?v=0.28.0",
-  "./src/ui/wiki.js": "./src/ui/wiki.js?v=0.28.0",
-  "./src/version.js": "./src/version.js?v=0.28.0",
-  "./src/world/boars.js": "./src/world/boars.js?v=0.28.0",
-  "./src/world/bridges.js": "./src/world/bridges.js?v=0.28.0",
-  "./src/world/generate.js": "./src/world/generate.js?v=0.28.0",
-  "./src/world/nature.js": "./src/world/nature.js?v=0.28.0",
-  "./src/world/pieces.js": "./src/world/pieces.js?v=0.28.0",
-  "./src/world/world.js": "./src/world/world.js?v=0.28.0",
-  "./lib/OrbitControls.js": "./lib/OrbitControls.js?v=0.28.0"
+  "three": "./lib/three.module.min.js?v=0.29.0",
+  "./src/ai/agent.js": "./src/ai/agent.js?v=0.29.0",
+  "./src/ai/building.js": "./src/ai/building.js?v=0.29.0",
+  "./src/ai/commentary.js": "./src/ai/commentary.js?v=0.29.0",
+  "./src/ai/data.js": "./src/ai/data.js?v=0.29.0",
+  "./src/ai/decide.js": "./src/ai/decide.js?v=0.29.0",
+  "./src/ai/intent.js": "./src/ai/intent.js?v=0.29.0",
+  "./src/ai/knowledge.js": "./src/ai/knowledge.js?v=0.29.0",
+  "./src/ai/llm.js": "./src/ai/llm.js?v=0.29.0",
+  "./src/ai/llmWorker.js": "./src/ai/llmWorker.js?v=0.29.0",
+  "./src/ai/memory.js": "./src/ai/memory.js?v=0.29.0",
+  "./src/ai/perception.js": "./src/ai/perception.js?v=0.29.0",
+  "./src/ai/social.js": "./src/ai/social.js?v=0.29.0",
+  "./src/ai/tasks.js": "./src/ai/tasks.js?v=0.29.0",
+  "./src/core/rng.js": "./src/core/rng.js?v=0.29.0",
+  "./src/game.js": "./src/game.js?v=0.29.0",
+  "./src/main.js": "./src/main.js?v=0.29.0",
+  "./src/render/instances.js": "./src/render/instances.js?v=0.29.0",
+  "./src/render/models.js": "./src/render/models.js?v=0.29.0",
+  "./src/render/renderer.js": "./src/render/renderer.js?v=0.29.0",
+  "./src/render/terrain.js": "./src/render/terrain.js?v=0.29.0",
+  "./src/ui/controls.js": "./src/ui/controls.js?v=0.29.0",
+  "./src/ui/dom.js": "./src/ui/dom.js?v=0.29.0",
+  "./src/ui/errors.js": "./src/ui/errors.js?v=0.29.0",
+  "./src/ui/feed.js": "./src/ui/feed.js?v=0.29.0",
+  "./src/ui/llmPanel.js": "./src/ui/llmPanel.js?v=0.29.0",
+  "./src/ui/menu.js": "./src/ui/menu.js?v=0.29.0",
+  "./src/ui/panels.js": "./src/ui/panels.js?v=0.29.0",
+  "./src/ui/perf.js": "./src/ui/perf.js?v=0.29.0",
+  "./src/ui/wiki.js": "./src/ui/wiki.js?v=0.29.0",
+  "./src/version.js": "./src/version.js?v=0.29.0",
+  "./src/world/boars.js": "./src/world/boars.js?v=0.29.0",
+  "./src/world/bridges.js": "./src/world/bridges.js?v=0.29.0",
+  "./src/world/generate.js": "./src/world/generate.js?v=0.29.0",
+  "./src/world/nature.js": "./src/world/nature.js?v=0.29.0",
+  "./src/world/pieces.js": "./src/world/pieces.js?v=0.29.0",
+  "./src/world/world.js": "./src/world/world.js?v=0.29.0",
+  "./lib/OrbitControls.js": "./lib/OrbitControls.js?v=0.29.0"
  }
 }
 </script>
@@ -183,6 +183,6 @@
   </div>
 </div>
 
-<script type="module" src="src/main.js?v=0.28.0"></script>
+<script type="module" src="src/main.js?v=0.29.0"></script>
 </body>
 </html>

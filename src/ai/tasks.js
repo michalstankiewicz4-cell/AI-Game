@@ -74,7 +74,7 @@ export const tasksMethods = {
       act: (dt, t) => {
         if (bush.removed || bush.berries <= 0 || this.full()) return 'done';
         if (t.elapsed > 1.3) {
-          t.elapsed = 0; bush.berries--; this.inv.berries++; this.stats.berries++;
+          t.elapsed = 0; bush.berries--; this.inv.berries++; this.stats.berries++; bush.lastBy = this.id; bush.lastByT = this.world.time;
           this.world.changed.add(bush);
         }
         return null;
@@ -193,7 +193,7 @@ export const tasksMethods = {
         const out = !(s.fuel > 0);
         if (out) { // rozpałka: dwie gałęzie
           if (this.inv.sticks < 2) return 'fail';
-          this.inv.sticks -= 2; s.fuel = 15;
+          this.inv.sticks -= 2; s.fuel = 15; s.lastFedBy = this.id;
           this.world.structuresChanged = true;
           this.say('rozpala wygasłe ognisko 🔥', 'info');
         }
@@ -430,6 +430,7 @@ export const tasksMethods = {
         const logs = tree.kind === 'palm' ? 1 : 2, sticks = tree.kind === 'palm' ? 1 : 2, leaves = tree.kind === 'palm' ? 2 : 3;
         this.inv.logs += logs; this.inv.sticks += sticks; this.inv.leaves += leaves; this.stats.wood += logs; this.practice('chop');
         tree.wood = 0; tree.growth = 0; // zostaje pniak, odrośnie
+        tree.lastBy = this.id; tree.lastByT = this.world.time;
         this.world.changed.add(tree);
         return 'done';
       },
@@ -458,7 +459,7 @@ export const tasksMethods = {
         if (rock.removed) return 'fail';
         if (t.elapsed < per) return null;
         t.elapsed = 0;
-        rock.stone--; this.inv.stone++;
+        rock.stone--; this.inv.stone++; rock.lastBy = this.id; rock.lastByT = this.world.time;
         this.world.changed.add(rock);
         if (rock.stone <= 0) { this.world.removeResource(rock); return 'done'; }
         return (t.got = (t.got || 0) + 1) >= 3 || this.full() ? 'done' : null;
@@ -673,7 +674,7 @@ export const tasksMethods = {
         const v = this.waterVessel();
         if (!v || f.stage !== 'planted') return 'fail';
         this.inv[v[1]]--; this.inv[v[0]]++;
-        f.water = 1; f.watered = true;
+        f.water = 1; f.watered = true; f.wateredBy = this.id;
         if (!this.known.has('watering') && !t.said) this.speak(f.kind === 'planter' ? 'Ziemia w doniczce całkiem sucha. Dam jej trochę wody.' : 'Ta ziemia jest sucha. Może roślinie przyda się woda?', true);
         else if (Math.random() < 0.3) this.say(`podlewa ${f.kind === 'planter' ? 'doniczkę 🪴💧' : 'grządkę 💧'}`);
         return 'done';
@@ -801,6 +802,7 @@ export const tasksMethods = {
       act: (dt, t) => {
         if (tree.removed || !this.isStump(tree)) return 'fail';
         if (t.elapsed < per) return null;
+        tree.lastBy = this.id; tree.lastByT = this.world.time;
         this.world.removeResource(tree);
         this.inv.logs += 1; this.stats.wood += 1;
         if (!this.uprooted) { this.uprooted = true; this.say('wyrywa pień z korzeniami. Kawałek drewna się przyda, ale tu już nic nie odrośnie 🪵'); }
@@ -815,7 +817,7 @@ export const tasksMethods = {
       act: (dt, t) => {
         if (r.removed || r.ears <= 0 || this.inv.grain >= POCKET_CAP.grain) return 'done';
         if (t.elapsed > 1.5) {
-          t.elapsed = 0; r.ears--; this.inv.grain = Math.min(POCKET_CAP.grain, this.inv.grain + 2);
+          t.elapsed = 0; r.ears--; r.lastBy = this.id; r.lastByT = this.world.time; this.inv.grain = Math.min(POCKET_CAP.grain, this.inv.grain + 2);
           this.world.changed.add(r);
           if (!t.said) { t.said = true; this.say('wyłuskuje ziarno z kłosów żyta 🌾'); }
         }
@@ -830,7 +832,7 @@ export const tasksMethods = {
       act: (dt, t) => {
         if (r.removed || r.flowers <= 0 || this.inv.flowers >= POCKET_CAP.flowers) return 'done';
         if (t.elapsed > 1.2) {
-          t.elapsed = 0; r.flowers--; this.inv.flowers++;
+          t.elapsed = 0; r.flowers--; r.lastBy = this.id; r.lastByT = this.world.time; this.inv.flowers++;
           this.joy = Math.min(30, this.joy + 4);
           if (Math.random() < 0.5) this.inv.flowerSeeds = Math.min(POCKET_CAP.flowerSeeds, this.inv.flowerSeeds + 1);
           this.world.changed.add(r);

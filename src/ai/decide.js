@@ -46,7 +46,7 @@ export const decideMethods = {
     // rośliny w grządkach i doniczkach, które wyschły (do podlania)
     const dry = w.structures.filter((s) => (s.kind === 'field' || s.kind === 'planter') && s.stage === 'planted' && s.water <= 0.1 && this.knownStructs.has(s.id) && !taken.has('w' + s.id))
       .map((s) => ({ s, d: distOf(s.i, s.j) })).filter((x) => x.d >= 0 && x.d < 30).sort((a, b) => a.d - b.d);
-    const wateringK = this.known.has('watering') ? 0.1 : 0;
+    const wateringK = (this.known.has('watering') ? 0.1 : 0) + (w.time - (this.noticedDry || -1e9) < 60 ? 0.08 : 0); // świeżo zauważyła suchą ziemię
     // miska albo doniczka: nabrać wody na zapas albo do podlewania, będąc przy stawie
     if (this.emptyVessels() > 0 && (this.thirst > 50 || dry.length)) {
       const spot = this.nearestTile(bfs, w.pondShore);

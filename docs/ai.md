@@ -67,6 +67,12 @@ Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie t
 - Plony zebrane przez kogoś innego (`harvestedBy`) → `fieldsRaided` (+0,12 do sadzenia w doniczkach, więcej doniczek). Roślina rośnie ponad 1,25 × `FARM.grow` na suchej ziemi → wniosek `dryGrowth` i doświadczenie `watering`.
 - `suspect` → w rozmowie pytanie wprost; podejrzany mówi prawdę według `lastTaker`/`harvestedBy`. Ostatnie 4 wnioski (`conclusions`) trafiają do modelu i na kartę postaci.
 
+## Zauważanie zmian (`memory.js`, `perception.js`)
+- `noticeRes(stary wpis pamięci, zasób)`: porównuje pamięć z tym, co postać widzi, jeśli patrzyła na to ponad 25 s temu. Wykrywa ścięcie i odrost drzewa, zniknięcie zasobu, objedzony krzak, zebrane żyto i kwiaty, rozbitą skałę. Kto (`r.lastBy`) – podane, gdy wiadomo. Zmiany zrobione przez samą postać (do 300 s) pomija.
+- `noticeNew` (świeżo postawiona budowla innej postaci, do 300 s od budowy), `noticeFire` (zgasło, znów się pali; `noticedOut`), `noticeChange` przy roślinach (dojrzała, wyschła → `noticedDry` +0,08 do podlewania przez 60 s, ktoś podlał → zdjęte podejrzenie).
+- `remark`: komentarz z szansą `reactFactors().chance × 0,6`, najwyżej raz na 20 s.
+- Wzrok: `lineOfSight` idzie po polach między postacią a celem. Zasłania teren wyższy niż linia wzroku (oko 0,8 nad ziemią), krawędź ze ścianą parteru (`wallBits`) i drugie drzewo na drodze. Pola do 1,5 od postaci widać zawsze.
+
 ## Słyszenie (`agent.js`)
 - `hearAround`: wszystko, co postać powie, słyszą przytomne postacie do 7 pól (`heard`, ostatnie 4 kwestie, trafiają do modelu przez 40 s).
 - `reactTo`: reakcja na swoje imię (tłumaczenie się albo zaprzeczenie), na zaginione rzeczy, odkrycia i wołanie o pomoc. Szansa zależy od humoru, zdrowia, zmęczenia i priorytetów (pilne zadanie, głód, pragnienie); w rozmowie postać odpowiada tylko rozmówcy. Odpowiedzi nie wywołują kolejnych reakcji.

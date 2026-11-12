@@ -3,6 +3,13 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.29.0] - 2026-11-12
+### Dodane
+- Sucha i podlana ziemia wyraźnie się różnią. Sucha jest jasna i spękana, a rośliny na niej więdną. Świeżo podlana jest ciemna i ma kałuże, a w miarę wysychania jaśnieje.
+- Postacie zauważają zmiany we wszystkim, co pamiętają: ścięte i odrośnięte drzewa, wyrwane pnie, objedzone i znów pełne krzaki, zebrane żyto i kwiaty, rozbite skały, świeżo postawione budowle innych, zgasłe i rozpalone ognisko, wyschnięte, podlane i dojrzałe rośliny. Wiedzą, kto to zrobił, jeśli to widać. Czy coś o tym powiedzą, zależy od humoru, zdrowia, zmęczenia i pilnych spraw. Komentują najwyżej raz na 20 s i nie mówią o tym, co zrobiły same.
+- Zmiany wpływają na decyzje: zauważona sucha ziemia przez minutę podnosi chęć podlania.
+- Widok zasłaniają wzgórza (teren wyższy niż linia wzroku), ściany z desek na parterze i drzewa (dwa drzewa na linii wzroku zasłaniają całkiem). Postać widzi tylko pola bezpośrednio obok siebie przez wszystko.
+
 ## [0.28.0] - 2026-11-12
 ### Dodane
 - Karta postaci podzielona na zakładki: 🧍 Stan (potrzeby, temperatura, zajęcie, ręce, statystyki), ⚖️ Priorytety, 🎒 Plecak (plecak i narzędzia) i 🧠 Wiedza (mapa, receptury, doświadczenie).
@@ -263,6 +270,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.29.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.29.0
 [0.28.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.28.0
 [0.27.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.27.0
 [0.26.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.26.0

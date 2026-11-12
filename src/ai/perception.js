@@ -18,6 +18,32 @@ export const perceptionMethods = {
     return night + (1 - night) * day;
   },
   torchLit() { return this.heldL === 'torch' && this.torchBurn > 0; },
+  // czy coś zasłania widok: wzgórze wyższe niż linia wzroku, ściana z desek na parterze, drzewa (dwa drzewa po drodze zasłaniają całkiem)
+  lineOfSight(x0, z0, x1, z1) {
+    const w = this.world;
+    const a = toTile(x0, z0), b = toTile(x1, z1);
+    if (a.i === b.i && a.j === b.j) return true;
+    const eye = w.tileY(a.i, a.j) + 0.8, end = w.tileY(b.i, b.j) + 0.4;
+    const walls = w.wallBits();
+    const n = Math.ceil(Math.hypot(x1 - x0, z1 - z0) * 2);
+    let pi = a.i, pj = a.j, trees = 0;
+    for (let s = 1; s < n; s++) {
+      const f = s / n;
+      const t = toTile(x0 + (x1 - x0) * f, z0 + (z1 - z0) * f);
+      if (t.i === pi && t.j === pj) continue;
+      // przejście przez krawędź ze ścianą (po przekątnej wystarczy jedna z dwóch dróg)
+      const c = idx(pi, pj), di = t.i - pi, dj = t.j - pj;
+      if (Math.abs(di) + Math.abs(dj) === 1) { if (!w.edgeOpen(walls, c, di, dj)) return false; }
+      else if (!((w.edgeOpen(walls, c, di, 0) && w.edgeOpen(walls, idx(pi + di, pj), 0, dj)) || (w.edgeOpen(walls, c, 0, dj) && w.edgeOpen(walls, idx(pi, pj + dj), di, 0)))) return false;
+      pi = t.i; pj = t.j;
+      if (pi === b.i && pj === b.j) break;
+      const k = idx(pi, pj);
+      if (w.tileY(pi, pj) > eye + (end - eye) * f + 0.15) return false; // wzgórze zasłania
+      const r = w.res[k];
+      if (r && (r.kind === 'tree' || r.kind === 'palm') && r.growth >= 0.5 && ++trees >= 2) return false;
+    }
+    return true;
+  },
 
   see(full = false, range = null) {
     const w = this.world;
@@ -29,8 +55,9 @@ export const perceptionMethods = {
     const visible = (dx, dz) => {
       const d = Math.hypot(dx, dz);
       if (d > R) return false;
-      if (full || d <= VIEW_NEAR) return true;
-      return Math.abs(wrapAng(Math.atan2(dx, dz) - this.facing)) <= viewHalfAngle(d / mul);
+      if (d <= 1.5) return true;
+      if (!full && d > VIEW_NEAR && Math.abs(wrapAng(Math.atan2(dx, dz) - this.facing)) > viewHalfAngle(d / mul)) return false;
+      return this.lineOfSight(x0, z0, x0 + dx, z0 + dz);
     };
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
       const p = toWorld(i, j);
@@ -39,16 +66,21 @@ export const perceptionMethods = {
       if (!this.seen[k]) { this.seen[k] = 1; this.seenCount++; }
       const r = w.res[k];
       const old = this.memByTile.get(k);
-      if (old !== undefined && (!r || r.id !== old)) { this.mem.delete(old); this.memByTile.delete(k); }
+      if (old !== undefined && (!r || r.id !== old)) { this.noticeRes(this.mem.get(old), null); this.mem.delete(old); this.memByTile.delete(k); }
       if (r) {
+        const prev = this.mem.get(r.id);
+        if (prev) this.noticeRes(prev, r);
         this.mem.set(r.id, { r, kind: r.kind, i: r.i, j: r.j, berries: r.berries, growth: r.growth, amount: r.amount, stone: r.stone, ears: r.ears, flowers: r.flowers, stand: r.stand, t: w.time });
         this.memByTile.set(k, r.id);
       }
     }
     for (const s of w.structures) {
-      if (!this.knownStructs.has(s.id)) { if (visible(s.x - x0, s.z - z0)) this.knownStructs.add(s.id); continue; }
+      if (!this.knownStructs.has(s.id)) { if (visible(s.x - x0, s.z - z0)) { this.knownStructs.add(s.id); this.noticeNew(s); } continue; }
+      if (s.kind === 'campfire' && Math.hypot(s.x - x0, s.z - z0) < 12 && visible(s.x - x0, s.z - z0)) this.noticeFire(s);
       // wraca w miejsce, o którym coś pamięta: czy wszystko jest, jak zostawił(a)?
-      if (this.expect.has(s.id) && Math.hypot(s.x - x0, s.z - z0) < 7 && visible(s.x - x0, s.z - z0)) this.checkExpect(s);
+      const near = Math.hypot(s.x - x0, s.z - z0) < 7;
+      if (this.expect.has(s.id) && near && visible(s.x - x0, s.z - z0)) this.checkExpect(s);
+      if ((s.kind === 'field' || s.kind === 'planter') && Math.hypot(s.x - x0, s.z - z0) < 12 && visible(s.x - x0, s.z - z0)) this.noticeChange(s);
     }
     for (const b of w.birds) {
       if (b.state === 'landed' && visible(b.x - x0, b.z - z0)) { const t = toTile(b.x, b.z); this.memBirds.set(b.id, { b, i: t.i, j: t.j, t: w.time }); }
