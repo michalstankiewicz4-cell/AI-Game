@@ -218,7 +218,7 @@ export class Agent {
       const shelter = this.nearStructure('shelter', 1.5);
       const tentS = !shelter && this.nearStructure('tent', 1.3);
       const fire = this.nearStructure('campfire', 3);
-      const bed = this.nearStructure('bed', 1.2);
+      const bed = this.nearStructure('bed', 0.6); // w łóżku, a nie obok
       this.energy = clamp(this.energy + (1.1 + (shelter ? 0.9 : tentS ? 0.5 : 0) + (fire ? 0.3 : 0) + (bed ? 1.0 : 0)) * dt, 0, 100);
       // doświadczenie: po pierwszej nocy w łóżku postać wie, że tak lepiej się wysypia
       if (bed && !this.known.has('bedRest') && (this.bedT = (this.bedT || 0) + dt) > 6) {
@@ -239,7 +239,7 @@ export class Agent {
       let target = 0.55 * avg + 0.45 * low;
       if (this.bodyT < 36) target -= (36 - this.bodyT) * 15;
       else if (this.bodyT > 37.5) target -= (this.bodyT - 37.5) * 10;
-      if (roof || (this.asleep && this.nearStructure('bed', 1.2))) target += 6;
+      if (roof || (this.asleep && this.nearStructure('bed', 0.6))) target += 6;
       if (warmFire && w.isNight()) target += 5;
       const others = w.agents.some((o) => o !== this && o.alive);
       if (others) target += w.time - this.lastTalk < 90 ? 8 : w.time - this.lastTalk > 240 ? -8 : 0;
@@ -352,7 +352,15 @@ export class Agent {
       this.asleep = false;
       const next = t.path[0];
       // ścieżka mogła się zablokować
-      if (!this.world.walkable(next.i, next.j)) { this.task = null; return; }
+      if (!this.world.walkable(next.i, next.j) || (!t.path.loose && this.world.stepBlocked(this.i, this.j, next.i, next.j) && !(this.i === next.i && this.j === next.j))) { this.task = null; return; }
+      // inne postacie: nie przechodzi przez nie. Stojącą omija; z idącą rozstępują się (czeka ta z wyższym numerem)
+      const other = (next.i !== this.i || next.j !== this.j) && this.world.agents.find((a) => a !== this && a.alive && a.i === next.i && a.j === next.j && (!(a.task && a.task.path && a.task.path.length) || a.id < this.id));
+      if (other) {
+        t.wait = (t.wait || 0) + dt;
+        if (t.wait > 1.2) { this.avoidUntil = this.world.time + 4; this.task = null; } // wybierz inną drogę
+        return;
+      }
+      t.wait = 0;
       const p = toWorld(next.i, next.j);
       const dx = p.x - this.x, dz = p.z - this.z, d = Math.hypot(dx, dz);
       // ciężki plecak spowalnia (od 70% udźwigu), zmęczenie też

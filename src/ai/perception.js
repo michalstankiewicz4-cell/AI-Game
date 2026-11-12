@@ -140,8 +140,11 @@ export const perceptionMethods = {
     return null;
   },
 
+  // trasa do pola; gdy na polu stoi duży obiekt (drzewo, skała, ognisko), postać staje obok
   pathTo(i, j) {
     const p = this.world.pathFrom(this.bfsCache, i, j);
+    if (p && p.length && (this.world.solid(idx(i, j)) || (this.bfsCache.avoid && this.bfsCache.avoid.has(idx(i, j))))) p.pop();
+    if (p && this.bfsCache.loose) p.loose = true; // trasa awaryjna (np. z zamkniętego domu): wolno przejść przez ścianę
     return p;
   },
 };

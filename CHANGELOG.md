@@ -3,6 +3,15 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.26.0] - 2026-11-12
+### Dodane
+- Kolizje: przez ściany z desek na parterze, drzewa (bez pni), skały, krzaki, ogniska, stoły i skrzynie nie da się przejść. Postać podchodzi do takiego obiektu i staje obok.
+- Postacie nie przechodzą przez siebie: stojącą omijają, a gdy dwie idą na siebie, jedna czeka i wybiera inną drogę.
+- Na jednym łóżku śpi jedna postać: najpierw idzie do własnego, potem do wolnego. Każda postać robi sobie własne łóżko.
+- Zamknięta ze wszystkich stron budka z desek ma drzwi od południa, a postać, która utknęła w ścianach albo między obiektami, wychodzi awaryjnie.
+### Zmienione
+- Sen „w łóżku” liczy się tylko na łóżku, a nie obok niego.
+
 ## [0.25.0] - 2026-11-12
 ### Dodane
 - Łopata (deska + gałąź + kamień) i drogi: postacie liczą, którędy chodzą, a łopatą ubijają drogę na wydeptanych ścieżkach przy obozie (do 22 pól od ogniska albo dachu). Po drodze chodzi się o połowę szybciej. W trybie „Odkrywa sam” postać zauważa to przy pierwszym kroku po drodze.
@@ -241,6 +250,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.26.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.26.0
 [0.25.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.25.0
 [0.24.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.24.0
 [0.23.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.23.1
