@@ -198,7 +198,7 @@ class LLM {
         agent.onLLM({ label, thought, intent, at: started, build });
       })
       .catch((e) => { this.usage.errors++; this.lastError = String(e.message || e).slice(0, 160); reportError(this.provider === 'web' ? 'Model w przeglądarce' : 'Claude API', e.message || e); })
-      .finally(() => { this.inflight--; agent.llmBusy = false; });
+      .finally(() => { this.inflight--; this.lastDone = performance.now(); agent.llmBusy = false; });
     return true;
   }
 

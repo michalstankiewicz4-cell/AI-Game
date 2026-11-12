@@ -18,7 +18,8 @@ export const CATS = {
   render_draw: '🖌️ Rysowanie: wysyłanie do karty (CPU)',
   gpu: '🎮 Karta graficzna (GPU)',
   ui: '🪟 Interfejs (panele, dziennik)',
-  other: '❓ Poza kodem gry (przeglądarka i składanie obrazu, sprzątanie pamięci, model językowy)',
+  llm: '🤖 Model w przeglądarce (liczy na karcie graficznej)',
+  other: '❓ Poza kodem gry (przeglądarka i składanie obrazu, sprzątanie pamięci)',
 };
 
 const prof = {
@@ -86,7 +87,7 @@ export function initPerf(r) {
   $('perfReset').onclick = () => resetStats();
 }
 
-function resetStats() { prof.frames = []; prof.lags = {}; prof.lagTotal = 0; prof.worst = []; prof.started = performance.now(); }
+function resetStats() { prof.llmFrames = 0; prof.allFrames = 0; prof.frames = []; prof.lags = {}; prof.lagTotal = 0; prof.worst = []; prof.started = performance.now(); }
 
 export function togglePerf(v) {
   prof.on = v ?? !prof.on;
@@ -136,6 +137,11 @@ export function frameEnd(interval, steps) {
   // reszta przerwy między klatkami, której nie zajęła gra: przeglądarka, GC, model w głównym wątku (albo czekanie na kartę)
   c.other = Math.max(0, interval - work - (gpu != null ? Math.max(0, gpu - work) : 0) - 16.7);
   c.interval = interval; c.steps = steps;
+  // czy model w przeglądarce liczył w tej klatce (pytanie w toku albo odpowiedź przyszła w czasie tej przerwy)
+  const busy = llm.provider === 'web' && (llm.inflight > 0 || (llm.lastDone || 0) > performance.now() - interval - 5);
+  c.llmBusy = busy;
+  if (busy) { c.llm = c.other; c.other = 0; }
+  prof.llmFrames = (prof.llmFrames || 0) + (busy ? 1 : 0); prof.allFrames = (prof.allFrames || 0) + 1;
   prof.frames.push(c);
   if (prof.frames.length > WINDOW) prof.frames.shift();
   if (interval > LAG_MS && prof.frames.length > 5) {
@@ -172,6 +178,8 @@ function renderPanel() {
   $('perfSum').innerHTML = `${Math.round(s.fps)} FPS, 95% klatek szybszych niż ${Math.round(s.p95)} ms. `
     + `Przycięcia (&gt;${LAG_MS} ms): <b>${prof.lagTotal}</b>${top ? `, najczęściej: <b>${CATS[top[0]]}</b>` : ''}.`
     + (g.ext ? '' : '<br><small>Przeglądarka nie podaje dokładnego czasu karty graficznej, więc GPU jest mierzone w przybliżeniu co 15. klatkę.</small>')
+    + (prof.allFrames ? `<br><small>Model w przeglądarce liczył w ${Math.round(100 * prof.llmFrames / prof.allFrames)}% klatek; ${prof.lags.llm || 0} z ${prof.lagTotal} przycięć wypadło właśnie wtedy.</small>` : '')
+    + (top && top[0] === 'llm' ? '<br><small>Przycięcia robi model językowy: zajmuje kartę graficzną, na której rysuje się gra. Pomaga mocniejsza karta (np. NVIDIA zamiast zintegrowanej), mniejszy model albo Claude API.</small>' : '')
     + (top && top[0] === 'other' ? '<br><small>Przycięcia są poza kodem gry. Przełącz grafikę na „🎨 Niska”: jeśli przycięć ubędzie, to wąskim gardłem jest karta graficzna.</small>' : '')
     + (llm.web.engine && !llm.web.inWorker ? '<br><small>Model językowy liczy w głównym wątku, jego praca też wpada do „poza grą”.</small>' : '');
   const maxAvg = Math.max(0.01, ...s.rows.map((r) => r.avg));
@@ -185,6 +193,7 @@ export function report() {
     `FPS ${Math.round(s.fps)}, p95 klatki ${Math.round(s.p95)} ms, przycięcia >${LAG_MS} ms: ${prof.lagTotal}`,
     `GPU: ${g.ext ? 'licznik czasu karty' : 'przybliżenie (czekanie na kartę co 15. klatkę)'}; model językowy: ${llm.web.engine ? (llm.web.inWorker ? 'osobny wątek' : 'główny wątek') : llm.provider}`,
     `Karta: ${gpuName()}`,
+    `Model w przeglądarce liczył w ${prof.allFrames ? Math.round(100 * prof.llmFrames / prof.allFrames) : 0}% klatek, przycięć w tym czasie: ${prof.lags.llm || 0}`,
     'kategoria | średnio ms | max ms | przycięcia'];
   for (const r of s.rows) lines.push(`${r.name} | ${r.avg.toFixed(2)} | ${r.max.toFixed(1)} | ${r.lags}`);
   lines.push('Najgorsze klatki: ' + prof.worst.map((w) => `${w.ms} ms (${CATS[w.cause]}, kroków symulacji: ${w.steps})`).join('; '));
