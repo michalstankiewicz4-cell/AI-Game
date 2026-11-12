@@ -76,18 +76,29 @@ export class Agent {
   practice(k) { this.skill[k] = Math.min(1, this.skill[k] + 0.05 * (1 - this.skill[k])); }
 
   // dymek nad głową + wpis w czacie komentarzy
+  // Mówi tylko model językowy. Teksty z szablonów nie trafiają do dymków:
+  // zostają jako notatki, które model dostaje w następnym zapytaniu i opisuje własnymi słowami.
   speak(text, force = false) {
     if (!text || !this.alive) return;
+    if (!this.llmSaid) {
+      this.notes = (this.notes || []).concat(text).slice(-5);
+      if (force) {
+        this.world.log(`<span style="opacity:.7">${this.name}: ${text}</span>`, 'talk');
+        this.llmNext = Math.min(this.llmNext || 0, this.world.time + 3); // ważne zdarzenie: zapytaj model wcześniej
+      }
+      return;
+    }
     if (!force && this.speakCd > 0) return;
-    this.bubble = { text, t: 4.5 };
+    this.lastSaid = text;
+    this.bubble = { text, t: 5.5 };
     this.speakCd = 6 + Math.random() * 6;
     if (this.world.onChat) this.world.onChat(this, text, this.llmSaid);
   }
   event(key, ctx) { this.speak(eventLine(key, ctx), true); }
-  // odpowiedź z Claude API (tryb LLM)
+  // odpowiedź modelu językowego
   onLLM({ label, thought, at }) {
     if (!this.alive) return;
-    if (thought) { this.llmSaid = true; this.speak(thought, true); this.llmSaid = false; }
+    if (thought) { this.llmSaid = true; this.speak(thought, true); this.llmSaid = false; this.notes = []; }
     if (label && this.task && label !== this.lastLabel && !this.task.urgent && this.world.time - at < 30) {
       this.llmPick = { label, at };
       this.task = null; // przy najbliższej aktualizacji agent przemyśli decyzję

@@ -1,0 +1,48 @@
+# Architektura
+
+Czysty HTML i JavaScript (moduły ES), bez bundlera i bez kroku budowania. Strona hostowana jest na GitHub Pages: workflow `.github/workflows/static.yml` publikuje całe repozytorium po każdym pushu na `main`.
+
+## Struktura
+```
+index.html            menu, HUD, importmapa (z cache-bustingiem ?v=WERSJA)
+css/style.css         wygląd interfejsu
+lib/                  Three.js r160 + OrbitControls (licencja MIT)
+tools/version.py      wersjonowanie i kontrola spójności
+docs/                 dokumentacja
+src/
+  version.js          wersja gry (semver), jedno źródło prawdy
+  main.js             punkt wejścia: pętla klatek, spina grę, render i UI
+  game.js             createGame(cfg), stepGame(game) – symulacja bez DOM
+  core/rng.js         losowość z ziarnem (mulberry32), szum fbm
+  world/              świat (kafelki, generowanie, mosty, przyroda)
+  ai/                 postacie (stan, decyzje, zadania, percepcja, wiedza, rozmowy, komentarze, modele językowe)
+  render/             Three.js: scena, modele low-poly, teren, mgła
+  ui/                 menu, panele, sterowanie, czat, ustawienia modeli
+```
+
+## Przepływ
+1. `main.js` wywołuje `initMenu` i `initLlmMenu`. Po kliknięciu „Start” `createGame(cfg)` tworzy `World`, agentów, narratora i `Social`, a `Renderer.build(world)` buduje scenę.
+2. W pętli `requestAnimationFrame` czas rzeczywisty mnożony przez prędkość trafia do akumulatora. `stepGame` wykonuje stałe kroki `STEP = 0.1 s`, najwyżej 100 na klatkę.
+3. `stepGame` po kolei:
+   - wywołuje `world.update`, czyli przyrodę i mosty,
+   - wywołuje `agent.update` dla każdego agenta: potrzeby, decyzja, zadanie, wzrok,
+   - wywołuje `social.update`,
+   - przelicza brzegi po zmianie mapy,
+   - wywołuje `narrator.update`.
+4. Zdarzenia z `world.events` trafią do dziennika i czatu. `Renderer.frame` rysuje scenę, a co 0,25 s odświeżają się HUD, karty postaci i licznik tokenów.
+5. Zapytania do modeli językowych są asynchroniczne. Odpowiedź wraca do `agent.onLLM`, a symulacja w tym czasie nie stoi.
+
+## Świat
+- **Mapa:** siatka kafelków `W × H` (`world.js`) z tablicami `type`, `height`, `island`, `res` (zasoby). Rozmiar zależy od liczby wysp.
+- **Wzorzec mixinów:** metody `World` i `Agent` są rozbite na pliki i doklejane przez `Object.assign(Class.prototype, metody)`.
+- **Ścieżki:** BFS po kafelkach z maską tego, co agent widział.
+
+## Render
+- **Teren:** jedna siatka z kolorami w wierzchołkach.
+- **Morze:** animowane fale.
+- **Obiekty:** modele low-poly z `models.js`.
+- **Mgła niewiedzy:** płaszczyzna z `DataTexture`, aktualizowana w trybie „Oczami AI”.
+- **Etykiety i dymki:** elementy DOM nakładane na obraz.
+
+## Podgląd do testów
+`window.__game` to stan gry (świat, agenci, `social`, `narrator`). Testy przewijają symulację, wywołując te same funkcje co `stepGame`.

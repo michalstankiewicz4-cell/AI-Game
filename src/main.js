@@ -7,6 +7,7 @@ import { addFeed, clearFeed, initFeed } from './ui/feed.js';
 import { initMenu, showMenu, rndSeed } from './ui/menu.js';
 import { initControls } from './ui/controls.js';
 import { buildAgentCards, renderDetail, updateHud } from './ui/panels.js';
+import { VERSION } from './version.js';
 import { initLlmMenu, updateTokens, makeDraggable, prepareLlm } from './ui/llmPanel.js';
 
 const state = {
@@ -38,6 +39,8 @@ function toggleAiView() {
 }
 
 initFeed();
+$('verLbl').textContent = $('hudVer').textContent = 'v' + VERSION;
+document.title = `Wyspy AI v${VERSION} – symulacja przetrwania`;
 initMenu(state.cfg, startGame);
 initLlmMenu();
 makeDraggable($('detail'), 'h3');
@@ -71,6 +74,7 @@ function startGame() {
   state.paused = false; updatePause();
   const n = state.cfg.agents;
   feed('chat', `🎙️ Witamy na Wyspach AI! ${n === 1 ? 'Jeden rozbitek' : n + ' rozbitków'} budzi się na plaży. Mają tylko siekierę i kilof, i nie wiedzą nic o tym świecie. Wszystkiego muszą się nauczyć. Zobaczmy, jak sobie poradzą...`, 'narr');
+  feed('chat', '🤖 Wszystko, co mówią postacie, wymyśla na bieżąco model językowy (oznaczenie 🤖). Narrator to skrypt gry.', 'narr');
   world.agents.forEach((a, k) => setTimeout(() => a.speak(['Gdzie ja jestem?!', 'Dobra, nie panikujemy. Najpierw rozejrzę się.', 'Wyspa... nic tu nie znam.', 'Mam siekierę i kilof. Coś wymyślę.'][k % 4], true), 600 + k * 900));
 }
 
