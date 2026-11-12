@@ -26,6 +26,8 @@ const KEYWORDS = [
   ['Uszyć ubranie', ['ubra', 'ubior', 'szyc', 'uszy', 'odziez', 'ciuch', 'okryc']],
   ['Odłożyć zapasy', ['odloz', 'zostaw', 'schowa', 'magazyn', 'skladzi', 'ciezk', 'za duzo']],
   ['Wziąć z zapasów', ['wziac', 'zabra', 'zapas', 'skladzi', 'magazyn']],
+  ['Wziąć jedzenie ze skrzyni', ['skrzyn', 'kufer', 'zapas jedzen', 'wyjm']],
+  ['Zrobić skrzynię', ['skrzyn', 'kufer', 'zbij', 'pojemnik', 'schowek']],
   ['Zrobić łóżko', ['lozk', 'posla', 'legow', 'wyspac']],
   ['Eksperymentować przy stole', ['eksperym', 'sprob', 'polacz', 'stol', 'warsztat', 'kombin']],
   ['Rozpalić ognisko', ['ognisk', 'ogien', 'ognia', 'rozpal']],
@@ -106,7 +108,7 @@ export function describeFree(a) {
   if (pond) sees.push('słodkowodny staw niedaleko');
   if (a.saltKnown) sees.push('morze (wiesz, że woda jest słona)'); else sees.push('morze dookoła');
   // budowle w pobliżu, które postać zna
-  const SNAME = { campfire: (s) => (s.fuel > 0 ? 'palące się ognisko' : 'wygasłe ognisko') + (s.grill ? ' z rusztem' : ''), shelter: () => 'szałas', tent: () => 'namiot', workbench: () => 'stół rzemieślniczy', bed: () => 'łóżko' };
+  const SNAME = { campfire: (s) => (s.fuel > 0 ? 'palące się ognisko' : 'wygasłe ognisko') + (s.grill ? ' z rusztem' : ''), shelter: () => 'szałas', tent: () => 'namiot', workbench: () => 'stół rzemieślniczy', bed: () => 'łóżko', chest: (s) => 'skrzynia' + (s.items && Object.values(s.items).some((v) => v > 0) ? ' z zapasami' : ' (pusta)') };
   for (const s of w.structures) {
     if (!a.knownStructs.has(s.id) || !SNAME[s.kind]) continue;
     const d = Math.hypot(s.i - a.i, s.j - a.j);

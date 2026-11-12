@@ -33,6 +33,7 @@ export const RECIPES = {
   clothes: { leaves: 6, rope: 2 },            // ubranie z liści (tylko przy stole)
   sword: { iron: 2, planks: 1 },              // żelazny miecz (wykuwany przy ogniu)
   shield: { planks: 3, rope: 1 },             // drewniana tarcza (tylko przy stole)
+  chest: { planks: 4, sticks: 2 },            // skrzynia na zapasy (trzyma też jedzenie)
 };
 // receptury, które da się odkryć i zrobić tylko w określonym miejscu
 export const FIRE_RECIPES = new Set(['ironTool', 'grill', 'sword']);
@@ -41,8 +42,10 @@ export const FIRE_FUEL = { max: 150, start: 100, burn: 0.5, logs: 60, sticks: 25
 
 export const RECIPE_NAMES = {
   planks: 'deski', rope: 'lina', rod: 'wędka', spear: 'włócznia', campfire: 'ognisko', shelter: 'szałas', ironTool: 'żelazne narzędzia',
-  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko', clothes: 'ubranie z liści', sword: 'miecz', shield: 'tarcza',
+  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko', clothes: 'ubranie z liści', sword: 'miecz', shield: 'tarcza', chest: 'skrzynia',
 };
+// miejsca na zapasy: kupka na ziemi i skrzynia
+export const STORES = new Set(['stash', 'chest']);
 export const MATS = ['logs', 'sticks', 'leaves', 'planks', 'seaweed', 'rope', 'stone', 'iron'];
 export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', leaves: 'liście', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda' };
 export const comboKey = (types) => [...types].sort().join('+');

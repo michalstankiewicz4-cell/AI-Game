@@ -20,6 +20,8 @@ const THOUGHTS = {
   '🧪 Eksperymentować przy stole': ['Przy stole może wyjdzie coś nowego.', 'Spróbuję połączyć to i owo na stole.'],
   '👕 Uszyć ubranie': ['Liście i lina... uszyję coś na grzbiet.', 'Czas na jakieś ubranie, robi się chłodno.'],
   '📦 Odłożyć zapasy': ['Plecak mi ciąży, odłożę część na później.', 'Zrobię sobie mały składzik.'],
+  '📦 Zrobić skrzynię': ['Zamiast kupek na ziemi zrobię porządną skrzynię.', 'Deski i gałęzie, zbiję skrzynię na zapasy.'],
+  '🍱 Wziąć jedzenie ze skrzyni': ['Mam coś do jedzenia w skrzyni.', 'Zajrzę do skrzyni, tam zostawiłem jedzenie.'],
   '📦 Wziąć z zapasów': ['Mam to w zapasach, po co szukać.', 'Wezmę ze składziku, co trzeba.'],
   '🐗 Polować na dzika': ['Dzik to góra mięsa. Idę na niego!', 'Z bronią w ręku nie boję się dzika.'],
   '🗡️ Wykuć miecz': ['Z rudy i deski wykuję miecz.', 'Przyda się porządna broń.'],

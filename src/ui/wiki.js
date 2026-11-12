@@ -5,7 +5,7 @@ import { $, esc } from './dom.js';
 
 const ICON = {
   planks: '🟫', rope: '🪢', rod: '🎣', spear: '🔱', campfire: '🔥', shelter: '🛖', ironTool: '⚒️', tent: '⛺', workbench: '🛠️',
-  grill: '♨️', bed: '🛏️', clothes: '👕', sword: '🗡️', shield: '🛡️',
+  grill: '♨️', bed: '🛏️', chest: '📦', clothes: '👕', sword: '🗡️', shield: '🛡️',
   logs: '🪵', sticks: '🥢', leaves: '🍃', seaweed: '🌿', stone: '🪨', iron: '⛏️',
   berries: '🫐', rawFish: '🐟', cookedFish: '🍣', rawMeat: '🍗', cookedMeat: '🍖',
 };
@@ -25,8 +25,9 @@ const RECIPE_DESC = {
   clothes: 'Ubranie z liści chroni przed zimnem.',
   sword: 'Żelazny miecz wykuty w ogniu. Najlepsza broń na dziki.',
   shield: 'Drewniana tarcza mocno zmniejsza obrażenia od szarży dzika.',
+  chest: 'Porządne miejsce na zapasy przy obozie. W odróżnieniu od kupki na ziemi trzyma też jedzenie, po które postać wraca, gdy jest głodna.',
 };
-const BUILDINGS = new Set(['campfire', 'shelter', 'tent', 'workbench', 'grill', 'bed']);
+const BUILDINGS = new Set(['campfire', 'shelter', 'tent', 'workbench', 'grill', 'bed', 'chest']);
 
 const MAT_DESC = {
   logs: 'Z drzew i palm. Na deski, ognisko, szałas i stół.',

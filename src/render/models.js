@@ -150,6 +150,11 @@ export const modelsMethods = {
       // kupka zapasów: kilka kłód i kamieni
       for (let k = 0; k < 3; k++) { const l = new THREE.Mesh(this.geo.trunk, m.trunk); l.scale.set(0.6, 0.5, 0.6); l.rotation.set(Math.PI / 2, 0, 0.3 * k); l.position.set(-0.15 + k * 0.15, 0.08 + (k === 1 ? 0.1 : 0), 0); l.castShadow = true; g.add(l); }
       const st = new THREE.Mesh(this.geo.rock, m.stone); st.scale.setScalar(0.25); st.position.set(0.3, 0.06, 0.2); g.add(st);
+    } else if (s.kind === 'chest') {
+      // skrzynia z desek z wieczkiem i okuciem
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.34, 0.42), m.plank); box.position.y = 0.17; box.castShadow = true; g.add(box);
+      const lid = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.08, 0.46), m.trunk); lid.position.y = 0.38; lid.castShadow = true; g.add(lid);
+      for (const sx of [-0.22, 0.22]) { const band = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.36, 0.44), m.post); band.position.set(sx, 0.19, 0); g.add(band); }
     } else if (s.kind === 'bed') {
       const frame = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.14, 0.95), m.plank); frame.position.y = 0.09; frame.castShadow = true; g.add(frame);
       const mat = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.08, 0.86), m.weed); mat.position.y = 0.2; g.add(mat);
