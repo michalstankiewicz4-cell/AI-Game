@@ -46,6 +46,13 @@ const KEYWORDS = [
   ['Wydrążyć miskę', ['misk', 'naczyn', 'wydraz']],
   ['Nabrać wody do miski', ['misk', 'nabra', 'zapas wod', 'nalac']],
   ['Napić się z miski', ['misk', 'pic', 'napi', 'wod']],
+  ['Podlać rośliny', ['podl', 'podlew', 'wod', 'ros', 'grzadk', 'doniczk']],
+  ['Posadzić w doniczce', ['doniczk', 'sadz', 'ziemi', 'kwiat']],
+  ['Posadzić w misce', ['misk', 'sadz', 'ziemi']],
+  ['Nabrać gliny', ['glin', 'brzeg', 'staw']],
+  ['Wypalić doniczkę', ['doniczk', 'wypal', 'glin', 'garnk']],
+  ['Zebrać żyto', ['zyt', 'klos', 'ziarn', 'zbo']],
+  ['Zerwać kwiaty', ['kwiat', 'zerw', 'bukiet', 'pachn']],
   ['Oskórować dzika', ['skor', 'oskor', 'mies', 'dzik']],
   ['Wystrugać łuk', ['luk', 'strug', 'cieciw']],
   ['Zrobić strzały', ['strzal', 'pior', 'lotk', 'grot']],
@@ -65,7 +72,7 @@ const KEYWORDS = [
   ['Rozejrzeć się', ['rozejrz', 'rozgl', 'obejrz', 'popatrz']],
   ['Porozmawiać', ['rozmaw', 'pogad', 'powiedz', 'zapyt', 'spotk', 'podejs do']],
   ['Pospacerować', ['spacer', 'przejs', 'przejd']],
-  ['Zbadać', ['zbada', 'sprawdz', 'obejrz', 'drzew', 'skal', 'krzak', 'palm', 'wodorost', 'kopal']],
+  ['Zbadać', ['zbada', 'sprawdz', 'obejrz', 'drzew', 'skal', 'krzak', 'palm', 'wodorost', 'kopal', 'zyt', 'kwiat']],
 ];
 
 const norm = (t) => (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
@@ -87,7 +94,8 @@ export function mapIntent(intent, labels) {
 
 const feel = (v, words) => (v < 15 ? words[0] : v < 35 ? words[1] : v < 60 ? words[2] : null);
 const DIR = ['na północy', 'na północnym wschodzie', 'na wschodzie', 'na południowym wschodzie', 'na południu', 'na południowym zachodzie', 'na zachodzie', 'na północnym zachodzie'];
-const KIND = { tree: 'drzewa', palm: 'palmy', rock: 'skały', bush: 'krzaki', seaweed: 'wodorosty', mine: 'wejście do jakiejś kopalni' };
+const KIND = { tree: 'drzewa', palm: 'palmy', rock: 'skały', bush: 'krzaki', seaweed: 'wodorosty', mine: 'wejście do jakiejś kopalni', rye: 'kępy dzikiego żyta', flower: 'kwiaty' };
+const CROP_N = { berry: 'jagody', rye: 'żyto', flower: 'kwiaty' };
 
 export const FREE_SYSTEM = 'Jesteś rozbitkiem na bezludnej wyspie i chcesz przeżyć. Nikt nie mówi ci, co robić: sam(a) decydujesz na podstawie tego, co czujesz i widzisz. '
   + 'Odpowiadasz wyłącznie jednym obiektem JSON, bez innego tekstu: {"mysl": "<co mówisz na głos>", "zamiar": "<co chcesz teraz zrobić, 2-6 słów>"}. '
@@ -125,7 +133,7 @@ export function describeFree(a) {
   if (pond) sees.push('słodkowodny staw niedaleko');
   if (a.saltKnown) sees.push('morze (wiesz, że woda jest słona)'); else sees.push('morze dookoła');
   // budowle w pobliżu, które postać zna
-  const SNAME = { campfire: (s) => (s.fuel > 0 ? 'palące się ognisko' : 'wygasłe ognisko') + (s.grill ? ' z rusztem' : ''), shelter: () => 'szałas', tent: () => 'namiot', workbench: () => 'stół rzemieślniczy', bed: () => 'łóżko', field: (s) => (s.stage === 'ripe' ? 'grządka z dojrzałymi jagodami' : s.stage === 'planted' ? 'grządka z rosnącą sadzonką' : 'pusta grządka'), chest: (s) => 'skrzynia' + (s.items && Object.values(s.items).some((v) => v > 0) ? ' z zapasami' : ' (pusta)') };
+  const SNAME = { campfire: (s) => (s.fuel > 0 ? 'palące się ognisko' : 'wygasłe ognisko') + (s.grill ? ' z rusztem' : ''), shelter: () => 'szałas', tent: () => 'namiot', workbench: () => 'stół rzemieślniczy', bed: () => 'łóżko', field: (s) => (s.stage === 'ripe' ? `grządka z dojrzałym plonem (${CROP_N[s.crop] || 'jagody'})` : s.stage === 'planted' ? `grządka z rosnącą sadzonką (${CROP_N[s.crop] || 'jagody'}${s.water > 0 ? ', podlana' : ', sucha ziemia'})` : 'pusta grządka'), planter: (s) => (s.vessel === 'pot' ? 'doniczka' : 'miska z ziemią') + (s.stage === 'ripe' ? ` z dojrzałym plonem (${CROP_N[s.crop]})` : s.stage === 'planted' ? ` z sadzonką (${CROP_N[s.crop]}${s.water > 0 ? ', podlana' : ', sucha ziemia'})` : ' (pusta)'), chest: (s) => 'skrzynia' + (s.items && Object.values(s.items).some((v) => v > 0) ? ' z zapasami' : ' (pusta)') };
   for (const s of w.structures) {
     if (!a.knownStructs.has(s.id) || !SNAME[s.kind]) continue;
     const d = Math.hypot(s.i - a.i, s.j - a.j);

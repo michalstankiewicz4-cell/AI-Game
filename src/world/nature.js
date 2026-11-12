@@ -12,10 +12,13 @@ export const natureMethods = {
       s.fuel = Math.max(0, s.fuel - 0.5 * dt);
       if (s.fuel <= 0) { this.log('🔥 Ognisko wygasło. Został popiół.', 'info'); this.structuresChanged = true; }
     }
-    // grządki: zasiane nasiona rosną i po czasie dają jagody
+    // grządki i doniczki: zasiane nasiona rosną; podlane szybciej, sucha grządka wolno, sucha doniczka wcale
     for (const s of this.structures) {
-      if (s.kind !== 'field' || s.stage !== 'planted') continue;
-      s.growth = Math.min(1, s.growth + dt / FARM.grow);
+      if (s.kind !== 'field' && s.kind !== 'planter') continue;
+      if (s.water > 0) s.water = Math.max(0, s.water - dt / FARM.water);
+      if (s.stage !== 'planted') continue;
+      const rate = s.water > 0 ? 1 : s.kind === 'field' ? FARM.dry : 0;
+      s.growth = Math.min(1, s.growth + dt * rate / FARM.grow);
       if (s.growth >= 1) { s.stage = 'ripe'; s.berries = FARM.berries; }
     }
     // odrastanie zasobów
@@ -26,6 +29,12 @@ export const natureMethods = {
       } else if (r.kind === 'bush' && r.berries < r.max) {
         r.regrow += dt;
         if (r.regrow > 50) { r.regrow = 0; r.berries++; this.changed.add(r); }
+      } else if (r.kind === 'rye' && r.ears < r.max) {
+        r.regrow += dt;
+        if (r.regrow > 80) { r.regrow = 0; r.ears++; this.changed.add(r); }
+      } else if (r.kind === 'flower' && r.flowers < r.max) {
+        r.regrow += dt;
+        if (r.regrow > 70) { r.regrow = 0; r.flowers++; this.changed.add(r); }
       } else if ((r.kind === 'tree' || r.kind === 'palm') && r.growth < 1) {
         r.growth = Math.min(1, r.growth + dt / 240);
         if (r.growth >= 1) r.wood = r.kind === 'tree' ? 3 : 2;

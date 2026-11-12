@@ -31,7 +31,7 @@ export const decideMethods = {
       const spot = this.nearestTile(bfs, w.pondShore);
       if (spot) add(needCurve(this.thirst) * 1.35 + crit(this.thirst, 25) - spot.d * 0.002, '💧 Pić wodę', () => this.taskDrink(spot));
       // woda w misce: przydaje się z dala od stawu
-      if (this.inv.waterBowl > 0 && (!spot || spot.d > 12)) add(needCurve(this.thirst) * 1.4 + crit(this.thirst, 25) + 0.05, '🥣 Napić się z miski', () => this.taskDrinkBowl());
+      if (this.waterVessel() && (!spot || spot.d > 12)) add(needCurve(this.thirst) * 1.4 + crit(this.thirst, 25) + 0.05, '🥣 Napić się z miski', () => this.taskDrinkBowl());
       else {
         unknownNeed = Math.max(unknownNeed, needCurve(this.thirst) * 1.4 + 0.25);
         if (!this.saltKnown && this.thirst < 60) {
@@ -40,10 +40,18 @@ export const decideMethods = {
         }
       }
     }
-    // miska: nabrać wody na zapas, będąc przy stawie
-    if (this.inv.bowl > 0 && this.thirst > 50) {
+    // rośliny w grządkach i doniczkach, które wyschły (do podlania)
+    const dry = w.structures.filter((s) => (s.kind === 'field' || s.kind === 'planter') && s.stage === 'planted' && s.water <= 0.1 && this.knownStructs.has(s.id) && !taken.has('w' + s.id))
+      .map((s) => ({ s, d: distOf(s.i, s.j) })).filter((x) => x.d >= 0 && x.d < 30).sort((a, b) => a.d - b.d);
+    const wateringK = this.known.has('watering') ? 0.1 : 0;
+    // miska albo doniczka: nabrać wody na zapas albo do podlewania, będąc przy stawie
+    if (this.emptyVessels() > 0 && (this.thirst > 50 || dry.length)) {
       const spot = this.nearestTile(bfs, w.pondShore);
-      if (spot && spot.d < 15) add(0.32 - spot.d * 0.01, '🥣 Nabrać wody do miski', () => this.taskFillBowl(spot));
+      if (spot && spot.d < (dry.length ? 30 : 15)) add((dry.length ? (dry.some((x) => x.s.kind === 'planter') ? 0.42 : 0.3) + wateringK : 0.32) - spot.d * (dry.length ? 0.004 : 0.01), '🥣 Nabrać wody do miski', () => this.taskFillBowl(spot));
+    }
+    if (dry.length && this.waterVessel()) {
+      const f = dry.find((x) => x.s.kind === 'planter') || dry[0];
+      add((f.s.kind === 'planter' ? 0.4 : 0.32) + wateringK - f.d * 0.003, '💧 Podlać rośliny', () => this.taskWater(f.s));
     }
     // --- jedzenie z ekwipunku ---
     if (this.hunger < 75 && this.foodStock() > 0) {
@@ -102,7 +110,7 @@ export const decideMethods = {
     }
     // grządki z dojrzałymi jagodami: zebrać, nawet gdy nie jest głodna (jagody na zapas i nasiona do sadzenia)
     if (this.roomFor(3, 1)) for (const s of w.structures) {
-      if (s.kind !== 'field' || s.stage !== 'ripe' || !this.knownStructs.has(s.id) || taken.has('f' + s.id)) continue;
+      if ((s.kind !== 'field' && s.kind !== 'planter') || s.stage !== 'ripe' || !this.knownStructs.has(s.id) || taken.has('f' + s.id)) continue;
       const d = distOf(s.i, s.j);
       if (d >= 0 && d < 30) { add(Math.max(foodScore + 0.15, 0.36) - d * 0.004, '🧺 Zebrać plony', () => this.taskHarvest(s)); break; }
     }
@@ -177,20 +185,46 @@ export const decideMethods = {
     // nóż, motyka, łuk, strzały, miska, ubranie ze skóry
     const craftT = (tool, label, msg, score) => { if (!tools[tool] && K(tool) && has(RECIPES[tool])) add(score, label, () => ({ ...this.taskCraft(tool, RECIPES[tool], msg, true), label: label.replace('Zrobić', 'Robi').replace('Wystrugać', 'Struga') })); };
     craftT('knife', '🔪 Zrobić nóż', 'robi kamienny nóż 🔪', 0.48);
-    craftT('hoe', '🌾 Zrobić motykę', 'robi motykę 🌾', 0.3 + (inv.seeds > 0 ? 0.12 : 0));
+    craftT('hoe', '🌾 Zrobić motykę', 'robi motykę 🌾', 0.3 + (this.anySeeds() ? 0.12 : 0));
     if (tools.knife) craftT('bow', '🏹 Wystrugać łuk', 'struga łuk 🏹', 0.36 + (this.w.hunt - 1) * 0.2);
     if (myBench) craftT('leather', '🧥 Uszyć ubranie ze skóry', 'szyje ubranie ze skóry 🧥', 0.42 + cold * 0.5);
     if (tools.knife && K('bowl') && inv.bowl + inv.waterBowl < 1 && has(RECIPES.bowl)) add(0.34, '🥣 Wydrążyć miskę', () => this.taskMake(RECIPES.bowl, { bowl: 1 }, '🥣 Drąży miskę nożem', 'drąży drewnianą miskę 🥣'));
     if (tools.bow && K('arrows') && inv.arrows < 4 && has(RECIPES.arrows)) add(0.4, '🏹 Zrobić strzały', () => this.taskMake(RECIPES.arrows, { arrows: 4 }, '🏹 Robi strzały', 'robi 4 strzały z lotkami z piór 🏹'));
     // upolowany dzik czeka na oskórowanie
     if (this.carcass && tools.knife && !this.carcass.skinned && this.carcass.dead && w.time - (this.carcassT || 0) < 120) add(0.9, '🔪 Oskórować dzika', () => this.taskSkin(this.carcass));
-    // uprawa: grządka motyką, sadzenie nasion z jagód
-    if (tools.hoe && inv.seeds > 0) {
-      const fields = w.structures.filter((s) => s.kind === 'field' && this.knownStructs.has(s.id));
-      const tilled = fields.map((s) => ({ s, d: distOf(s.i, s.j) })).filter((x) => x.s.stage === 'tilled' && x.d >= 0 && x.d < 30 && !taken.has('f' + x.s.id)).sort((a, b) => a.d - b.d)[0];
-      const farm = K('farm') ? 0.12 : 0;
-      if (tilled) add(0.4 + farm - tilled.d * 0.003, '🌱 Zasiać nasiona', () => this.taskPlant(tilled.s));
-      else if (fields.length < 6 && (myFire || myRoof)) add(0.36 + farm, '🌾 Przygotować grządkę', () => this.taskTill());
+    // uprawa: grządka motyką, sadzenie nasion (jagody, żyto, kwiaty), doniczki i miski z ziemią
+    const seedy = this.anySeeds();
+    const farm = K('farm') ? 0.12 : 0;
+    if (seedy) {
+      const beds = w.structures.filter((s) => (s.kind === 'field' || s.kind === 'planter') && this.knownStructs.has(s.id));
+      const free = beds.map((s) => ({ s, d: distOf(s.i, s.j) })).filter((x) => (x.s.kind === 'field' ? x.s.stage === 'tilled' : x.s.stage === 'empty') && x.d >= 0 && x.d < 30 && !taken.has('f' + x.s.id)).sort((a, b) => a.d - b.d)[0];
+      if (free) add(0.4 + farm - free.d * 0.003, '🌱 Zasiać nasiona', () => this.taskPlant(free.s));
+      else if (tools.hoe && beds.filter((s) => s.kind === 'field').length < 6 && (myFire || myRoof)) add(0.36 + farm, '🌾 Przygotować grządkę', () => this.taskTill());
+      // doniczka (albo miska, gdy jest więcej niż jedna) z ziemią przy obozie
+      const home = myFire ? anyFire : myRoof ? (myShelter ? shelter : tentN) : null;
+      // jedno naczynie zostaje na wodę (do picia i podlewania)
+      const vessels = inv.bowl + inv.waterBowl + inv.pot + inv.waterPot;
+      const vessel = vessels < 2 ? null : inv.pot > 0 ? 'pot' : inv.bowl > 0 ? 'bowl' : null;
+      if (home && vessel && beds.filter((s) => s.kind === 'planter').length < 6) add((vessel === 'pot' ? 0.36 : 0.28) + farm * 0.5, vessel === 'pot' ? '🪴 Posadzić w doniczce' : '🪴 Posadzić w misce', () => this.taskPotPlant(home, vessel, this.pickCrop()));
+    }
+    // glina i doniczki: glinę bierze się z brzegu stawu, wypala w ognisku
+    const pots = inv.pot + inv.waterPot + w.structures.filter((s) => s.kind === 'planter' && s.vessel === 'pot' && s.owner === this.id).length;
+    if (K('pot') && pots < 3) {
+      if (inv.clay >= RECIPES.pot.clay && fire && fire.d < 30) add(0.4 + (seedy ? 0.06 : 0), '🏺 Wypalić doniczkę', () => this.taskFirePot(fire));
+      else if (K('clay') && inv.clay < RECIPES.pot.clay && this.roomFor(3, 5) && (myFire || myRoof)) {
+        const spot = this.nearestTile(bfs, w.pondShore);
+        if (spot && spot.d < 30) add(0.32 + (seedy ? 0.06 : 0) - spot.d * 0.004, '🧱 Nabrać gliny', () => this.taskClay(spot));
+      }
+    }
+    // dzikie żyto: ziarno do siewu
+    if (inv.grain < 6 && (tools.hoe || K('hoe') || K('farm'))) {
+      const rye = this.nearestRes(bfs, (m) => m.kind === 'rye' && (m.ears > 0 || m.age > 80), taken);
+      if (rye && rye.d < 30) add(0.32 + farm * 0.5 - rye.d * 0.004, '🌾 Zebrać żyto', () => this.taskRye(rye.r));
+    }
+    // kwiaty: dla przyjemności, gdy nic pilnego
+    if (inv.flowers < 3 && this.hunger > 50 && this.thirst > 50) {
+      const fl = this.nearestRes(bfs, (m) => m.kind === 'flower' && (m.flowers > 0 || m.age > 70), taken);
+      if (fl && fl.d < 20) add(0.14 + (this.mood < 45 ? 0.12 : 0) - fl.d * 0.004, '🌼 Zerwać kwiaty', () => this.taskFlowers(fl.r));
     }
     if (!myFire && K('campfire') && has(RECIPES.campfire)) add(0.7 + (this.known.has('warmFire') ? cold * 0.5 : 0), '🔥 Rozpalić ognisko', () => this.taskBuild('campfire', RECIPES.campfire));
     if (myFire && !myShelter && K('shelter') && has(RECIPES.shelter)) add(0.45 + (this.known.has('warmRoof') ? cold * 0.3 : 0), '🛖 Zbudować szałas', () => this.taskBuild('shelter', RECIPES.shelter));
@@ -200,7 +234,7 @@ export const decideMethods = {
     }
     // lista życzeń: czego potrzebuję do celów
     const bridgesLeft = K('bridge') && w.bridges.some((br) => !br.complete);
-    const want = { logs: 0, sticks: 0, leaves: 0, planks: 0, rope: 0, stone: 1, seaweed: 0 };
+    const want = { logs: 0, sticks: 0, leaves: 0, planks: 0, rope: 0, stone: 1, seaweed: 0, clay: 0 };
     const wish = (cost, mul = 1) => { for (const k in cost) if (k in want) want[k] += cost[k] * mul; };
     if (!tools.rod && K('rod')) wish(RECIPES.rod);
     if (!tools.spear && K('spear')) wish(RECIPES.spear);
@@ -220,12 +254,13 @@ export const decideMethods = {
     if (plankOp) want.planks += 2; // zapas desek na budowę
     if (K('torch') && inv.torch < 2 && myFire) wish(RECIPES.torch);
     if (!tools.knife && K('knife')) wish(RECIPES.knife);
-    if (!tools.hoe && K('hoe') && inv.seeds > 0) wish(RECIPES.hoe);
+    if (!tools.hoe && K('hoe') && this.anySeeds()) wish(RECIPES.hoe);
     if (!tools.bow && K('bow') && tools.knife) wish(RECIPES.bow);
     if (tools.knife && K('bowl') && inv.bowl + inv.waterBowl < 1) wish(RECIPES.bowl);
     if (tools.bow && K('arrows') && inv.arrows < 4 && inv.feathers > 0) wish(RECIPES.arrows);
     if (!tools.leather && K('leather') && myBench && inv.hide >= 2) wish(RECIPES.leather);
     if (myFire) want.sticks += 2; // zapas na podsycanie ogniska
+    if (K('pot') && pots < 3) want.clay = RECIPES.pot.clay; // glina na doniczkę: nie odkładać
     // zapas do eksperymentów, dopóki są nieodkryte receptury
     if (Object.keys(RECIPES).some((r) => !K(r))) {
       want.logs = Math.max(want.logs, 1); want.sticks = Math.max(want.sticks, 2); want.stone = Math.max(want.stone, 1);
@@ -335,7 +370,7 @@ export const decideMethods = {
       let best = null;
       for (const m of this.mem.values()) {
         if (this.triedKinds.has(m.kind) || (taken && taken.has(m.r.id))) continue;
-        if ((m.kind === 'bush' && m.berries <= 0) || ((m.kind === 'tree' || m.kind === 'palm') && m.growth < 1) || (m.kind === 'seaweed' && m.amount <= 0)) continue;
+        if ((m.kind === 'bush' && m.berries <= 0) || (m.kind === 'rye' && m.ears <= 0) || (m.kind === 'flower' && m.flowers <= 0) || ((m.kind === 'tree' || m.kind === 'palm') && m.growth < 1) || (m.kind === 'seaweed' && m.amount <= 0)) continue;
         const d = m.kind === 'seaweed' ? bfs.dist[idx(m.r.stand.i, m.r.stand.j)] : bfs.dist[idx(m.i, m.j)];
         if (d >= 0 && (!best || d < best.d)) best = { m, d };
       }

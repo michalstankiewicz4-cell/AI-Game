@@ -21,7 +21,7 @@ Każda wyspa ma mniej więcej rozmiar ekranu. Przy kilku wyspach:
 ## Świat
 - Ocean z falami i wyspy w stylu low-poly z poszarpaną linią brzegu.
 - Stawy ze słodką wodą. Wody morskiej nie da się pić, a postacie muszą to odkryć same.
-- Zasoby: drzewa i palmy (odrastają po ścięciu), skały, krzaki z jagodami (owoce odrastają), wodorosty przy brzegu, a na wzgórzu kopalnia.
+- Zasoby: drzewa i palmy (odrastają po ścięciu), skały, krzaki z jagodami (owoce odrastają), kępy dzikiego żyta i kwiaty na łąkach (też odrastają), wodorosty przy brzegu, a na wzgórzu kopalnia. Brzeg stawu jest gliniasty.
 - Zwierzęta: ptaki do polowania, ławice ryb do łowienia i dziki (`src/world/boars.js`).
 
 ### 🐗 Dziki
@@ -94,6 +94,7 @@ Na starcie każda postać ma siekierę i kilof. Receptur nie zna, odkrywa je, ł
 | Łuk | kłoda + lina | strugany nożem; ze strzałami poluje na ptaki i walczy z dzikiem z daleka |
 | Strzały | gałąź + pióra + kamień | 4 sztuki; czasem się gubią albo łamią |
 | Ubranie ze skóry | 2 skóry + lina | odkrywane tylko przy stole rzemieślniczym; +7°C odczuwalnej temperatury |
+| Gliniana doniczka | 3 grudki gliny | wypalana w ognisku; naczynie na wodę i doniczka na rośliny |
 
 Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo przy ogniu, łóżko przy stole rzemieślniczym. Miski i łuku nie zrobi się bez noża. Próba w złym miejscu kończy się wskazówką w myślach postaci.
 
@@ -113,10 +114,15 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Skrzynia:** postać, która odkryje skrzynię, zbija ją przy obozie. Do skrzyni trafia nadmiar materiałów (ma pierwszeństwo przed kupką na ziemi) i nadmiar jedzenia (przy sobie zostają po 2 sztuki). Głodna postać bez jedzenia w plecaku idzie po nie do skrzyni, a jedzenie w skrzyni liczy się do zapasu, więc postacie nie zbierają jagód bez końca.
 - **Wiedza o składzikach:** postacie mówią sobie o nich w rozmowach. Pusty składzik znika z mapy.
 
-## Uprawa, miska i zdobycze z polowania
+## Uprawa, naczynia i zdobycze z polowania
 - **Nasiona:** jedząc jagody, postać czasem znajduje pestki (ok. 1 na 3 garście, najwyżej 12 przy sobie). Nasiona, pióra i strzały to drobiazgi: nie zajmują miejsca w plecaku.
 - **Grządka:** postać z motyką i nasionami spulchnia ziemię na trawie obok obozu (najchętniej przy innych grządkach, do 6 grządek). Zasiane nasiona po ok. 270 s czasu gry (półtorej doby) wyrastają w krzak z 6 jagodami. Przy zbiorze wracają 2 nasiona, a grządka czeka na kolejne sadzenie. W trybie „Odkrywa sam” postać sieje najpierw z ciekawości, a dopiero po pierwszym zbiorze wie, że to działa.
-- **Miska:** przy stawie postać nabiera wody do pustych misek. Spragniona, z dala od stawu (ponad 12 pól), pije z miski (+40 do pragnienia).
+- **Co się sieje:** nasiona jagód, ziarno żyta (z kłosów dzikiego żyta, 2 z kłosa) i nasiona kwiatów (z co drugiego zerwanego kwiatu). Na grządce postać sieje to, czego ma nasiona i czego najmniej rośnie. Plon z grządki: krzak jagód 6 jagód i 2 nasiona, żyto 8 ziaren, kwiaty 3 kwiaty i 2 nasiona.
+- **Podlewanie:** podlana roślina rośnie pełnym tempem, sucha grządka prawie trzy razy wolniej, a sucha doniczka wcale. Woda w ziemi starcza na ok. 220 s (mokra ziemia jest ciemniejsza). Postać nabiera wody do misek i doniczek przy stawie i niesie ją do roślin. W trybie „Odkrywa sam” podlewa najpierw z ciekawości, a po zbiorze z podlewanej rośliny wie, że to pomaga.
+- **Kwiaty:** zerwane cieszą postać (najchętniej zrywa je w złym nastroju, najwyżej 8 przy sobie). Zbiór kwiatów z uprawy cieszy jeszcze bardziej.
+- **Glina i doniczka:** pijąc ze stawu, postać czasem zauważa gliniasty brzeg i bierze grudkę. Doniczkę odkrywa, eksperymentując z gliną przy ogniu; potem nabiera 3 grudki z brzegu stawu i wypala je w ognisku.
+- **Naczynia:** miska i doniczka niosą wodę: przy stawie postać napełnia wszystkie puste naczynia. Spragniona, z dala od stawu (ponad 12 pól), pije z naczynia (+40 do pragnienia), a z wodą podlewa rośliny.
+- **Doniczka z rośliną:** postać nasypuje ziemi do doniczki albo miski, sadzi w niej nasiona i stawia ją przy obozie (do 6 doniczek). Motyka nie jest potrzebna, ale roślina rośnie tylko podlewana i daje mniej więcej połowę plonu grządki. Po zbiorze w doniczce można znów coś posadzić. Jedno naczynie postać zawsze zostawia sobie na wodę.
 - **Dzik:** z nożem postać skóruje upolowanego dzika (ok. 4 s): 3 mięsa i skóra. Bez noża urwie tylko 1 kawałek mięsa. Martwy dzik leży na boku, dopóki ktoś go nie oskóruje.
 - **Ptaki:** upolowany ptak daje mięso i 2 pióra.
 - **Łuk:** ze strzałami trafia ptaka częściej niż włócznia (75% zamiast 50% na start). Postać z łukiem i strzałami może też walczyć z dzikiem i na niego polować.

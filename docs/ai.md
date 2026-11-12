@@ -52,11 +52,14 @@ Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie t
 - Gdy plecak jest pełny, a czegoś do celów brakuje, postać odkłada zbędne rzeczy (zapas desek i kamieni ponad 4 też).
 - `dropSurplus()`: przy limicie sztuk odkłada połowę tego, czego ma najwięcej, przy limicie wagi połowę tego, co najcięższe.
 
-## Uprawa, miska i łowy (`decide.js`, `tasks.js`)
+## Uprawa, naczynia i łowy (`decide.js`, `tasks.js`)
 - `taskTill` stawia strukturę `field` (pole w `world.structures` ze `stage`: `tilled`, `planted`, `ripe`). `world.update` (`nature.js`) podnosi `growth` zasianej grządki i po `FARM.grow` sekundach daje jagody.
 - Opcje: „🌾 Przygotować grządkę” i „🌱 Zasiać nasiona” (motyka i nasiona; premia po odkryciu `farm`), „🧺 Zebrać plony” (także bez głodu), „🥣 Nabrać wody do miski”, „🥣 Napić się z miski” (z dala od stawu), „🔪 Oskórować dzika” (`agent.carcass` po zabiciu dzika nożem), „🏹 Polować z łuku”.
 - `KNIFE_RECIPES` (miska, łuk) wymagają noża przy odkryciu i przy robieniu.
 - Doświadczenia `seeds` (pestki w jagodach) i `farm` (z nasion rośnie krzak) trafiają do `known`.
+- Rośliny opisuje `CROPS` w `data.js` (`berry`, `rye`, `flower`: czym się sieje i co daje zbiór z grządki i z doniczki). Grządka i doniczka (`planter`, z polem `vessel`: `pot` albo `bowl`) mają `crop`, `stage`, `growth` i `water` (0..1, wysycha w `FARM.water` s). Sucha grządka rośnie w tempie `FARM.dry`, sucha doniczka wcale.
+- `pickCrop()` wybiera nasiona rośliny, której najmniej rośnie. Opcje: „💧 Podlać rośliny” (doniczki najpierw), „🥣 Nabrać wody do miski” (także gdy rośliny są suche), „🪴 Posadzić w doniczce / w misce” (gdy ma co najmniej 2 naczynia), „🧱 Nabrać gliny”, „🏺 Wypalić doniczkę”, „🌾 Zebrać żyto”, „🌼 Zerwać kwiaty”.
+- `VESSELS` łączy puste i pełne naczynia (`bowl`/`waterBowl`, `pot`/`waterPot`). Doświadczenia `watering` (przy zbiorze z podlewanej rośliny) i `clay` (przy piciu ze stawu, 15%) trafiają do `known`. Ziarno, nasiona kwiatów i kwiaty to drobiazgi spoza plecaka (limity w `POCKET_CAP`).
 
 ## Rozmowy (`src/ai/social.js`)
 Postacie, które spotkają się bliżej niż 2,6 kafelka, mogą porozmawiać. Ta sama para rozmawia najwyżej raz na 70 s. W rozmowie:

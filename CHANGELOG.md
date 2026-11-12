@@ -3,6 +3,18 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.24.0] - 2026-11-12
+### Dodane
+- Podlewanie: posadzone rośliny trzeba podlewać wodą z miski albo doniczki. Podlana grządka rośnie normalnie (ok. półtorej doby), sucha prawie trzy razy wolniej, a doniczka bez wody wcale. Ziemia trzyma wodę ok. 220 s i ciemnieje po podlaniu. Że woda przyspiesza wzrost, postać odkrywa przy zbiorze z podlewanej rośliny.
+- Dzikie żyto: kępy rosną tu i ówdzie na łąkach. Z kłosów postać wyłuskuje ziarno (2 z kłosa), które sieje się jak nasiona. Z grządki zbiera się 8 ziaren.
+- Kwiaty w trzech kolorach do zrywania: cieszą postać (bardziej w złym nastroju), a co drugi daje nasiona kwiatów. Wysiane dają 3 kwiaty i 2 nasiona.
+- Glina i doniczka: pijąc ze stawu, postać czasem zauważa gliniasty brzeg. Glinę (3 grudki) wypala się w ognisku na doniczkę (nowa receptura, odkrywana przy ogniu).
+- Doniczka i miska jako naczynie: w obu można nosić wodę ze stawu, pić z nich i podlewać.
+- Doniczka i miska jako doniczka: postać nasypuje do nich ziemi, sadzi nasiona (jagody, żyto albo kwiaty) i stawia przy obozie. Rośnie w nich mniej (mniej więcej połowa plonu grządki), ale nie trzeba motyki. Jedno naczynie zostaje zawsze na wodę.
+- Modele: kępy żyta, kwiaty, doniczka z gliny, miska z ziemią, żyto i kwiaty na grządkach. Nowe wpisy w wiki, słowa kluczowe pełnej swobody, fakty dla trybu „Wie wszystko”.
+### Zmienione
+- Na grządce postać sieje tę roślinę, której nasiona ma, a której najmniej rośnie.
+
 ## [0.23.1] - 2026-11-12
 ### Poprawione
 - Postać ma dwie ręce. W prawej trzyma narzędzie albo broń (siekierę przy ścinaniu, kilof przy kopaniu, nóż, motykę, wędkę, łuk), a w lewej po zmroku płonącą pochodnię, w walce tarczę. Nie ścina już drzew pochodnią. Łuk trzyma oburącz, więc wtedy odkłada pochodnię. Karta postaci pokazuje obie ręce.
@@ -219,6 +231,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.24.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.24.0
 [0.23.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.23.1
 [0.23.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.23.0
 [0.22.2]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.2

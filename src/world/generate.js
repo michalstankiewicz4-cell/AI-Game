@@ -105,6 +105,9 @@ export const generateMethods = {
         if (v < treeP) this.addResource('tree', i, j, { wood: 3, growth: 1 });
         else if (v < treeP + bushP) this.addResource('bush', i, j, { berries: 3, max: 4, regrow: 0 });
         else if (v < treeP + bushP + rockP) this.addResource('rock', i, j, { stone: 4 });
+        // kępy dzikiego żyta i kwiaty na łąkach
+        else if (v < treeP + bushP + rockP + 0.012) this.addResource('rye', i, j, { ears: 3, max: 3, regrow: 0 });
+        else if (v < treeP + bushP + rockP + 0.03) this.addResource('flower', i, j, { flowers: 2, max: 2, regrow: 0, hue: Math.floor(r() * 3) });
       } else if (t === T.SAND) {
         if (v < 0.02) this.addResource('rock', i, j, { stone: 3 });
         else if (v < 0.035) this.addResource('palm', i, j, { wood: 2, growth: 1 });

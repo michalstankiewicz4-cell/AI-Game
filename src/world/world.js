@@ -170,7 +170,9 @@ export class World {
     const p = toWorld(i, j);
     const s = { id: this.nextId++, kind, i, j, x: p.x, z: p.z, owner, island: this.island[idx(i, j)], fuel: kind === 'campfire' ? 100 : 0, grill: false };
     if (kind === 'stash' || kind === 'chest') s.items = {};
-    if (kind === 'field') { s.stage = 'tilled'; s.growth = 0; s.berries = 0; }
+    // grządka i doniczka: co rośnie (crop), etap, wzrost 0..1 i wilgoć ziemi 0..1
+    if (kind === 'field') { s.stage = 'tilled'; s.growth = 0; s.berries = 0; s.crop = null; s.water = 0; }
+    if (kind === 'planter') { s.stage = 'empty'; s.growth = 0; s.crop = null; s.water = 0; s.vessel = 'pot'; }
     this.structures.push(s);
     this.structuresChanged = true;
     return s;

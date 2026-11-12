@@ -2,7 +2,7 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import {
-  FIRE_FUEL, FARM,
+  FIRE_FUEL, FARM, CROPS, VESSELS, POCKET_CAP,
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   STORES, SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, WEIGHT, clamp,
 } from './data.js';
@@ -24,7 +24,13 @@ export const tasksMethods = {
       act: (dt, t) => {
         this.thirst = clamp(this.thirst + 35 * dt, 0, 100);
         this.drankPond = true;
-        return this.thirst >= 100 || t.elapsed > 4 ? 'done' : null;
+        const end = this.thirst >= 100 || t.elapsed > 4;
+        // przy piciu postać czasem zauważa, że brzeg stawu jest gliniasty
+        if (end && !this.known.has('clay') && Math.random() < 0.15) {
+          this.known.add('clay'); this.inv.clay += 1;
+          this.say('zauważa, że brzeg stawu jest śliski i gliniasty. Bierze grudkę gliny 🧱', 'learn');
+        }
+        return end ? 'done' : null;
       },
     };
   },
@@ -51,7 +57,7 @@ export const tasksMethods = {
           if (k === 'cookedFish' || k === 'cookedMeat') this.joy = Math.min(30, this.joy + 6); // ciepły posiłek cieszy
           if (first) this.event('tasteGood', { food: FOOD[k].name });
         }
-        if (k === 'berries' && this.inv.seeds < 12 && Math.random() < FARM.seedChance) {
+        if (k === 'berries' && this.inv.seeds < POCKET_CAP.seeds && Math.random() < FARM.seedChance) {
           this.inv.seeds++;
           if (!this.known.has('seeds')) { this.known.add('seeds'); this.say('znajduje w jagodach pestki. Może to nasiona? 🌱', 'learn'); }
         }
@@ -589,14 +595,27 @@ export const tasksMethods = {
       },
     };
   },
-  taskPlant(f) {
+  // co posadzić: roślinę, której nasiona ma, a której najmniej rośnie w znanych grządkach i doniczkach
+  pickCrop() {
+    const have = Object.keys(CROPS).filter((c) => this.inv[CROPS[c].seed] > 0);
+    if (!have.length) return null;
+    const n = (c) => this.world.structures.filter((s) => s.crop === c && s.stage !== 'tilled' && s.stage !== 'empty' && this.knownStructs.has(s.id)).length;
+    return have.sort((x, y) => n(x) - n(y))[0];
+  },
+  anySeeds() { return Object.values(CROPS).some((c) => this.inv[c.seed] > 0); },
+  // sadzenie na grządce albo w pustej doniczce z ziemią
+  taskPlant(f, crop = this.pickCrop()) {
+    if (!crop) return null;
+    const seed = CROPS[crop].seed;
     return {
       targetId: 'f' + f.id, path: this.pathTo(f.i, f.j), label: '🌱 Sadzi nasiona',
       act: (dt, t) => {
         if (t.elapsed < 2.5) return null;
-        if (f.stage !== 'tilled' || this.inv.seeds < 1) return 'fail';
-        this.inv.seeds--; f.stage = 'planted'; f.growth = 0; f.planter = this.id;
+        const free = f.kind === 'planter' ? f.stage === 'empty' : f.stage === 'tilled';
+        if (!free || this.inv[seed] < 1) return 'fail';
+        this.inv[seed]--; f.stage = 'planted'; f.growth = 0; f.planter = this.id; f.crop = crop;
         if (!this.known.has('farm')) this.speak('Wsadzę to nasionko do ziemi. Ciekawe, czy coś wyrośnie?', true);
+        else this.say(`sadzi ${CROPS[crop].name} ${f.kind === 'planter' ? 'w doniczce 🪴' : 'na grządce 🌱'}`);
         return 'done';
       },
     };
@@ -607,39 +626,158 @@ export const tasksMethods = {
       act: (dt, t) => {
         if (t.elapsed < 2.5) return null;
         if (f.stage !== 'ripe') return 'fail';
-        this.inv.berries += f.berries; this.stats.berries += f.berries;
-        this.inv.seeds += FARM.seeds;
-        f.berries = 0; f.stage = 'tilled'; f.growth = 0;
-        this.joy = Math.min(30, this.joy + 8);
+        const crop = CROPS[f.crop || 'berry'];
+        const got = f.kind === 'planter' ? crop.pot : crop.yield;
+        for (const k in got) {
+          this.inv[k] += got[k];
+          if (POCKET_CAP[k]) this.inv[k] = Math.min(this.inv[k], POCKET_CAP[k]);
+        }
+        if (got.berries) this.stats.berries += got.berries;
+        f.berries = 0; f.stage = f.kind === 'planter' ? 'empty' : 'tilled'; f.growth = 0;
+        this.joy = Math.min(30, this.joy + (got.flowers ? 12 : 8));
         if (!this.known.has('farm')) {
           this.known.add('farm');
-          this.say('odkrywa, że z nasion wyrasta krzak z jagodami! 🌱🧠', 'learn');
+          this.say(`odkrywa, że z nasion wyrasta ${crop.name}! 🌱🧠`, 'learn');
           this.event('discover', { what: 'uprawa' });
-        } else this.say('zbiera jagody ze swojej grządki 🧺');
+        } else this.say(`zbiera ${f.crop === 'rye' ? 'żyto' : f.crop === 'flower' ? 'kwiaty' : 'jagody'} ${f.kind === 'planter' ? 'z doniczki 🪴' : 'ze swojej grządki 🧺'}`);
+        if (f.watered && !this.known.has('watering')) {
+          this.known.add('watering');
+          this.say('zauważa, że podlewana roślina rosła szybciej 💧🧠', 'learn');
+        }
+        f.watered = false;
+        return 'done';
+      },
+    };
+  },
+  // podlewanie: woda z miski albo doniczki na grządkę lub do doniczki z rośliną
+  waterVessel() { return VESSELS.find(([, full]) => this.inv[full] > 0) || null; },
+  emptyVessels() { return VESSELS.reduce((t, [e]) => t + this.inv[e], 0); },
+  taskWater(f) {
+    return {
+      targetId: 'w' + f.id, path: this.pathTo(f.i, f.j), label: '💧 Podlewa',
+      act: (dt, t) => {
+        if (t.elapsed < 2) return null;
+        const v = this.waterVessel();
+        if (!v || f.stage !== 'planted') return 'fail';
+        this.inv[v[1]]--; this.inv[v[0]]++;
+        f.water = 1; f.watered = true;
+        if (!this.known.has('watering') && !t.said) this.speak(f.kind === 'planter' ? 'Ziemia w doniczce całkiem sucha. Dam jej trochę wody.' : 'Ta ziemia jest sucha. Może roślinie przyda się woda?', true);
+        else if (Math.random() < 0.3) this.say(`podlewa ${f.kind === 'planter' ? 'doniczkę 🪴💧' : 'grządkę 💧'}`);
         return 'done';
       },
     };
   },
   taskFillBowl(spot) {
     return {
-      path: this.pathTo(spot.i, spot.j), face: spot.water, label: '🥣 Nabiera wody do miski',
+      path: this.pathTo(spot.i, spot.j), face: spot.water, label: '🥣 Nabiera wody',
       act: (dt, t) => {
         if (t.elapsed < 2) return null;
-        if (this.inv.bowl < 1) return 'fail';
-        this.inv.waterBowl += this.inv.bowl; this.inv.bowl = 0;
+        if (this.emptyVessels() < 1) return 'fail';
+        for (const [e, full] of VESSELS) { this.inv[full] += this.inv[e]; this.inv[e] = 0; }
         return 'done';
       },
     };
   },
   taskDrinkBowl() {
     return {
-      urgent: true, path: [], label: '🥣 Pije z miski',
+      urgent: true, path: [], label: '🥣 Pije z naczynia',
       act: (dt, t) => {
         if (t.elapsed < 1.5) return null;
-        if (this.inv.waterBowl < 1) return 'fail';
-        this.inv.waterBowl--; this.inv.bowl++;
+        const v = this.waterVessel();
+        if (!v) return 'fail';
+        this.inv[v[1]]--; this.inv[v[0]]++;
         this.thirst = clamp(this.thirst + 40, 0, 100);
         return 'done';
+      },
+    };
+  },
+  // glina z brzegu stawu (na doniczki)
+  taskClay(spot) {
+    return {
+      path: this.pathTo(spot.i, spot.j), face: spot.water, label: '🧱 Nabiera gliny',
+      act: (dt, t) => {
+        if (t.elapsed < 4) return null;
+        this.inv.clay += 3;
+        this.say('wykopuje glinę z brzegu stawu 🧱');
+        return 'done';
+      },
+    };
+  },
+  // wypalanie doniczki z gliny w ognisku
+  taskFirePot(fire) {
+    const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
+    return {
+      path: this.pathTo(spot.i, spot.j), face: fire.s, label: '🏺 Wypala doniczkę',
+      act: (dt, t) => {
+        if (t.elapsed < 5) return null;
+        if (this.inv.clay < RECIPES.pot.clay || !(fire.s.fuel > 0)) return 'fail';
+        this.inv.clay -= RECIPES.pot.clay; this.inv.pot++;
+        this.say('lepi z gliny doniczkę i wypala ją w ognisku 🏺');
+        return 'done';
+      },
+    };
+  },
+  // doniczka albo miska z ziemią i nasionami stawiana przy obozie
+  potSpot(home) {
+    const w = this.world, bfs = this.bfsCache;
+    for (let r = 1; r < 5; r++) for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) {
+      if (Math.max(Math.abs(di), Math.abs(dj)) !== r) continue;
+      const i = home.i + di, j = home.j + dj;
+      if (!w.walkable(i, j) || w.type[idx(i, j)] === T.BRIDGE || w.res[idx(i, j)] || bfs.dist[idx(i, j)] < 0) continue;
+      if (w.structures.some((s) => s.i === i && s.j === j) || w.pieces.some((p) => p.i === i && p.j === j && p.type !== 'wall')) continue;
+      return { i, j };
+    }
+    return null;
+  },
+  taskPotPlant(home, vessel, crop) {
+    const spot = this.potSpot(home);
+    if (!spot || !crop) return null;
+    const seed = CROPS[crop].seed;
+    const w = this.world;
+    return {
+      path: this.pathTo(spot.i, spot.j), label: vessel === 'pot' ? '🪴 Sadzi w doniczce' : '🪴 Sadzi w misce',
+      act: (dt, t) => {
+        if (t.elapsed > 2 && !t.soil) { t.soil = true; this.say(`nasypuje ziemi do ${vessel === 'pot' ? 'doniczki' : 'miski'} 🪴`); }
+        if (t.elapsed < 5) return null;
+        if (this.inv[vessel] < 1 || this.inv[seed] < 1 || w.structures.some((s) => s.i === spot.i && s.j === spot.j)) return 'fail';
+        this.inv[vessel]--; this.inv[seed]--;
+        const p = w.addStructure('planter', spot.i, spot.j, this.id);
+        p.vessel = vessel; p.crop = crop; p.stage = 'planted'; p.planter = this.id;
+        this.rememberStruct(p);
+        this.say(`sadzi ${CROPS[crop].name} w ${vessel === 'pot' ? 'doniczce' : 'misce'} z ziemią 🌱`);
+        return 'done';
+      },
+    };
+  },
+  // dzikie żyto: kłosy dają ziarno do siewu
+  taskRye(r) {
+    return {
+      targetId: r.id, path: this.pathTo(r.i, r.j), face: r, label: '🌾 Zbiera kłosy żyta',
+      act: (dt, t) => {
+        if (r.removed || r.ears <= 0 || this.inv.grain >= POCKET_CAP.grain) return 'done';
+        if (t.elapsed > 1.5) {
+          t.elapsed = 0; r.ears--; this.inv.grain = Math.min(POCKET_CAP.grain, this.inv.grain + 2);
+          this.world.changed.add(r);
+          if (!t.said) { t.said = true; this.say('wyłuskuje ziarno z kłosów żyta 🌾'); }
+        }
+        return null;
+      },
+    };
+  },
+  // kwiaty: cieszą, a czasem zostają z nich nasiona
+  taskFlowers(r) {
+    return {
+      targetId: r.id, path: this.pathTo(r.i, r.j), face: r, label: '🌼 Zrywa kwiaty',
+      act: (dt, t) => {
+        if (r.removed || r.flowers <= 0 || this.inv.flowers >= POCKET_CAP.flowers) return 'done';
+        if (t.elapsed > 1.2) {
+          t.elapsed = 0; r.flowers--; this.inv.flowers++;
+          this.joy = Math.min(30, this.joy + 4);
+          if (Math.random() < 0.5) this.inv.flowerSeeds = Math.min(POCKET_CAP.flowerSeeds, this.inv.flowerSeeds + 1);
+          this.world.changed.add(r);
+          if (!t.said) { t.said = true; this.say('zrywa kwiaty. Ładnie pachną 🌼'); }
+        }
+        return null;
       },
     };
   },

@@ -175,10 +175,17 @@ export class Renderer {
     const fires = [];
     for (const [s, g] of this.structMeshes) {
       if (s.kind === 'stash') { g.visible = !!s.items && Object.values(s.items).some((v) => v > 0); continue; } // pusta kupka znika
-      if (s.kind === 'field') {
-        const pl = g.getObjectByName('plant'), fr = g.getObjectByName('fruit');
-        const k = s.stage === 'tilled' ? 0 : s.stage === 'ripe' ? 1 : 0.15 + s.growth * 0.85;
-        pl.visible = k > 0; pl.scale.setScalar(Math.max(0.01, k)); fr.visible = s.stage === 'ripe';
+      if (s.kind === 'field' || s.kind === 'planter') {
+        // roślina rośnie (skala), dojrzała pokazuje plon; mokra ziemia ciemnieje po podlaniu
+        const sc = s.kind === 'field' ? 1 : 0.55;
+        const k = s.stage === 'planted' ? 0.15 + s.growth * 0.85 : s.stage === 'ripe' ? 1 : 0;
+        const crop = s.crop || 'berry';
+        for (const [name, c, ripe] of [['plant', 'berry'], ['fruit', 'berry', 1], ['ryePlant', 'rye'], ['ryeEars', 'rye', 1], ['flowerPlant', 'flower'], ['bloom', 'flower', 1]]) {
+          const o = g.getObjectByName(name);
+          o.visible = k > 0 && crop === c && (!ripe || s.stage === 'ripe');
+          if (o.visible) o.scale.setScalar(sc * Math.max(0.01, k));
+        }
+        g.getObjectByName('wet').visible = s.water > 0;
         continue;
       }
       if (s.kind !== 'campfire') continue;
