@@ -8,6 +8,30 @@ import {
 } from './data.js';
 
 export const knowledgeMethods = {
+  // tryb „wie wszystko”: postać zaczyna z pełną wiedzą o recepturach, jedzeniu, zjawiskach i mapie świata
+  knowAll() {
+    const w = this.world;
+    this.omniscient = true;
+    for (const r of Object.keys(RECIPES)) this.known.add(r);
+    for (const k of ['cook', 'bridge', 'warmFire', 'warmRoof', 'bedRest', 'boarDanger']) this.known.add(k);
+    for (const k of Object.keys(FOOD)) this.edible.set(k, true);
+    for (const k of Object.keys(KIND_NAMES)) this.triedKinds.add(k);
+    this.saltKnown = true;
+    this.drankPond = true;
+    // zna też dobre kształty schronienia z desek: ściany wokół i przykrycie nad głową
+    this.buildPref = { wall0: 1.2, floor0: 0.4, floor1: 1, slope1: 1, wall1: 0.3 };
+    // mapa: wszystkie pola i zasoby, jakie są na starcie (zwierzęta i ryby się ruszają, więc tych nie zna)
+    for (let k = 0; k < W * H; k++) {
+      if (!this.seen[k]) { this.seen[k] = 1; this.seenCount++; }
+      const r = w.res[k];
+      if (r) {
+        this.mem.set(r.id, { r, kind: r.kind, i: r.i, j: r.j, berries: r.berries, growth: r.growth, amount: r.amount, stone: r.stone, stand: r.stand, t: w.time });
+        this.memByTile.set(k, r.id);
+      }
+    }
+    for (const s of w.structures) this.knownStructs.add(s.id);
+  },
+
   nextExperiment(at = null) {
     const have = MATS.filter((m) => this.inv[m] > 0);
     const fire = at ? at.fire : !!this.nearStructure('campfire', 3);

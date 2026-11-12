@@ -8,6 +8,9 @@ Przycisk Start działa, gdy gra się wczyta (do tego czasu pokazuje „Ładowani
 W menu wybierasz:
 - **Liczbę AI:** od 1 do 4 (domyślnie 1).
 - **Liczbę wysp:** od 1 do 4 (domyślnie 1), w dowolnej kombinacji z liczbą AI.
+- **Wiedzę postaci:**
+  - **🧪 Odkrywa sam** (domyślnie): rozbitkowie nie wiedzą nic. Badają zasoby, łączą materiały, próbują jedzenia i sami czują, co grzeje. Opis w [ai.md](ai.md#uczenie-się-od-zera-srcaiknowledgejs).
+  - **📚 Wie wszystko:** od startu znają wszystkie receptury (także te przy ogniu i przy stole), wiedzą, co jest jadalne, że morska woda nie gasi pragnienia, że ogień i dach grzeją, łóżko daje lepszy sen, a dziki atakują. Znają też mapę wszystkich wysp z zasobami (zwierzęta i ryby się ruszają, więc tych nie). Nie eksperymentują, tylko od razu zbierają materiały i budują obóz. Dalej muszą jednak wszystko zdobyć i zrobić, a ograniczają je plecak, pora dnia, wzrok i potrzeby.
 - **Ziarno świata:** ta sama liczba daje ten sam świat.
 - **Mózg postaci:** model w przeglądarce albo Claude API, opisane w [modele-jezykowe.md](modele-jezykowe.md).
 
@@ -141,11 +144,33 @@ Postać, która zna deski, może kłaść je pojedynczo. Każda deska to osobny 
 | Pauza | spacja |
 | Prędkość 1×, 2×, 4×, 8× | 1–4 |
 | Jakość grafiki (cienie) | przycisk 🎨 w górnym pasku |
+| Pomiar wydajności | P lub przycisk ⏱️ w górnym pasku |
 | Błędy do skopiowania | zakładka „⚠️ Błędy” pod czatem |
 
 ## Wiki w grze
 Przycisk „📖 Wiki” w górnym pasku (albo klawisz K) otwiera encyklopedię wysp. Jest podzielona na kategorie: crafting, budowle, materiały, jedzenie, narzędzia, świat (drzewa, skały, kopalnia, staw, morze, ryby, ptaki, dziki, mosty, składziki) i doświadczenia (np. że przy ogniu cieplej).
 
-Widać w niej wszystko, z kosztem receptur, miejscem, gdzie da się je odkryć (przy ognisku albo przy stole), wagą i sytością. Rzeczy, które odkryła choć jedna postać, mają zielony znaczek ✓ i zostają odkryte także po jej śmierci. Licznik „Odkryto X z Y” pokazuje postęp. Wiki jest tylko dla gracza: model językowy jej nie dostaje, więc postacie dalej uczą się wyłącznie na próbach.
+Widać w niej wszystko, z kosztem receptur, miejscem, gdzie da się je odkryć (przy ognisku albo przy stole), wagą i sytością. Rzeczy, które odkryła choć jedna postać, mają zielony znaczek ✓ i zostają odkryte także po jej śmierci. Licznik „Odkryto X z Y” pokazuje postęp. Wiki jest tylko dla gracza: model językowy jej nie dostaje, więc w trybie „Odkrywa sam” postacie dalej uczą się wyłącznie na próbach. W trybie „Wie wszystko” prawie wszystko ma ✓ od startu.
 
 Okienko „Postacie” i kartę postaci przesuwasz, chwytając za nagłówek.
+
+## Pomiar wydajności
+Przycisk ⏱️ w górnym pasku (albo klawisz P) otwiera okienko „⏱️ Wydajność”. Od chwili otwarcia mierzy każdą klatkę i pokazuje dla ok. 10 ostatnich sekund, ile milisekund zajęły:
+
+| Część | Co obejmuje |
+|---|---|
+| 🌍 Świat | przyroda (odrastanie, ptaki, ryby, dziki), ogniska, pogoda, mosty |
+| 🧠 AI: decyzje | wybór działania (utility AI), razem ze ścieżkami liczonymi przy wyborze |
+| 🧭 AI: szukanie drogi | ścieżki liczone poza wyborem działania |
+| 👁️ AI: wzrok i pamięć | stożek widzenia i zapamiętywanie zasobów |
+| 🚶 AI: ruch i potrzeby | reszta pętli postaci: chodzenie, zadania, potrzeby, temperatura |
+| 💬 Rozmowy i narrator | spotkania postaci, komentarze, przeliczanie brzegów |
+| 🎨 Rysowanie: przygotowanie sceny | aktualizacja modeli, etykiet, dymków, mgły i morza (procesor) |
+| 🖌️ Rysowanie: wysyłanie do karty | wywołanie rysowania three.js (procesor) |
+| 🎮 Karta graficzna | czas pracy karty; dokładny, gdy przeglądarka ma licznik czasu GPU, a bez niego przybliżony co 15. klatkę |
+| 🪟 Interfejs | panele, karty postaci, dziennik i czat |
+| ❓ Poza kodem gry | przerwa między klatkami, której gra nie zajęła: przeglądarka i składanie obrazu, sprzątanie pamięci, model językowy liczony w głównym wątku |
+
+Gra nie ma osobnego silnika fizyki: ruch zwierząt i fale morza liczą się w częściach „Świat” i „Rysowanie”.
+
+Przycięcie to klatka dłuższa niż 50 ms (poniżej 20 FPS). Każde przycięcie trafia do części, która w tej klatce trwała najdłużej, a podsumowanie podaje najczęstszą przyczynę i 5 najgorszych klatek. Gdy przycięcia są „poza kodem gry”, przełącz grafikę na „🎨 Niska”: jeśli ich ubędzie, wąskim gardłem jest karta graficzna. „📋 Kopiuj raport” kopiuje wyniki razem z nazwą karty graficznej, a „↺ Od nowa” zeruje pomiar. Zamknięte okienko niczego nie mierzy.

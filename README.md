@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.21.0 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.22.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -23,7 +23,7 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Noc i pochodnie:** w nocy postać widzi na ok. 1/4 dziennego zasięgu, z pochodnią w ręku na połowę. Pochodnię odkrywa się i zapala przy ognisku. Postać trzyma w ręku przedmiot z plecaka: pochodnię, broń albo narzędzie.
 - **Mosty:** budowane segment po segmencie (2 deski + 1 lina), od obu brzegów.
 - **AI:** decyzje oparte na użyteczności (utility AI) – w panelu postaci widać, co rozważa. Każdy agent ma charakter.
-- **Start bez wiedzy:** AI nie znają mapy, receptur ani jadalności. Z ciekawości badają nowe zasoby, eksperymentują łącząc materiały i tak odkrywają receptury; uczą się, co jest jadalne (surowe może zaszkodzić) i że morskiej wody nie da się pić.
+- **Wiedza postaci (menu):** „🧪 Odkrywa sam” albo „📚 Wie wszystko”. W pierwszym trybie AI nie znają mapy, receptur ani jadalności. Z ciekawości badają nowe zasoby, eksperymentują łącząc materiały i tak odkrywają receptury; uczą się, co jest jadalne (surowe może zaszkodzić) i że morskiej wody nie da się pić. W drugim znają wszystko od startu (receptury, jedzenie, mapę, zjawiska) i od razu zbierają oraz budują.
 - **Percepcja i pamięć:** stożek widzenia (im dalej, tym węższy), pamięć tego, co widział; trzeba się rozejrzeć, by odświeżyć wiedzę. Tryb „👁️ Oczami AI” pokazuje stożek i mgłę niewiedzy.
 - **Rozmowy:** agenci spotykają się, wymieniają wiedzą o mapie, recepturami, doświadczeniem (umiejętności rosną z praktyką) i przedmiotami.
 - **Komentarze na żywo:** gdy model działa, postacie mówią jego słowami (🤖), a nad myślącą postacią widać „💭 …”. Gdy model się ładuje albo nie działa, mówi za nie skrypt (dymek kursywą, 📜). Narrator komentuje sytuację.
@@ -32,10 +32,11 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Grafika:** zasoby rysowane przez instancjonowanie, przełącznik jakości 🎨 (cienie, rozdzielczość) i licznik FPS w górnym pasku.
 - **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli; „📋 Kopiuj wszystko” kopiuje je z wersją gry i nazwą karty graficznej.
 - **Wiki w grze (📖, klawisz K):** receptury, budowle, materiały, jedzenie, narzędzia, obiekty świata i doświadczenia w kategoriach. Widać wszystko, a to, co odkryła któraś postać, ma znaczek ✓. Postacie wiki nie widzą.
+- **Pomiar wydajności (⏱️, klawisz P):** ile czasu klatki zajmuje świat, AI, rysowanie (procesor i karta graficzna) i interfejs, liczba przycięć i ich najczęstsza przyczyna, raport do skopiowania.
 - **Okienka:** „Postacie” (klik przenosi kamerę do postaci) i karta postaci dają się przesuwać za nagłówek.
 
 ## Sterowanie
-Lewy przycisk – obrót, prawy – przesuwanie, kółko – zoom, WASD/strzałki – ruch kamery. Klik na postać (na mapie lub w okienku „Postacie”) – przelot i śledzenie (F wyłącza), Tab / Shift+Tab – następna / poprzednia postać, V – oczami AI, K – wiki, spacja – pauza, 1–4 – prędkość, 🎨 – jakość grafiki.
+Lewy przycisk – obrót, prawy – przesuwanie, kółko – zoom, WASD/strzałki – ruch kamery. Klik na postać (na mapie lub w okienku „Postacie”) – przelot i śledzenie (F wyłącza), Tab / Shift+Tab – następna / poprzednia postać, V – oczami AI, K – wiki, P – pomiar wydajności, spacja – pauza, 1–4 – prędkość, 🎨 – jakość grafiki.
 
 ## Struktura projektu
 ```
@@ -74,7 +75,7 @@ src/
     models.js         modele low-poly
     terrain.js        teren, morze, mgła niewiedzy
     instances.js      instancjonowanie zasobów (mniej wywołań rysowania)
-  ui/                 menu, panele, sterowanie, czat, ustawienia modeli (llmPanel.js), błędy (errors.js)
+  ui/                 menu, panele, sterowanie, czat, ustawienia modeli (llmPanel.js), błędy (errors.js), pomiar wydajności (perf.js)
 ```
 
 ## Uruchomienie lokalne

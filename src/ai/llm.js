@@ -1,7 +1,7 @@
 // Opcjonalny „mózg” postaci z modelem językowym:
 //  - Claude API (klucz wpisuje gracz; zostaje tylko w localStorage tej przeglądarki, nigdy w repo),
 //  - darmowy model z Hugging Face uruchamiany w przeglądarce (WebLLM + WebGPU).
-import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES } from './data.js';
+import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES, WORLD_FACTS } from './data.js';
 import { FREE_SYSTEM, describeFree } from './intent.js';
 import { reportError } from '../ui/errors.js';
 import { parseBuildOps } from './building.js';
@@ -303,6 +303,7 @@ function describe(a, labels, decide) {
     + (w.daylight() < 0.35 ? `Jest ciemno: widzisz na ok. ${Math.round(a.viewR || 18)} kroków${a.torchLit && a.torchLit() ? ' (trzymasz płonącą pochodnię)' : ''}.\n` : '')
     + `Samopoczucie ${Math.round(a.mood)}/100. Plecak: ${a.invTotal()} rzeczy, ${a.invWeight().toFixed(1)} z 25 kg.\n`
     + `Ekwipunek: ${inv}. Narzędzia: ${tools}. Znane receptury: ${recipes}. Jadalne: ${edible}.\n`
+    + (a.omniscient ? WORLD_FACTS + '\n' : '')
     + `Pozostali: ${others}.\n`
     + ([...a.memBoars.values()].some((m) => !m.b.dead && w.time - m.t < 30 && Math.hypot(m.i - a.i, m.j - a.j) < 12) ? `W pobliżu kręci się dzik${a.known.has('boarDanger') ? ' (wiesz, że atakuje)' : ''}.\n` : '');
   if (a.notes && a.notes.length) s += `Co się ostatnio działo w twojej głowie i wokół (opisz to własnymi słowami, nie cytuj): ${a.notes.join(' | ')}\n`;

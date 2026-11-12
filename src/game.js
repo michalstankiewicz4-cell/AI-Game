@@ -1,4 +1,5 @@
 // Tworzenie nowej gry i krok symulacji (bez DOM).
+import { timed } from './ui/perf.js';
 import { World, idx } from './world/world.js';
 import { Agent, computeShores } from './ai/agent.js';
 import { PERSONAS } from './ai/data.js';
@@ -20,7 +21,9 @@ export function createGame(cfg) {
   }
   for (let n = 0; n < cfg.agents; n++) {
     const s = spots[n * 2 % spots.length];
-    world.agents.push(new Agent(world, PERSONAS[n], s.i, s.j, n));
+    const a = new Agent(world, PERSONAS[n], s.i, s.j, n);
+    if (cfg.knowledge === 'all') a.knowAll();
+    world.agents.push(a);
   }
   return { world, agents: world.agents, narrator: new Narrator(world), social: new Social(world) };
 }
@@ -28,9 +31,11 @@ export function createGame(cfg) {
 // jeden krok symulacji; narrate(text) dostaje komentarze narratora
 export function stepGame(game, narrate) {
   const w = game.world;
-  w.update(STEP);
-  for (const a of game.agents) { const wasAlive = a.alive; a.update(STEP); if (wasAlive && !a.alive) a.diedAt = w.time; }
-  game.social.update(STEP);
-  if (w.shoresDirty) { w.shoresDirty = false; computeShores(w); }
-  game.narrator.update(STEP, narrate);
+  timed('world', () => w.update(STEP));
+  timed('agents', () => { for (const a of game.agents) { const wasAlive = a.alive; a.update(STEP); if (wasAlive && !a.alive) a.diedAt = w.time; } });
+  timed('social', () => {
+    game.social.update(STEP);
+    if (w.shoresDirty) { w.shoresDirty = false; computeShores(w); }
+    game.narrator.update(STEP, narrate);
+  });
 }

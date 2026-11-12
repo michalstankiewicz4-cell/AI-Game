@@ -1,6 +1,6 @@
 // Tryb „pełna swoboda”: model dostaje tylko to, co postać widzi i czuje,
 // sam wymyśla zamiar, a gra tłumaczy go na jedno z dostępnych teraz działań.
-import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES } from './data.js';
+import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES, WORLD_FACTS, recipeList } from './data.js';
 import { idx } from '../world/world.js';
 
 // słowa kluczowe (bez polskich znaków) dla każdego działania; wygrywa działanie z największą liczbą trafień
@@ -134,7 +134,8 @@ export function describeFree(a) {
   const inv = Object.entries(a.inv).filter(([, v]) => v > 0).map(([k, v]) => `${ITEM_LABELS[k].replace(/^[^\p{L}]+/u, '').toLowerCase()} ×${v}`);
   lines.push(`Masz przy sobie: ${[...Object.entries(a.tools).filter(([, v]) => v).map(([k]) => TOOL_LABELS[k].replace(/^[^\p{L}]+/u, '').toLowerCase()), ...inv].join(', ') || 'nic'}.`);
   const recipes = [...a.known].filter((r) => RECIPE_NAMES[r]).map((r) => RECIPE_NAMES[r]);
-  if (recipes.length) lines.push(`Umiesz zrobić: ${recipes.join(', ')}.`);
+  if (a.omniscient) lines.push(WORLD_FACTS, `Umiesz zrobić: ${recipeList()}.`);
+  else if (recipes.length) lines.push(`Umiesz zrobić: ${recipes.join(', ')}.`);
   const edible = [...a.edible].filter(([, v]) => v).map(([k]) => FOOD[k].name);
   if (edible.length) lines.push(`Wiesz, że da się jeść: ${edible.join(', ')}.`);
   if (a.task) lines.push(`Teraz: ${a.task.label.replace(/^[^\p{L}]+/u, '').toLowerCase()}.`);

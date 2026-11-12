@@ -46,6 +46,9 @@ W odpowiedzi może dodać pole `"deska"` z listą do 4 poleceń:
 
 Nazwy zmieniają się od razu, a resztę postać wykonuje po kolei jako zadanie „🪵 Budować z desek”. Opis nie mówi, do czego służy dach ani ściany: to postać ma odkryć sama.
 
+## Tryb wiedzy
+W trybie „🧪 Odkrywa sam” model nie dostaje żadnych podpowiedzi o świecie: tylko to, co postać sama odkryła (znane receptury, jadalne jedzenie, doświadczenia). W trybie „📚 Wie wszystko” do opisu sytuacji dochodzi zdanie z faktami (`WORLD_FACTS` w `data.js`): przy ognisku i pod dachem jest cieplej, w łóżku lepiej się śpi, morska woda nie gasi pragnienia, surowe mięso i ryba mogą zaszkodzić, dziki atakują, pochodnię zapala się od ogniska. W pełnej swobodzie model dostaje też wszystkie receptury ze składnikami i miejscem (przy ogniu, przy stole).
+
 ## Pełna swoboda (przełącznik w menu)
 Model nie dostaje listy działań ani notatek ze skryptu, tylko to, co postać:
 - **czuje:** potrzeby opisane słowami, np. „bardzo chce ci się pić”,
@@ -76,6 +79,7 @@ VRAM to wartości z WebLLM dla okna 4096 tokenów, a gra używa mniejszego (1536
 
 - **Tryb myślenia** (Qwen3.5, przełącznik pod listą modeli, domyślnie wyłączony): model najpierw rozważa sytuację (`extra_body.enable_thinking`), a potem odpowiada. Dostaje wtedy 768 tokenów więcej i bez wymuszonego JSON-a, a tok myślenia (`<think>…</think>`) jest wycinany przed czytaniem odpowiedzi. Gdy przełącznik jest wyłączony, myślenie jest wyłączone jawnie.
 - **LM Studio:** w menu jest już wyszarzony przycisk „LM Studio (wkrótce)”. Model liczyłby się wtedy w programie na komputerze, np. na mocniejszej karcie, a gra rysowałaby się na drugiej.
+- **Bielik (polski model):** WebLLM 0.2.86 nie ma jego wersji, więc gra nie może go pobrać do przeglądarki. Bielik jest dostępny jako GGUF, więc pójdzie przez LM Studio, gdy ten przycisk zacznie działać.
 
 - **Laptop z dwiema kartami:** Chrome bywa przypięty do słabszej karty zintegrowanej, a WebLLM nie może tego zmienić na Windows. Wejdź w Ustawienia › System › Ekran › Grafika i ustaw Chrome na „Wysoka wydajność” (np. NVIDIA RTX).
 - **Wymagania:** Chrome lub Edge na komputerze z WebGPU. Bez WebGPU gra pokazuje komunikat, a postacie działają na samym kodzie gry i mówi za nie skrypt (📜).

@@ -27,12 +27,30 @@ Zadania (`src/ai/tasks.js`) to małe automaty: dojdź ścieżką, wykonaj czynno
 Widok „👁️ Oczami AI” pokazuje stożek, a to, czego postać nie zna, przykrywa mgłą.
 
 ## Uczenie się od zera (`src/ai/knowledge.js`)
+Ta sekcja opisuje tryb „🧪 Odkrywa sam”. Tryb „📚 Wie wszystko” opisuje następna sekcja.
+
 Na starcie postać nie zna mapy, receptur ani jadalności.
 - **Ciekawość:** nowe rodzaje zasobów warto zbadać, co daje opcję „🔎 Zbadać…”.
 - **Eksperymenty:** postać łączy posiadane materiały. Trafiona kombinacja (`RECIPE_BY_COMBO`) oznacza odkrycie receptury, a każda próba jest zapamiętywana.
 - **Jedzenie:** pierwsze zjedzenie czegoś to próba. Surowe mięso może zaszkodzić, wtedy postać zapamiętuje, że to niejadalne.
 - **Woda:** spróbowanie wody morskiej uczy, że jest słona.
 - **Umiejętności:** łowienie, polowanie, ścinanie i górnictwo rosną z praktyką.
+
+## Tryb „Wie wszystko”
+Gdy w menu wybrano „📚 Wie wszystko”, `createGame` wywołuje dla każdej postaci `knowAll()` (`src/ai/knowledge.js`):
+- `known` dostaje wszystkie receptury oraz doświadczenia `cook`, `bridge`, `warmFire`, `warmRoof`, `bedRest` i `boarDanger`,
+- `edible` oznacza całe jedzenie jako jadalne, `triedKinds` wszystkie rodzaje zasobów, a `saltKnown` i `drankPond` są ustawione,
+- `seen`, `mem` i `knownStructs` obejmują całą mapę z zasobami i budowlami ze startu,
+- `buildPref` zaczyna z wiedzą, że ściany wokół i przykrycie nad głową chronią przed wiatrem,
+- `omniscient = true` wyłącza eksperymenty w `decide()`.
+
+Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie także `recipeList()` (receptury ze składnikami i miejscem). W trybie odkrywania żadne z nich do modelu nie trafia.
+
+## Plecak i zapasy
+- `want` w `decide()` to lista materiałów potrzebnych do najbliższych celów. Materiały na rzeczy ze stołu albo z ognia (łóżko, ubranie, tarcza, pochodnia) trafiają na nią dopiero, gdy stół albo ogień już stoją.
+- Ze składziku postać bierze najwyżej po 4 deski i kamienie (`keep`) i zostawia co najmniej jedno wolne miejsce w plecaku, żeby po zebraniu nie musieć od razu czegoś odkładać.
+- Gdy plecak jest pełny, a czegoś do celów brakuje, postać odkłada zbędne rzeczy (zapas desek i kamieni ponad 4 też).
+- `dropSurplus()`: przy limicie sztuk odkłada połowę tego, czego ma najwięcej, przy limicie wagi połowę tego, co najcięższe.
 
 ## Rozmowy (`src/ai/social.js`)
 Postacie, które spotkają się bliżej niż 2,6 kafelka, mogą porozmawiać. Ta sama para rozmawia najwyżej raz na 70 s. W rozmowie:

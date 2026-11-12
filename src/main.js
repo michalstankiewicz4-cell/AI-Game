@@ -11,10 +11,11 @@ import { VERSION } from './version.js';
 import { initErrors } from './ui/errors.js';
 import { initWiki, toggleWiki, wikiOpen, scanDiscoveries } from './ui/wiki.js';
 import { initLlmMenu, updateTokens, makeDraggable, prepareLlm } from './ui/llmPanel.js';
+import { initPerf, togglePerf, timed, frameStart, frameEnd } from './ui/perf.js';
 
 const state = {
   world: null, agents: [], narrator: null, social: null, speed: 1, paused: false, selected: null,
-  opts: { labels: true, bubbles: true, follow: false, aiView: false }, cfg: { agents: 1, islands: 1, seed: 0 }, acc: 0, over: false,
+  opts: { labels: true, bubbles: true, follow: false, aiView: false }, cfg: { agents: 1, islands: 1, seed: 0, knowledge: 'learn' }, acc: 0, over: false,
 };
 const renderer = new Renderer($('app'));
 let quality = 'high';
@@ -60,7 +61,9 @@ initLlmMenu();
 makeDraggable($('detail'), '.dhead');
 makeDraggable($('agentsWin'), '.win-h');
 $('agentsMin').onclick = (e) => { const w = $('agentsWin'); w.classList.toggle('min'); e.target.textContent = w.classList.contains('min') ? '+' : '–'; };
-const panCamera = initControls(state, renderer, { select, setSpeed, updatePause, toggleAiView, toggleWiki, wikiOpen });
+const panCamera = initControls(state, renderer, { select, setSpeed, updatePause, toggleAiView, toggleWiki, wikiOpen, togglePerf });
+initPerf(renderer);
+makeDraggable($('perf'), '.win-h');
 initWiki(() => state.world);
 $('menuBtn').onclick = () => { toggleWiki(false); state.paused = true; updatePause(); showMenu(); };
 $('goRestart').onclick = () => { $('gameover').classList.add('hidden'); rndSeed(); showMenu(); };
@@ -98,7 +101,7 @@ function buildGame() {
   $('detail').classList.add('hidden');
   state.paused = false; updatePause();
   const n = state.cfg.agents;
-  feed('chat', `🎙️ Witamy na Wyspach AI! ${n === 1 ? 'Jeden rozbitek' : n + ' rozbitków'} budzi się na plaży. Mają tylko siekierę i kilof, i nie wiedzą nic o tym świecie. Wszystkiego muszą się nauczyć. Zobaczmy, jak sobie poradzą...`, 'narr');
+  feed('chat', `🎙️ Witamy na Wyspach AI! ${n === 1 ? 'Jeden rozbitek' : n + ' rozbitków'} budzi się na plaży. Mają tylko siekierę i kilof${state.cfg.knowledge === 'all' ? ', ale znają ten świat na wylot. Zobaczmy, jak szybko urządzą obóz...' : ' i nie wiedzą nic o tym świecie. Wszystkiego muszą się nauczyć. Zobaczmy, jak sobie poradzą...'}`, 'narr');
   feed('chat', '🤖 Postacie mówią przez model językowy (🤖). Dopóki model się ładuje albo nie działa, mówi za nie skrypt (📜). Narrator to skrypt gry.', 'narr');
   world.agents.forEach((a, k) => setTimeout(() => a.speak(['Gdzie ja jestem?!', 'Dobra, nie panikujemy. Najpierw rozejrzę się.', 'Wyspa... nic tu nie znam.', 'Mam siekierę i kilof. Coś wymyślę.'][k % 4], true), 600 + k * 900));
 }
@@ -106,29 +109,34 @@ function buildGame() {
 // ---------- pętla ----------
 let last = performance.now(), hudT = 0, fps = 60;
 function loop(now) {
-  const rdt = Math.min(0.1, (now - last) / 1000);
+  const interval = now - last;
+  const rdt = Math.min(0.1, interval / 1000);
+  frameStart();
+  let steps = 0;
   if (now > last) fps = fps * 0.95 + (1000 / (now - last)) * 0.05;
   last = now;
   const w = state.world;
   if (w) {
     if (!state.paused && !state.over) {
       state.acc += rdt * state.speed;
-      let steps = 0;
       while (state.acc >= STEP && steps < 100) {
         state.acc -= STEP; steps++;
         stepGame(state, (t) => feed('chat', esc(t), 'narr'));
       }
-      for (const e of w.events) feed('log', e.text, e.kind);
-      // ważne zdarzenia także w komentarzach
-      for (const e of w.events) if (e.kind === 'big' || e.kind === 'death' || e.kind === 'learn') feed('chat', '📜 ' + e.text, e.kind); // zdarzenia gry (nie wypowiedzi)
+      timed('ui', () => {
+        for (const e of w.events) feed('log', e.text, e.kind);
+        // ważne zdarzenia także w komentarzach
+        for (const e of w.events) if (e.kind === 'big' || e.kind === 'death' || e.kind === 'learn') feed('chat', '📜 ' + e.text, e.kind); // zdarzenia gry (nie wypowiedzi)
+      });
       w.events.length = 0;
       if (state.agents.every((a) => !a.alive)) gameOver();
     }
     panCamera(rdt);
-    renderer.frame(w, state.agents, state.selected, now / 1000, state.opts);
+    timed('render', () => renderer.frame(w, state.agents, state.selected, now / 1000, state.opts));
     if (firstFrame) { firstFrame(); firstFrame = null; }
     hudT -= rdt;
-    if (hudT <= 0) { hudT = 0.25; updateHud(state); updateTokens(); scanDiscoveries(w); $('fpsLbl').textContent = Math.round(fps) + ' FPS'; }
+    if (hudT <= 0) timed('ui', () => { hudT = 0.25; updateHud(state); updateTokens(); scanDiscoveries(w); $('fpsLbl').textContent = Math.round(fps) + ' FPS'; });
+    frameEnd(interval, steps);
   }
   requestAnimationFrame(loop);
 }

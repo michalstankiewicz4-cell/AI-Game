@@ -3,6 +3,16 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.22.0] - 2026-11-12
+### Dodane
+- Dwa tryby wiedzy w menu („Wiedza postaci”): **🧪 Odkrywa sam** (jak dotąd: postacie zaczynają bez wiedzy i uczą się metodą prób) oraz **📚 Wie wszystko**. W drugim trybie postacie od startu znają wszystkie receptury, jedzenie, mapę świata z zasobami i to, co grzeje, chroni i szkodzi, więc nie eksperymentują, tylko od razu zbierają i budują.
+- W trybie „Wie wszystko” model językowy dostaje fakty o świecie (ciepło przy ogniu i pod dachem, łóżko, słona woda, surowe jedzenie, dziki, pochodnia), a w pełnej swobodzie także receptury ze składnikami. W trybie odkrywania nadal nic mu się nie podpowiada.
+- Pomiar wydajności (przycisk ⏱️ albo klawisz P): okienko pokazuje, ile średnio i najwyżej zajmuje w klatce świat, AI (decyzje, szukanie drogi, wzrok, ruch), rysowanie po stronie procesora, karta graficzna, interfejs i to, co dzieje się poza kodem gry. Liczy przycięcia (klatki dłuższe niż 50 ms) i przypisuje każde najdłużej trwającej części. „📋 Kopiuj raport” kopiuje wyniki z nazwą karty graficznej.
+### Poprawione
+- Postacie nie wpadają w pętlę „weź z zapasów, odłóż zapasy”: ze składziku biorą najwyżej po 4 deski i kamienie, zostawiają w plecaku wolne miejsce, a przy pełnym plecaku odkładają zbędne rzeczy, żeby zebrać to, czego brakuje. Przy limicie sztuk odkładają to, czego mają najwięcej, a przy limicie wagi to, co najcięższe.
+- Bez ogniska zbieranie kamieni ma pierwszeństwo. Łóżko, ubranie i tarczę postać robi tylko przy stole rzemieślniczym, a materiały na nie (i na pochodnię) zbiera dopiero, gdy stół albo ogień już stoją. Stół i łóżko mają wyższy priorytet.
+- Postać z obozem (ogień i dach) chętniej majsterkuje z desek.
+
 ## [0.21.0] - 2026-11-12
 ### Dodane
 - Noc ogranicza wzrok: postać widzi na ok. 1/4 dziennego zasięgu, a z płonącą pochodnią w ręku albo przy ognisku na połowę. Stożek w widoku „Oczami AI” kurczy się razem z zasięgiem.
@@ -178,6 +188,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.22.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.0
 [0.21.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.21.0
 [0.20.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.20.0
 [0.19.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.19.0

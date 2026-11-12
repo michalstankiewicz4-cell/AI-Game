@@ -235,7 +235,7 @@ export const tasksMethods = {
         if (t.elapsed < 1.5) return null;
         const s = st.s; let got = 0;
         for (const k in want) {
-          while (this.inv[k] < want[k] && s.items[k] > 0 && this.roomFor(1, WEIGHT[k])) { s.items[k]--; this.inv[k]++; got++; }
+          while (this.inv[k] < want[k] && s.items[k] > 0 && this.roomFor(2, WEIGHT[k] + 1)) { s.items[k]--; this.inv[k]++; got++; }
         }
         return got ? 'done' : 'fail';
       },

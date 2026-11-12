@@ -53,6 +53,11 @@ export const comboKey = (types) => [...types].sort().join('+');
 // zestawy materiałów, które przy ogniu dają coś innego niż bez ognia
 export const FIRE_COMBOS = new Set([...FIRE_RECIPES].map((r) => comboKey(Object.keys(RECIPES[r]))));
 export const TORCH = { burn: 70, light: 0.5, night: 0.25 }; // pochodnia: s palenia; zasięg wzroku w nocy z pochodnią i bez (część dziennego)
+// tryb „wie wszystko”: fakty, które w trybie odkrywania postać musi sama sprawdzić
+export const WORLD_FACTS = 'Znasz ten świat: przy ognisku i pod dachem (szałas, namiot, deski nad głową i ściany wokół) jest cieplej, w łóżku lepiej się śpi, '
+  + 'morska woda nie gasi pragnienia (pij ze stawu), surowe mięso i ryba mogą zaszkodzić (lepiej upiec), dziki atakują (miecz, włócznia, tarcza pomagają), '
+  + 'pochodnię zapala się od ogniska, a w nocy z nią widać dalej.';
+export const recipeList = () => Object.entries(RECIPES).map(([r, c]) => `${RECIPE_NAMES[r]} (${Object.entries(c).map(([k, n]) => `${MAT_NAMES[k]} ×${n}`).join(' + ')}${FIRE_RECIPES.has(r) ? ', przy ogniu' : BENCH_RECIPES.has(r) ? ', przy stole' : ''})`).join('; ');
 export const RECIPE_BY_COMBO = new Map(Object.entries(RECIPES).map(([k, r]) => [comboKey(Object.keys(r)), k]));
 export const KIND_NAMES = { tree: 'drzewo', palm: 'palmę', rock: 'skałę', bush: 'krzak', seaweed: 'wodorosty', mine: 'kopalnię' };
 

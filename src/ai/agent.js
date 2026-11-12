@@ -72,7 +72,10 @@ export class Agent {
   // za ciężko albo za dużo: odłóż połowę najcięższego materiału na kupkę (składzik) w miejscu, gdzie stoi
   dropSurplus() {
     let best = null;
-    for (const k of MATS) if (this.inv[k] > 0 && (!best || this.inv[k] * WEIGHT[k] > this.inv[best] * WEIGHT[best])) best = k;
+    // za dużo rzeczy: odłóż tego, czego ma najwięcej sztuk; za ciężko: tego, co najwięcej waży
+    const byCount = this.invTotal() >= INV_CAP;
+    const val = (k) => (byCount ? this.inv[k] : this.inv[k] * WEIGHT[k]);
+    for (const k of MATS) if (this.inv[k] > 0 && (!best || val(k) > val(best))) best = k;
     if (!best) return;
     const n = Math.max(1, Math.floor(this.inv[best] / 2));
     this.inv[best] -= n;

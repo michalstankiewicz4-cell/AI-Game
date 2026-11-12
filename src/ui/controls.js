@@ -25,6 +25,7 @@ export function initControls(state, renderer, api) {
     }
     if (e.key.toLowerCase() === 'v') api.toggleAiView();
     if (e.key.toLowerCase() === 'k') api.toggleWiki();
+    if (e.key.toLowerCase() === 'p') api.togglePerf();
     if (e.key === 'Escape') { if (api.wikiOpen()) api.toggleWiki(false); else api.select(null); }
   });
   window.addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
