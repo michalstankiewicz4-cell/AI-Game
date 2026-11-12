@@ -13,7 +13,7 @@ export const knowledgeMethods = {
     const w = this.world;
     this.omniscient = true;
     for (const r of Object.keys(RECIPES)) this.known.add(r);
-    for (const k of ['cook', 'bridge', 'warmFire', 'warmRoof', 'bedRest', 'boarDanger', 'seeds', 'farm']) this.known.add(k);
+    for (const k of ['cook', 'bridge', 'warmFire', 'warmRoof', 'bedRest', 'boarDanger', 'seeds', 'farm', 'watering', 'clay']) this.known.add(k);
     for (const k of Object.keys(FOOD)) this.edible.set(k, true);
     for (const k of Object.keys(KIND_NAMES)) this.triedKinds.add(k);
     this.saltKnown = true;
@@ -25,7 +25,7 @@ export const knowledgeMethods = {
       if (!this.seen[k]) { this.seen[k] = 1; this.seenCount++; }
       const r = w.res[k];
       if (r) {
-        this.mem.set(r.id, { r, kind: r.kind, i: r.i, j: r.j, berries: r.berries, growth: r.growth, amount: r.amount, stone: r.stone, stand: r.stand, t: w.time });
+        this.mem.set(r.id, { r, kind: r.kind, i: r.i, j: r.j, berries: r.berries, growth: r.growth, amount: r.amount, stone: r.stone, ears: r.ears, flowers: r.flowers, stand: r.stand, t: w.time });
         this.memByTile.set(k, r.id);
       }
     }
@@ -73,7 +73,7 @@ export const knowledgeMethods = {
           return 'done';
         }
         if (FIRE_RECIPES.has(r) && !this.nearStructure('campfire', 3)) {
-          this.speak({ ironTool: 'Ruda i gałąź... może w ogniu by się dało to wykuć?', sword: 'Ruda i deska... w ogniu dałoby się to wykuć?', torch: 'Gałąź owinięta liśćmi... gdyby ją tak podpalić?' }[r] || 'Kamienie i patyki... coś by z tego było nad ogniem.', true);
+          this.speak({ ironTool: 'Ruda i gałąź... może w ogniu by się dało to wykuć?', sword: 'Ruda i deska... w ogniu dałoby się to wykuć?', torch: 'Gałąź owinięta liśćmi... gdyby ją tak podpalić?', pot: 'Ulepiłem(am) z gliny naczynie, ale się rozłazi. Może w ogniu by stwardniało?' }[r] || 'Kamienie i patyki... coś by z tego było nad ogniem.', true);
           return 'done';
         }
         if (BENCH_RECIPES.has(r) && !this.nearStructure('workbench', 3)) {
@@ -89,11 +89,12 @@ export const knowledgeMethods = {
         // od razu zrób, jeśli starcza materiałów (narzędzia i półprodukty)
         const cost = RECIPES[r];
         const enough = Object.keys(cost).every((k) => this.inv[k] >= cost[k]);
-        if (enough && ['planks', 'rope', 'rod', 'spear', 'knife', 'hoe', 'bow', 'bowl', 'arrows'].includes(r)) {
+        if (enough && ['planks', 'rope', 'rod', 'spear', 'knife', 'hoe', 'bow', 'bowl', 'arrows', 'pot'].includes(r)) {
           for (const k in cost) this.inv[k] -= cost[k];
           if (r === 'planks') this.inv.planks += 2;
           else if (r === 'rope') this.inv.rope += 1;
           else if (r === 'bowl') this.inv.bowl += 1;
+          else if (r === 'pot') this.inv.pot += 1;
           else if (r === 'arrows') this.inv.arrows += 4;
           else this.tools[r] = true;
         }
@@ -119,6 +120,8 @@ export const knowledgeMethods = {
     if (m.kind === 'tree' || m.kind === 'palm') task = this.taskChop(r);
     else if (m.kind === 'rock') task = this.taskStone(r);
     else if (m.kind === 'bush') task = this.taskBerries(r);
+    else if (m.kind === 'rye') task = this.taskRye(r);
+    else if (m.kind === 'flower') task = this.taskFlowers(r);
     else if (m.kind === 'seaweed') task = this.taskSeaweed({ r, d: 0 });
     else if (m.kind === 'mine') task = this.taskMine();
     if (!task) return null;
@@ -126,7 +129,7 @@ export const knowledgeMethods = {
     task.onEnd = (res) => {
       if (res !== 'done' || this.triedKinds.has(m.kind)) return;
       this.triedKinds.add(m.kind);
-      const got = { tree: 'kłody i gałęzie', palm: 'kłodę i gałąź', rock: 'kamienie', bush: 'jagody (jadalne?)', seaweed: 'wodorosty', mine: 'kamień i może rudę' }[m.kind];
+      const got = { tree: 'kłody i gałęzie', palm: 'kłodę i gałąź', rock: 'kamienie', bush: 'jagody (jadalne?)', rye: 'ziarno z kłosów', flower: 'kwiaty i trochę nasion', seaweed: 'wodorosty', mine: 'kamień i może rudę' }[m.kind];
       this.say(`bada ${KIND_NAMES[m.kind]} i zdobywa: ${got} 🔎`, 'learn');
       if (m.kind === 'tree' || m.kind === 'palm') this.triedKinds.add(m.kind === 'tree' ? 'palm' : 'tree');
     };

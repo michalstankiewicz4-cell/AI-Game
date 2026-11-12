@@ -12,6 +12,8 @@ export const modelsMethods = {
       skin: M(0xf0c8a0), dark: M(0x222222), stone: M(0x777777), flame: new THREE.MeshBasicMaterial({ color: 0xffa030 }),
       fish: M(0xff8a3d), bird: M(0xf4f4f4), birdWing: M(0xdadada), beak: M(0xf0a020), ghost: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.18 }),
       dead: M(0x777777), weed: M(0x2f6b2a), thatch: M(0xc9a35a), iron: M(0xb0603a),
+      rye: M(0xc9a948), ryeGreen: M(0x7fa046), stem: M(0x4f8a3a), clay: M(0xb5623a),
+      petals: [M(0xf2d230), M(0xe0566e), M(0xf4f0ff)], petalMid: M(0xf0a020),
     };
     this.geo = {
       trunk: new THREE.CylinderGeometry(0.09, 0.14, 1, 6), cone: new THREE.ConeGeometry(0.55, 1, 7), round: new THREE.IcosahedronGeometry(0.5, 0),
@@ -19,6 +21,8 @@ export const modelsMethods = {
       berry: new THREE.IcosahedronGeometry(0.06, 0), plank: new THREE.BoxGeometry(1.02, 0.08, 1.15), post: new THREE.CylinderGeometry(0.05, 0.05, 1.2, 5),
       fish: new THREE.ConeGeometry(0.09, 0.35, 5), birdBody: new THREE.IcosahedronGeometry(0.13, 0), wing: new THREE.BoxGeometry(0.32, 0.02, 0.13),
       palmLeaf: new THREE.ConeGeometry(0.16, 0.9, 4), weed: new THREE.ConeGeometry(0.06, 0.7, 4), ghost: new THREE.BoxGeometry(0.9, 0.04, 0.9),
+      stalk: new THREE.CylinderGeometry(0.012, 0.016, 0.6, 4), ear: new THREE.ConeGeometry(0.035, 0.16, 5), petal: new THREE.IcosahedronGeometry(0.07, 0),
+      flowerMid: new THREE.IcosahedronGeometry(0.035, 0), stem: new THREE.CylinderGeometry(0.01, 0.012, 0.3, 4),
     };
   },
 
@@ -68,6 +72,23 @@ export const modelsMethods = {
         const a = k * 1.7;
         add(G.berry, m.berry, Math.cos(a) * 0.32, 0.3 + (k % 2) * 0.12, Math.sin(a) * 0.32).name = 'berry' + k;
       }
+    } else if (r.kind === 'rye') {
+      // kępa żyta: źdźbła i kłosy (znikają, gdy postać je zbierze)
+      for (let k = 0; k < 9; k++) {
+        const a = k * 2.4, rr = 0.08 + (k % 3) * 0.1, h = 0.85 + (k % 4) * 0.07;
+        const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
+        add(G.stalk, m.rye, x, 0.3 * h, z, 1, h, 1);
+        add(G.ear, m.rye, x, 0.62 * h, z).name = 'ear' + (k % 3) + '_' + k;
+      }
+    } else if (r.kind === 'flower') {
+      // kwiaty na łodyżkach w jednym z trzech kolorów
+      const pm = m.petals[(r.hue || 0) % 3];
+      for (let k = 0; k < 5; k++) {
+        const a = k * 1.9, rr = k ? 0.16 : 0, x = Math.cos(a) * rr, z = Math.sin(a) * rr, h = 0.8 + (k % 3) * 0.2;
+        add(G.stem, m.stem, x, 0.15 * h, z, 1, h, 1);
+        const p = add(G.petal, pm, x, 0.3 * h, z, 1, 0.45, 1); p.name = 'fl' + (k % 2) + '_' + k;
+        add(G.flowerMid, m.petalMid, x, 0.3 * h + 0.03, z).name = 'fm' + (k % 2) + '_' + k;
+      }
     } else if (r.kind === 'seaweed') {
       for (let k = 0; k < 5; k++) {
         const a = k * 1.3;
@@ -106,6 +127,10 @@ export const modelsMethods = {
       g.getObjectByName('stump').visible = !grown && r.growth < 0.5;
     } else if (r.kind === 'bush') {
       for (let k = 0; k < 4; k++) g.getObjectByName('berry' + k).visible = k < r.berries;
+    } else if (r.kind === 'rye' || r.kind === 'flower') {
+      // ile kłosów albo kwiatów zostało: każda część modelu należy do jednej „sztuki”
+      const left = r.kind === 'rye' ? r.ears : r.flowers;
+      for (const o of g.children) if (o.name && /^(ear|fl|fm)\d/.test(o.name)) o.visible = Number(o.name.match(/\d/)[0]) < left;
     } else if (r.kind === 'seaweed') {
       for (let k = 0; k < 5; k++) g.getObjectByName('weed' + k).visible = k < 2 + r.amount;
     } else if (r.kind === 'rock') {
@@ -156,19 +181,23 @@ export const modelsMethods = {
       const lid = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.08, 0.46), m.trunk); lid.position.y = 0.38; lid.castShadow = true; g.add(lid);
       for (const sx of [-0.22, 0.22]) { const band = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.36, 0.44), m.post); band.position.set(sx, 0.19, 0); g.add(band); }
     } else if (s.kind === 'field') {
-      // grządka: spulchniona ziemia w bruzdach, na niej sadzonka, która rośnie, i jagody, gdy dojrzeje
+      // grządka: spulchniona ziemia w bruzdach, na niej sadzonka, która rośnie, i plon, gdy dojrzeje
       const soil = this.mat.soil || (this.mat.soil = new THREE.MeshStandardMaterial({ color: 0x6b4a2b, roughness: 1, flatShading: true }));
       const bed = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.06, 0.92), soil); bed.position.y = 0.02; bed.receiveShadow = true; g.add(bed);
       for (const z of [-0.28, 0, 0.28]) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.05, 0.1), soil); r.position.set(0, 0.07, z); g.add(r); }
-      const plant = new THREE.Group(); plant.name = 'plant';
-      for (const [px, pz] of [[-0.25, -0.28], [0.2, 0], [-0.1, 0.28], [0.3, 0.28], [-0.3, 0]]) {
-        const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.14, 0), m.leaf || m.weed); b.position.set(px, 0.17, pz); b.castShadow = true; plant.add(b);
-      }
-      g.add(plant);
-      const fruit = new THREE.Group(); fruit.name = 'fruit';
-      const berry = m.berry || (m.berry = new THREE.MeshStandardMaterial({ color: 0x5b3fc4, roughness: 0.5 }));
-      for (let k = 0; k < 8; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.04, 5, 4), berry); b.position.set(Math.cos(k * 2.4) * 0.3, 0.26, Math.sin(k * 2.4) * 0.3); fruit.add(b); }
-      g.add(fruit);
+      // mokra ziemia po podlaniu jest ciemniejsza
+      const wet = new THREE.Mesh(new THREE.BoxGeometry(0.93, 0.061, 0.93), this.wetSoil()); wet.position.y = 0.021; wet.name = 'wet'; g.add(wet);
+      this.cropGroups(g, [[-0.25, -0.28], [0.2, 0], [-0.1, 0.28], [0.3, 0.28], [-0.3, 0]], 0.1, 1);
+    } else if (s.kind === 'planter') {
+      // doniczka z gliny albo drewniana miska z ziemią, w niej mała roślina
+      const clay = s.vessel === 'pot';
+      const pot = new THREE.Mesh(clay ? new THREE.CylinderGeometry(0.17, 0.12, 0.26, 8) : new THREE.CylinderGeometry(0.22, 0.14, 0.12, 9), clay ? m.clay : m.plank);
+      pot.position.y = clay ? 0.13 : 0.06; pot.castShadow = true; g.add(pot);
+      const top = clay ? 0.25 : 0.11;
+      const soil = this.mat.soil || (this.mat.soil = new THREE.MeshStandardMaterial({ color: 0x6b4a2b, roughness: 1, flatShading: true }));
+      const dirt = new THREE.Mesh(new THREE.CylinderGeometry(clay ? 0.15 : 0.19, 0.15, 0.02, 8), soil); dirt.position.y = top; g.add(dirt);
+      const wet = new THREE.Mesh(new THREE.CylinderGeometry(clay ? 0.152 : 0.192, 0.15, 0.021, 8), this.wetSoil()); wet.position.y = top; wet.name = 'wet'; g.add(wet);
+      this.cropGroups(g, [[0, 0], [0.07, 0.06], [-0.07, 0.04]], top, 0.55);
     } else if (s.kind === 'bed') {
       const frame = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.14, 0.95), m.plank); frame.position.y = 0.09; frame.castShadow = true; g.add(frame);
       const mat = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.08, 0.86), m.weed); mat.position.y = 0.2; g.add(mat);
@@ -176,6 +205,31 @@ export const modelsMethods = {
     g.position.set(s.x, this.world.tileY(s.i, s.j), s.z);
     this.scene.add(g);
     this.structMeshes.set(s, g);
+  },
+
+  wetSoil() { return this.mat.wetSoil || (this.mat.wetSoil = new THREE.MeshStandardMaterial({ color: 0x3e2a18, roughness: 0.6, flatShading: true })); },
+  // rośliny na grządce i w doniczce: krzak z jagodami, żyto z kłosami, kwiaty; renderer pokazuje tę, która rośnie
+  cropGroups(g, spots, y, sc) {
+    const m = this.mat, G = this.geo;
+    const grp = (name) => { const o = new THREE.Group(); o.name = name; o.position.y = y; o.scale.setScalar(sc); g.add(o); return o; };
+    const mesh = (parent, geo, mat, x, yy, z, sx = 1, sy = 1, sz = 1) => { const o = new THREE.Mesh(geo, mat); o.position.set(x, yy, z); o.scale.set(sx, sy, sz); o.castShadow = true; parent.add(o); return o; };
+    const plant = grp('plant'), fruit = grp('fruit');
+    const berryLeaf = new THREE.IcosahedronGeometry(0.14, 0), berryGeo = new THREE.SphereGeometry(0.04, 5, 4);
+    for (const [px, pz] of spots) mesh(plant, berryLeaf, m.weed, px, 0.07, pz);
+    for (let k = 0; k < 8; k++) mesh(fruit, berryGeo, m.berry, Math.cos(k * 2.4) * 0.3 * (spots.length > 3 ? 1 : 0.5), 0.16, Math.sin(k * 2.4) * 0.3 * (spots.length > 3 ? 1 : 0.5));
+    const rye = grp('ryePlant'), ears = grp('ryeEars');
+    for (const [px, pz] of spots) for (let k = 0; k < 3; k++) {
+      const x = px + Math.cos(k * 2.1) * 0.06, z = pz + Math.sin(k * 2.1) * 0.06;
+      mesh(rye, G.stalk, m.ryeGreen, x, 0.3, z);
+      mesh(ears, G.ear, m.rye, x, 0.62, z);
+    }
+    const fl = grp('flowerPlant'), bloom = grp('bloom');
+    spots.forEach(([px, pz], k) => {
+      mesh(fl, G.stem, m.stem, px, 0.15, pz, 1.2, 1, 1.2);
+      mesh(fl, berryLeaf, m.weed, px, 0.04, pz, 0.6, 0.4, 0.6);
+      mesh(bloom, G.petal, m.petals[k % 3], px, 0.31, pz, 1.2, 0.5, 1.2);
+      mesh(bloom, G.flowerMid, m.petalMid, px, 0.34, pz);
+    });
   },
 
   addBridgeTile(i, j, br) {

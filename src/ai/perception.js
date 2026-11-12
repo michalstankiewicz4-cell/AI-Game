@@ -41,7 +41,7 @@ export const perceptionMethods = {
       const old = this.memByTile.get(k);
       if (old !== undefined && (!r || r.id !== old)) { this.mem.delete(old); this.memByTile.delete(k); }
       if (r) {
-        this.mem.set(r.id, { r, kind: r.kind, i: r.i, j: r.j, berries: r.berries, growth: r.growth, amount: r.amount, stone: r.stone, stand: r.stand, t: w.time });
+        this.mem.set(r.id, { r, kind: r.kind, i: r.i, j: r.j, berries: r.berries, growth: r.growth, amount: r.amount, stone: r.stone, ears: r.ears, flowers: r.flowers, stand: r.stand, t: w.time });
         this.memByTile.set(k, r.id);
       }
     }

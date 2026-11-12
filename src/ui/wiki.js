@@ -7,7 +7,7 @@ const ICON = {
   planks: '🟫', rope: '🪢', rod: '🎣', spear: '🔱', campfire: '🔥', shelter: '🛖', ironTool: '⚒️', tent: '⛺', workbench: '🛠️',
   grill: '♨️', bed: '🛏️', chest: '📦', torch: '🔥', clothes: '👕', sword: '🗡️', shield: '🛡️',
   logs: '🪵', sticks: '🥢', leaves: '🍃', seaweed: '🌿', stone: '🪨', iron: '⛏️',
-  knife: '🔪', hoe: '🌾', bowl: '🥣', bow: '🏹', arrows: '🏹', leather: '🧥', feathers: '🪶', hide: '🟤', seeds: '🌱',
+  knife: '🔪', hoe: '🌾', bowl: '🥣', bow: '🏹', arrows: '🏹', leather: '🧥', feathers: '🪶', hide: '🟤', seeds: '🌱', clay: '🧱', pot: '🏺', grain: '🌾', flowers: '🌼', flowerSeeds: '🌱',
   berries: '🫐', rawFish: '🐟', cookedFish: '🍣', rawMeat: '🍗', cookedMeat: '🍖',
 };
 
@@ -33,6 +33,7 @@ const RECIPE_DESC = {
   bow: 'Kłoda wystrugana nożem i lina jako cięciwa. Ze strzałami poluje się celniej na ptaki i walczy z dzikiem z daleka.',
   arrows: 'Gałąź, kamienny grot i lotka z piór: 4 strzały. Czasem się gubią albo łamią.',
   leather: 'Ubranie uszyte ze skóry dzika przy stole rzemieślniczym. Grzeje mocniej niż ubranie z liści.',
+  pot: 'Glina z brzegu stawu wypalona w ognisku. Można w niej nosić wodę jak w misce, a po nasypaniu ziemi posadzić nasiona. W doniczce roślina rośnie tylko podlewana.',
   chest: 'Porządne miejsce na zapasy przy obozie. W odróżnieniu od kupki na ziemi trzyma też jedzenie, po które postać wraca, gdy jest głodna.',
 };
 const BUILDINGS = new Set(['campfire', 'shelter', 'tent', 'workbench', 'grill', 'bed', 'chest']);
@@ -48,6 +49,7 @@ const MAT_DESC = {
   iron: 'Ruda żelaza z kopalni. Z niej narzędzia i miecz.',
   feathers: 'Pióra z upolowanych ptaków. Lotki do strzał.',
   hide: 'Skóra z dzika oskórowanego nożem. Na ubranie ze skóry.',
+  clay: 'Glina z gliniastego brzegu stawu. Wypalona w ognisku daje doniczkę.',
 };
 const FOOD_DESC = {
   berries: 'Rosną na krzakach i odrastają. Mało sycące.',
@@ -78,7 +80,10 @@ const WORLD = [
   ['piece_floor', '🟫', 'Podłoga z desek', 'Pojedyncza deska położona płasko na ziemi albo wyżej, oparta o ściany. Ma własną nazwę.'],
   ['piece_wall', '🧱', 'Ściana z desek', 'Deska postawiona pionowo na krawędzi pola. Wyżej da się ją postawić tylko na innej ścianie.'],
   ['piece_slope', '📐', 'Skos z desek', 'Deska położona pod skosem, np. na ścianach. Postacie mogą ją zdjąć, przenieść i przemianować.'],
-  ['field', '🌾', 'Grządka', 'Ziemia spulchniona motyką. Zasiane nasiona po ok. półtorej doby wyrastają w krzak z 6 jagodami, a przy zbiorze wracają 2 nasiona.'],
+  ['field', '🌾', 'Grządka', 'Ziemia spulchniona motyką. Rośnie na niej krzak jagód (6 jagód i 2 nasiona), żyto (8 ziaren) albo kwiaty (3 kwiaty i 2 nasiona). Podlewana dojrzewa po ok. półtorej doby, sucha prawie trzy razy wolniej.'],
+  ['planter', '🪴', 'Doniczka z rośliną', 'Doniczka albo miska z ziemią i nasionami, stawiana przy obozie. Rośnie tylko podlewana i daje mniej więcej połowę plonu grządki. Po zbiorze można w niej znów coś posadzić.'],
+  ['rye', '🌾', 'Dzikie żyto', 'Kępy żyta rosną tu i ówdzie na łąkach. Z kłosów wyłuskuje się ziarno do siewu, a kłosy odrastają.'],
+  ['flower', '🌼', 'Kwiaty', 'Rosną na łąkach w trzech kolorach. Zerwane cieszą, a co drugi daje nasiona.'],
   ['stash', '📦', 'Składzik', 'Kupka rzeczy odłożonych, gdy plecak jest za ciężki. Można po nie wrócić.'],
 ];
 const EXPERIENCE = [
@@ -88,7 +93,9 @@ const EXPERIENCE = [
   ['cook', '🍖', 'Pieczenie', 'Pieczone jedzenie syci dużo bardziej niż surowe.'],
   ['saltWater', '🧂', 'Morska woda szkodzi', 'Słonej wody nie da się pić.'],
   ['seeds', '🌱', 'Nasiona w jagodach', 'Postać, która je jagody, znajduje w nich pestki.'],
-  ['farm', '🌾', 'Uprawa', 'Po pierwszym zbiorze postać wie, że z nasion na grządce wyrastają jagody.'],
+  ['farm', '🌾', 'Uprawa', 'Po pierwszym zbiorze postać wie, że z posadzonych nasion coś wyrasta.'],
+  ['watering', '💧', 'Podlewanie', 'Gdy zbiera plon z podlewanej rośliny, postać wie, że woda przyspiesza wzrost.'],
+  ['clay', '🧱', 'Glina', 'Pijąc ze stawu, postać czasem zauważa, że brzeg jest gliniasty.'],
   ['boarDanger', '🐗', 'Dziki są groźne', 'Po pierwszym zderzeniu z dzikiem postać wie, że trzeba uważać.'],
 ];
 
@@ -108,7 +115,11 @@ function catalog() {
       id: 'tools', name: '🧰 Narzędzia', items: [
         ...START_TOOLS.map(([k, icon, name, desc]) => ({ key: 'tool:' + k, icon, name, desc })),
         ...['rod', 'spear', 'clothes', 'sword', 'shield', 'knife', 'hoe', 'bow', 'leather'].map((t) => ({ key: 'tool:' + t, icon: ICON[t], name: RECIPE_NAMES[t], desc: RECIPE_DESC[t], meta: `receptura: ${cost(t)}` })),
-        { key: 'item:seeds', icon: ICON.seeds, name: 'nasiona', desc: 'Pestki znalezione w zjedzonych jagodach (mniej więcej co trzecia garść) i zebrane z grządki. Sadzi się je na grządce przygotowanej motyką.', meta: '0.02 kg / szt.' },
+        { key: 'item:seeds', icon: ICON.seeds, name: 'nasiona jagód', desc: 'Pestki znalezione w zjedzonych jagodach (mniej więcej co trzecia garść) i zebrane z grządki. Sadzi się je na grządce przygotowanej motyką albo w doniczce.', meta: '0.02 kg / szt.' },
+        { key: 'item:grain', icon: ICON.grain, name: 'ziarno żyta', desc: 'Wyłuskane z kłosów dzikiego żyta (2 ziarna z kłosa). To nasiona: z grządki zbiera się 8 ziaren, z doniczki 4.', meta: '0.02 kg / szt.' },
+        { key: 'item:flowerSeeds', icon: ICON.flowerSeeds, name: 'nasiona kwiatów', desc: 'Zostają z co drugiego zerwanego kwiatu. Wysiane dają nowe kwiaty i kolejne nasiona.', meta: '0.02 kg / szt.' },
+        { key: 'item:flowers', icon: ICON.flowers, name: 'kwiaty', desc: 'Zerwane kwiaty cieszą postać, zwłaszcza w złym nastroju. Kwiaty z własnej uprawy cieszą jeszcze bardziej.', meta: '0.05 kg / szt.' },
+        { key: 'item:waterBowl', icon: '💧', name: 'naczynie z wodą', desc: 'Miska albo doniczka napełniona przy stawie. Z wody można się napić z dala od stawu albo podlać nią rośliny.', meta: 'miska 1.2 kg · doniczka 1.6 kg' },
         { key: 'item:torch', icon: ICON.torch, name: 'pochodnia (w ręku)', desc: RECIPE_DESC.torch, meta: `receptura: ${cost('torch')} · przy ognisku · 0.4 kg` },
       ],
     },
@@ -123,22 +134,24 @@ export function scanDiscoveries(world) {
   const f = world.wikiFound || (world.wikiFound = new Set());
   const add = (k) => f.add(k);
   for (const a of world.agents) {
-    for (const r of a.known) { add('recipe:' + r); if (EXPERIENCE.some((e) => e[0] === r)) add('exp:' + r); }
+    // w trybie „Wie wszystko” postać zna wszystko od startu: w wiki liczy się dopiero to, co naprawdę zrobi albo spotka
+    if (!a.omniscient) for (const r of a.known) { add('recipe:' + r); if (EXPERIENCE.some((e) => e[0] === r)) add('exp:' + r); }
     if (a.known.has('bridge')) add('world:bridge');
     for (const k in a.inv) if (a.inv[k] > 0) add((FOOD[k] ? 'food:' : 'item:') + k);
-    for (const [k, v] of a.edible) if (v) add('food:' + k);
+    if (!a.omniscient) for (const [k, v] of a.edible) if (v) add('food:' + k);
     for (const k in a.tools) if (a.tools[k]) add('tool:' + k);
-    for (const k of a.triedKinds) add('world:' + k);
+    if (!a.omniscient) for (const k of a.triedKinds) add('world:' + k);
     if (a.drankPond) add('world:pond');
     if (a.saltKnown) { add('world:sea'); add('exp:saltWater'); }
     if (a.stats.fish > 0) add('world:fish');
     if (a.stats.birds > 0) add('world:bird');
-    if (a.inv.waterBowl > 0) add('recipe:bowl');
+    if (a.inv.waterBowl > 0) { add('recipe:bowl'); add('item:waterBowl'); }
+    if (a.inv.waterPot > 0) { add('recipe:pot'); add('item:waterBowl'); }
     if (a.stats.boars > 0 || a.memBoars.size || a.known.has('boarDanger')) add('world:boar');
   }
   for (const s of world.structures) {
     if (s.kind === 'stash') add('world:stash');
-    else if (s.kind === 'field') add('world:field');
+    else if (s.kind === 'field' || s.kind === 'planter') add('world:' + s.kind);
     else add('recipe:' + s.kind);
     if (s.grill) add('recipe:grill');
     if (s.items) for (const k in s.items) if (s.items[k] > 0) add((FOOD[k] ? 'food:' : 'item:') + k);
@@ -148,12 +161,13 @@ export function scanDiscoveries(world) {
   return f;
 }
 
-let tab = 'craft', open = false, getWorld = () => null, shown = '';
+let tab = 'craft', open = false, getWorld = () => null, shown = '', lastWorld = null, worldN = 0;
 function render(force) {
   const w = getWorld();
   const found = w ? scanDiscoveries(w) : new Set();
   // przerysuj tylko, gdy coś się zmieniło (inaczej klik w zakładkę trafia w znikający przycisk)
-  const sig = `${tab}|${found.size}|${w ? w.seed + ':' + w.agents.length : ''}`;
+  if (w !== lastWorld) { lastWorld = w; worldN++; } // nowa gra: wiki zaczyna od zera
+  const sig = `${tab}|${found.size}|${worldN}`;
   if (!force && sig === shown) return;
   shown = sig;
   const all = CATS.flatMap((c) => c.items), got = all.filter((e) => found.has(e.key)).length;

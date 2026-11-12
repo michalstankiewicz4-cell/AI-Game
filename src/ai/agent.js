@@ -17,7 +17,7 @@ import { buildingMethods, BUILD_LABEL } from './building.js';
 export { PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MAT_NAMES, KIND_NAMES, VIEW_RANGE, VIEW_NEAR, viewHalfAngle } from './data.js';
 export { ITEM_LABELS, TOOL_LABELS } from './data.js';
 
-const POCKET = new Set(['seeds', 'feathers', 'arrows']);
+const POCKET = new Set(['seeds', 'feathers', 'arrows', 'grain', 'flowerSeeds', 'flowers']);
 
 export class Agent {
   constructor(world, persona, i, j, id) {
@@ -33,7 +33,7 @@ export class Agent {
     this.hunger = 85; this.thirst = 80; this.energy = 90; this.health = 100;
     this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
     this.mood = 60; this.joy = 0; this.lastTalk = -999; // samopoczucie 0-100, chwilowa radość, ostatnia rozmowa
-    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0, feathers: 0, hide: 0, seeds: 0, arrows: 0, bowl: 0, waterBowl: 0 };
+    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0, feathers: 0, hide: 0, seeds: 0, arrows: 0, bowl: 0, waterBowl: 0, clay: 0, grain: 0, flowerSeeds: 0, flowers: 0, pot: 0, waterPot: 0 };
     this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false, knife: false, hoe: false, bow: false, leather: false };
     this.task = null;
     this.alive = true;
