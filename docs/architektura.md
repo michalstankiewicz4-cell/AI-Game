@@ -54,6 +54,7 @@ src/
 - **Jakość grafiki** (przycisk 🎨 w górnym pasku): wysoka ma cienie i rozdzielczość do 1,5×, niska wyłącza cienie i zmniejsza rozdzielczość. Licznik FPS stoi obok.
 - **Mgła niewiedzy:** płaszczyzna z `DataTexture`, aktualizowana w trybie „Oczami AI”.
 - **Etykiety i dymki:** elementy DOM nakładane na obraz.
+- **Płynny ruch:** `stepGame` zapisuje poprzednie pozycje postaci, dzików, ptaków i ryb (`_px`, `_py`, `_pz`, `_pf`), a `main.js` ustawia `world.alpha` (ułamek drogi do następnego kroku, `acc / STEP`). `Renderer.frame` rysuje pozycję i obrót pomiędzy poprzednim a bieżącym krokiem. Skok o więcej niż 3 pola rysuje od razu bez wygładzania.
 
 ## Pomiar wydajności (`src/ui/perf.js`)
 - `timed(kategoria, fn)` mierzy fragment pętli. Tak są owinięte `world.update`, pętla agentów i `social`/`narrator` w `stepGame`, `Renderer.frame` oraz odświeżanie interfejsu w `main.js`.

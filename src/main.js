@@ -131,6 +131,8 @@ function loop(now) {
       w.events.length = 0;
       if (state.agents.every((a) => !a.alive)) gameOver();
     }
+    // ułamek drogi do następnego kroku symulacji (do płynnego rysowania ruchu)
+    w.alpha = state.paused || state.over ? 1 : Math.min(1, state.acc / STEP);
     panCamera(rdt);
     timed('render', () => renderer.frame(w, state.agents, state.selected, now / 1000, state.opts));
     if (firstFrame) { firstFrame(); firstFrame = null; }

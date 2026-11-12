@@ -10,6 +10,8 @@ import { terrainMethods } from './terrain.js';
 import { PIECE_LH } from '../world/pieces.js';
 
 
+const wrapA = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
+
 export class Renderer {
   constructor(container) {
     this.container = container;
@@ -202,6 +204,13 @@ export class Renderer {
       if (f) l.position.set(f.g.position.x, f.g.position.y + (f.torch ? 1.1 : 0.7), f.g.position.z);
     });
 
+    // płynny ruch: pozycja między poprzednim a bieżącym krokiem symulacji (krok trwa 0,1 s, klatka zwykle krócej)
+    const al = world.alpha ?? 1;
+    const lp = (o) => {
+      if (o._px === undefined || Math.abs(o.x - o._px) + Math.abs(o.z - o._pz) > 3) return { x: o.x, y: o.y, z: o.z };
+      return { x: o._px + (o.x - o._px) * al, y: o.y === undefined ? undefined : o._py + (o.y - o._py) * al, z: o._pz + (o.z - o._pz) * al };
+    };
+    const la = (cur, prev) => (prev === undefined ? cur : prev + wrapA(cur - prev) * al);
     // ryby
     const seenF = new Set();
     for (const fsh of world.fish) {
@@ -209,7 +218,8 @@ export class Renderer {
       let m = this.fishMeshes.get(fsh);
       if (!m) { m = new THREE.Mesh(this.geo.fish, this.mat.fish); m.rotation.order = 'YXZ'; scene.add(m); this.fishMeshes.set(fsh, m); }
       const jy = fsh.jump > 0 ? Math.sin((1 - fsh.jump) * Math.PI) * 0.9 : 0;
-      m.position.set(fsh.x, -fsh.depth + jy, fsh.z);
+      const fp = lp(fsh);
+      m.position.set(fp.x, -fsh.depth + jy, fp.z);
       m.visible = inCone(fsh.x, fsh.z);
       m.rotation.y = -fsh.dir + Math.PI / 2; m.rotation.x = Math.PI / 2 + (fsh.jump > 0 ? (fsh.jump - 0.5) * 1.5 : 0);
     }
@@ -231,8 +241,9 @@ export class Renderer {
         scene.add(g); this.birdMeshes.set(b, g);
       }
       const prev = g.position.clone();
-      g.position.set(b.x, b.y, b.z);
-      const dx = b.x - prev.x, dz = b.z - prev.z;
+      const bp = lp(b);
+      g.position.set(bp.x, bp.y, bp.z);
+      const dx = bp.x - prev.x, dz = b.z - prev.z;
       if (dx * dx + dz * dz > 1e-6) g.rotation.y = Math.atan2(dx, dz);
       const flap = b.state === 'landed' ? 0.1 : Math.sin(rt * (b.state === 'landing' ? 18 : 9) + b.id) * 0.7;
       g.getObjectByName('w-1').rotation.z = flap; g.getObjectByName('w1').rotation.z = -flap;
@@ -256,8 +267,9 @@ export class Renderer {
         }
         scene.add(g); this.boarMeshes.set(b, g);
       }
-      g.position.set(b.x, world.groundHeight(b.x, b.z), b.z);
-      g.rotation.y = Math.PI / 2 - b.dir;
+      const rp = lp(b);
+      g.position.set(rp.x, world.groundHeight(rp.x, rp.z), rp.z);
+      g.rotation.y = Math.PI / 2 - la(b.dir, b._pf);
       const run = b.state === 'charge' || b.state === 'flee';
       g.children.forEach((c) => { if (c.name === 'leg') c.rotation.x = Math.sin(rt * (run ? 18 : 8) + c.position.z * 10) * (run ? 0.6 : 0.3); });
       g.visible = !b.dead && inCone(b.x, b.z);
@@ -269,16 +281,17 @@ export class Renderer {
     for (const a of agents) {
       let g = this.agentMeshes.get(a);
       if (!g) { g = this.makeAgentMesh(a); this.agentMeshes.set(a, g); this.labels.set(a, this.makeLabel(a)); }
-      const gy = world.groundHeight(a.x, a.z);
+      const ap = lp(a), ax = ap.x, az = ap.z, af = la(a.facing, a._pf);
+      const gy = world.groundHeight(ax, az);
       const moving = a.task && a.task.path && a.task.path.length > 0;
       const bob = moving ? Math.abs(Math.sin(rt * 10 + a.id)) * 0.06 : 0;
-      g.position.set(a.x, gy + bob, a.z);
+      g.position.set(ax, gy + bob, az);
       const arm = g.getObjectByName('arm');
       if (!a.alive || a.asleep) {
-        g.rotation.set(-Math.PI / 2, a.facing, 0, 'YXZ'); g.position.y = gy + 0.18;
+        g.rotation.set(-Math.PI / 2, af, 0, 'YXZ'); g.position.y = gy + 0.18;
         if (!a.alive) g.getObjectByName('body').material.color.set(0x777777);
       } else {
-        g.rotation.set(0, a.facing, 0);
+        g.rotation.set(0, af, 0);
         arm.rotation.x = a.working ? Math.sin(rt * 9 + a.id) * 1.0 - 0.6 : moving ? Math.sin(rt * 10) * 0.4 : 0;
       }
       // przedmiot w ręku
@@ -293,7 +306,7 @@ export class Renderer {
       g.visible = seenNow;
       // etykieta
       const el = this.labels.get(a);
-      v.set(a.x, gy + 1.25, a.z).project(this.camera);
+      v.set(ax, gy + 1.25, az).project(this.camera);
       // dymek: wypowiedź, a gdy model właśnie myśli nad odpowiedzią – „💭”
       const text = !a.alive ? '💀' : a.asleep ? 'Zzz...' : a.bubble ? a.bubble.text : a.llmBusy ? '💭 …' : '';
       // imię i dymek włącza się niezależnie: etykieta jest widoczna, gdy pokazuje choć jedno z nich
@@ -313,7 +326,8 @@ export class Renderer {
 
     // śledzenie wybranego agenta
     if (selected && opts.follow) {
-      const target = new THREE.Vector3(selected.x, world.groundHeight(selected.x, selected.z), selected.z);
+      const sp = lp(selected);
+      const target = new THREE.Vector3(sp.x, world.groundHeight(sp.x, sp.z), sp.z);
       const flying = this.flyT > 0;
       const delta = target.clone().sub(this.controls.target).multiplyScalar(flying ? 0.14 : 0.08);
       this.controls.target.add(delta); this.camera.position.add(delta);
