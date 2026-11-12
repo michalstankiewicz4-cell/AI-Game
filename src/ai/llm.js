@@ -131,9 +131,14 @@ class LLM {
     const started = agent.world.time;
     this.call(free ? FREE_SYSTEM : sys, user, 160)
       .then((txt) => {
-        const j = parseJson(txt);
-        if (!j) throw new Error('Model nie zwrócił JSON-a');
-        const thought = typeof j.mysl === 'string' ? j.mysl.trim().slice(0, 140) : '';
+        let j = parseJson(txt);
+        // mały model czasem odpowie zwykłym tekstem albo innymi kluczami: bierzemy, co się da
+        if (!j) { const t = (txt || '').replace(/[{}"]/g, '').trim(); if (!t) throw new Error('Pusta odpowiedź modelu'); j = { mysl: t.split('\n')[0] }; }
+        const pickStr = (...ks) => { for (const k of ks) if (typeof j[k] === 'string' && j[k].trim()) return j[k]; return ''; };
+        j.mysl = pickStr('mysl', 'myśl', 'thought', 'wypowiedz', 'wypowiedź', 'text');
+        j.zamiar = pickStr('zamiar', 'intent', 'akcja', 'action');
+        if (j.wybor == null) j.wybor = j['wybór'] ?? j.choice;
+        const thought = j.mysl.trim().replace(/^["„]|["”]$/g, '').slice(0, 140);
         let label = null, intent = null;
         if (free) intent = typeof j.zamiar === 'string' ? j.zamiar.trim().slice(0, 80) : '';
         else if (decide) { const n = Math.round(+j.wybor); if (n >= 1 && n <= labels.length) label = labels[n - 1]; }

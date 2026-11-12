@@ -3,6 +3,11 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.7.1] - 2026-11-12
+### Naprawione
+- Brak dymków, gdy model się ładuje albo nie działa: wtedy za postacie mówi skrypt (dymek kursywą, w czacie 📜). Gdy model liczy odpowiedź, nad postacią jest „💭 …”.
+- Łagodniejsze czytanie odpowiedzi małego modelu: inne klucze albo zwykły tekst zamiast JSON-a nie kończą się błędem, tylko wypowiedzią.
+
 ## [0.7.0] - 2026-11-12
 ### Zmienione
 - Wydajność grafiki: drzewa, skały, krzaki i wodorosty rysowane przez instancjonowanie. Wywołań rysowania jest ok. 110 zamiast ok. 1500, a czas przygotowania klatki spadł z ok. 10–21 ms do ok. 2–3 ms (pomiar w przeglądarce testowej).
@@ -65,6 +70,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.7.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.7.1
 [0.7.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.7.0
 [0.6.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.6.0
 [0.5.2]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.5.2

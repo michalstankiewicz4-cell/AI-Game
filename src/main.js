@@ -70,7 +70,7 @@ function startGame() {
   state.opts.follow = false;
   const world = game.world;
   clearFeed();
-  world.onChat = (a, text, ai) => feed('chat', `<b style="color:${hex(a.color)}">${ai ? '🤖 ' : ''}${a.name}:</b> ${esc(text)}`);
+  world.onChat = (a, text, ai) => feed('chat', `<b style="color:${hex(a.color)}">${ai ? '🤖 ' : '📜 '}${a.name}:</b> ${esc(text)}`);
   renderer.build(world);
   // kamera nad wyspą startową
   const c = world.islandDefs[0];
@@ -83,7 +83,7 @@ function startGame() {
   state.paused = false; updatePause();
   const n = state.cfg.agents;
   feed('chat', `🎙️ Witamy na Wyspach AI! ${n === 1 ? 'Jeden rozbitek' : n + ' rozbitków'} budzi się na plaży. Mają tylko siekierę i kilof, i nie wiedzą nic o tym świecie. Wszystkiego muszą się nauczyć. Zobaczmy, jak sobie poradzą...`, 'narr');
-  feed('chat', '🤖 Wszystko, co mówią postacie, wymyśla na bieżąco model językowy (oznaczenie 🤖). Narrator to skrypt gry.', 'narr');
+  feed('chat', '🤖 Postacie mówią przez model językowy (🤖). Dopóki model się ładuje albo nie działa, mówi za nie skrypt (📜). Narrator to skrypt gry.', 'narr');
   world.agents.forEach((a, k) => setTimeout(() => a.speak(['Gdzie ja jestem?!', 'Dobra, nie panikujemy. Najpierw rozejrzę się.', 'Wyspa... nic tu nie znam.', 'Mam siekierę i kilof. Coś wymyślę.'][k % 4], true), 600 + k * 900));
 }
 
