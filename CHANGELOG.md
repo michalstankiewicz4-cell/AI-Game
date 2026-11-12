@@ -3,6 +3,19 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.13.0] - 2026-11-12
+### Dodane
+- Liście z drzew (z drzewa 3, z palmy 2).
+- Nowe receptury do odkrycia:
+  - namiot (gałęzie + liście): lekki dach, cieplej i lepszy sen,
+  - stół rzemieślniczy (kłody + deski),
+  - ruszt (gałęzie + kamienie): zakłada się na ognisko i smaży na nim 2× szybciej, po dwie sztuki,
+  - łóżko (deski + gałęzie + liście): odkrywane tylko przy stole rzemieślniczym, dużo szybszy sen.
+- Ognisko się wypala: postacie podsycają je kłodami, gałęziami albo liśćmi, a wygasłe rozpalają na nowo. Wygasłe ognisko nie grzeje i nie piecze, nie widać też płomieni.
+- Postać sama odkrywa, że w łóżku lepiej się wysypia: z ciekawości kładzie się w nim raz, a potem je wybiera.
+- Modele 3D: namiot, stół, łóżko, ruszt nad ogniskiem.
+- Model językowy w trybie pełnej swobody widzi pobliskie budowle (także wygasłe ognisko i ruszt), a gra rozumie nowe zamiary („podsycić ogień”, „zrobić łóżko”, „rozbić namiot”…).
+
 ## [0.12.0] - 2026-11-12
 ### Dodane
 - Klimat umiarkowany: temperatura powietrza zmienia się w ciągu doby (najzimniej ok. 4:00, najcieplej ok. 15:00) i z dnia na dzień, a na wzgórzach jest chłodniej. O świcie narrator podaje prognozę, a temperatura jest w górnym pasku.
@@ -108,6 +121,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.13.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.13.0
 [0.12.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.12.0
 [0.11.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.11.0
 [0.10.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.10.0

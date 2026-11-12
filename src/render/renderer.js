@@ -168,6 +168,17 @@ export class Renderer {
     for (const [s, g] of this.structMeshes) {
       if (s.kind !== 'campfire') continue;
       const fl = g.getObjectByName('flame'), fl2 = g.getObjectByName('flame2');
+      // ruszt dokłada się, gdy postać go zrobi
+      if (s.grill && !g.getObjectByName('grill')) {
+        const gr = new THREE.Group(); gr.name = 'grill';
+        for (let k = -2; k <= 2; k++) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.62), this.mat.post); b.position.set(k * 0.12, 0.42, 0); gr.add(b); }
+        for (const sx of [-1, 1]) { const p = new THREE.Mesh(this.geo.post, this.mat.post); p.scale.set(0.7, 0.36, 0.7); p.position.set(sx * 0.33, 0.21, 0); gr.add(p); }
+        g.add(gr);
+      }
+      // wygasłe ognisko: bez płomieni i bez światła
+      const lit = s.fuel > 0;
+      fl.visible = fl2.visible = lit;
+      if (!lit) continue;
       const k = 1 + Math.sin(rt * 13 + s.id) * 0.15 + Math.sin(rt * 7.3) * 0.1;
       fl.scale.set(1, k, 1); fl2.scale.set(1, 2 - k, 1);
       fires.push({ g, k, d: g.position.distanceToSquared(this.controls.target) });

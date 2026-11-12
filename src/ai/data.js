@@ -26,19 +26,28 @@ export const RECIPES = {
   campfire: { sticks: 3, logs: 1, stone: 4 }, // ognisko
   shelter: { logs: 2, planks: 4, rope: 2 },   // szałas
   ironTool: { iron: 2, sticks: 1 },           // żelazne narzędzie (przy ognisku)
+  tent: { sticks: 4, leaves: 6 },             // namiot: lekki dach
+  workbench: { logs: 2, planks: 3 },          // stół rzemieślniczy
+  grill: { sticks: 3, stone: 2 },             // ruszt (zakłada się na palące się ognisko)
+  bed: { planks: 3, sticks: 2, leaves: 4 },   // łóżko (tylko przy stole rzemieślniczym)
 };
+// receptury, które da się odkryć i zrobić tylko w określonym miejscu
+export const FIRE_RECIPES = new Set(['ironTool', 'grill']);
+export const BENCH_RECIPES = new Set(['bed']);
+export const FIRE_FUEL = { max: 150, start: 100, burn: 0.5, logs: 60, sticks: 25, leaves: 8 }; // paliwo ogniska (s palenia)
 
 export const RECIPE_NAMES = {
   planks: 'deski', rope: 'lina', rod: 'wędka', spear: 'włócznia', campfire: 'ognisko', shelter: 'szałas', ironTool: 'żelazne narzędzia',
+  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko',
 };
-export const MATS = ['logs', 'sticks', 'planks', 'seaweed', 'rope', 'stone', 'iron'];
-export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda' };
+export const MATS = ['logs', 'sticks', 'leaves', 'planks', 'seaweed', 'rope', 'stone', 'iron'];
+export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', leaves: 'liście', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda' };
 export const comboKey = (types) => [...types].sort().join('+');
 export const RECIPE_BY_COMBO = new Map(Object.entries(RECIPES).map(([k, r]) => [comboKey(Object.keys(r)), k]));
 export const KIND_NAMES = { tree: 'drzewo', palm: 'palmę', rock: 'skałę', bush: 'krzak', seaweed: 'wodorosty', mine: 'kopalnię' };
 
 export const ITEM_LABELS = {
-  logs: '🪵 Kłody', sticks: '🥢 Gałęzie', planks: '🟫 Deski', seaweed: '🌿 Wodorosty', rope: '🪢 Lina',
+  logs: '🪵 Kłody', sticks: '🥢 Gałęzie', leaves: '🍃 Liście', planks: '🟫 Deski', seaweed: '🌿 Wodorosty', rope: '🪢 Lina',
   stone: '🪨 Kamień', iron: '⛏️ Ruda żelaza',
   berries: '🫐 Jagody', rawFish: '🐟 Ryba', cookedFish: '🍣 Piecz. ryba', rawMeat: '🍗 Mięso', cookedMeat: '🍖 Piecz. mięso',
 };

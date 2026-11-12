@@ -15,6 +15,13 @@ const KEYWORDS = [
   ['Odpocząć', ['odpocz', 'odsap', 'relaks', 'usiad', 'zmecz']],
   ['Upiec jedzenie', ['piec', 'upiec', 'gotow', 'smaz', 'ugotow']],
   ['Ogrzać się przy ognisku', ['ogrz', 'grzac', 'grzej', 'ciepl', 'zimn', 'marzn', 'zmarz']],
+  ['Podsycić ognisko', ['podsyc', 'dorzuc', 'dolozy', 'podtrzym', 'ognisk', 'ogien', 'ognia']],
+  ['Rozpalić ognisko na nowo', ['rozpal', 'ognisk', 'ogien', 'ognia', 'zgasl', 'na nowo']],
+  ['Zrobić ruszt', ['ruszt', 'grill', 'smaz', 'ruszcie']],
+  ['Rozbić namiot', ['namiot', 'rozbi', 'schron']],
+  ['Zrobić stół rzemieślniczy', ['stol', 'warsztat', 'blat', 'zbij']],
+  ['Zrobić łóżko', ['lozk', 'posla', 'legow', 'wyspac']],
+  ['Eksperymentować przy stole', ['eksperym', 'sprob', 'polacz', 'stol', 'warsztat', 'kombin']],
   ['Rozpalić ognisko', ['ognisk', 'ogien', 'ognia', 'rozpal']],
   ['Ścinać drzewo', ['scin', 'scia', 'drzew', 'drewn', 'rab', 'klod', 'siekier']],
   ['Ciosać deski', ['desk', 'cios']],
@@ -90,6 +97,15 @@ export function describeFree(a) {
   const pond = w.pondShore.find((p) => a.seen[idx(p.i, p.j)] && Math.hypot(p.i - a.i, p.j - a.j) < 18);
   if (pond) sees.push('słodkowodny staw niedaleko');
   if (a.saltKnown) sees.push('morze (wiesz, że woda jest słona)'); else sees.push('morze dookoła');
+  // budowle w pobliżu, które postać zna
+  const SNAME = { campfire: (s) => (s.fuel > 0 ? 'palące się ognisko' : 'wygasłe ognisko') + (s.grill ? ' z rusztem' : ''), shelter: () => 'szałas', tent: () => 'namiot', workbench: () => 'stół rzemieślniczy', bed: () => 'łóżko' };
+  for (const s of w.structures) {
+    if (!a.knownStructs.has(s.id) || !SNAME[s.kind]) continue;
+    const d = Math.hypot(s.i - a.i, s.j - a.j);
+    if (d > 16) continue;
+    const ang = Math.atan2(s.i - a.i, -(s.j - a.j)) * 180 / Math.PI;
+    sees.unshift(`${SNAME[s.kind](s)} ${d < 3 ? 'tuż obok' : DIR[Math.round(((ang + 360) % 360) / 45) % 8]}`);
+  }
   lines.push('Widzisz i pamiętasz w pobliżu: ' + sees.join(', ') + '.');
   const people = w.agents.filter((o) => o !== a && o.alive && Math.hypot(o.i - a.i, o.j - a.j) < 12).map((o) => o.name);
   if (people.length) lines.push(`Niedaleko jest: ${people.join(', ')}.`);

@@ -2,9 +2,18 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import {
+  FIRE_FUEL,
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
 } from './data.js';
+
+const BUILD = {
+  campfire: ['🔥 Rozpala ognisko', 'rozpala ognisko 🔥', 5],
+  shelter: ['🛖 Buduje szałas', 'stawia szałas 🛖', 9],
+  tent: ['⛺ Rozbija namiot', 'rozbija namiot z gałęzi i liści ⛺', 6],
+  workbench: ['🛠️ Robi stół', 'zbija stół rzemieślniczy 🛠️', 7],
+  bed: ['🛏️ Robi łóżko', 'robi łóżko z desek, gałęzi i liści 🛏️', 7],
+};
 
 export const tasksMethods = {
   // ---------- zadania ----------
@@ -113,9 +122,12 @@ export const tasksMethods = {
   taskSleep(bfs) {
     // śpij w szałasie lub przy ognisku jeśli blisko
     let target = null;
-    const sh = this.nearestStructure(bfs, 'shelter');
+    const sh = this.nearestStructure(bfs, 'shelter') || this.nearestStructure(bfs, 'tent');
     const fi = this.nearestStructure(bfs, 'campfire');
-    if (sh && sh.d < 30) target = sh;
+    // łóżko: z ciekawości raz spróbuje, a potem wybiera je, bo wie, że lepiej się w nim śpi
+    const bed = (this.known.has('bedRest') || !this.bedTried) && this.nearestStructure(bfs, 'bed');
+    if (bed && bed.d < 30) { target = bed; this.bedTried = true; }
+    else if (sh && sh.d < 30) target = sh;
     else if (fi && fi.d < 30) target = this.freeTileNear(fi.i, fi.j, bfs) || fi;
     const path = target ? this.pathTo(target.i, target.j) : [];
     return {
@@ -126,6 +138,50 @@ export const tasksMethods = {
         if (this.energy >= 99) return 'done';
         if (!this.world.isNight() && this.energy > 75) return 'done';
         return null;
+      },
+    };
+  },
+
+  // podsycenie ogniska (albo rozpalenie wygasłego): kłody palą się najdłużej, potem gałęzie, na końcu liście
+  taskFeedFire(fire) {
+    const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
+    const s = fire.s;
+    return {
+      path: this.pathTo(spot.i, spot.j), face: s, label: s.fuel > 0 ? '🪵 Podsyca ogień' : '🔥 Rozpala na nowo',
+      act: (dt, t) => {
+        if (t.elapsed < 2) return null;
+        const out = !(s.fuel > 0);
+        if (out) { // rozpałka: dwie gałęzie
+          if (this.inv.sticks < 2) return 'fail';
+          this.inv.sticks -= 2; s.fuel = 15;
+          this.world.structuresChanged = true;
+          this.say('rozpala wygasłe ognisko 🔥', 'info');
+        }
+        while (s.fuel < FIRE_FUEL.max - 20) {
+          if (this.inv.logs > 0 && s.fuel < 80) { this.inv.logs--; s.fuel += FIRE_FUEL.logs; }
+          else if (this.inv.sticks > 1) { this.inv.sticks--; s.fuel += FIRE_FUEL.sticks; }
+          else if (this.inv.leaves > 0) { this.inv.leaves--; s.fuel += FIRE_FUEL.leaves; }
+          else break;
+        }
+        s.fuel = Math.min(FIRE_FUEL.max, s.fuel);
+        return 'done';
+      },
+    };
+  },
+
+  // ruszt zakłada się na palące się ognisko
+  taskGrill(fire, cost) {
+    const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
+    return {
+      path: this.pathTo(spot.i, spot.j), face: fire.s, label: '🍢 Robi ruszt',
+      act: (dt, t) => {
+        if (t.elapsed < 4) return null;
+        if (fire.s.grill) return 'done';
+        for (const k in cost) if (this.inv[k] < cost[k]) return 'fail';
+        for (const k in cost) this.inv[k] -= cost[k];
+        fire.s.grill = true; this.world.structuresChanged = true;
+        this.say('kładzie ruszt z patyków i kamieni nad ogniskiem 🍢', 'big');
+        return 'done';
       },
     };
   },
@@ -141,12 +197,16 @@ export const tasksMethods = {
   taskCook(fire) {
     const spot = this.freeTileNear(fire.i, fire.j, this.bfsCache) || fire;
     return {
-      path: this.pathTo(spot.i, spot.j), face: fire.s, label: '🔥 Piecze',
+      path: this.pathTo(spot.i, spot.j), face: fire.s, label: fire.s.grill ? '🍢 Smaży na ruszcie' : '🔥 Piecze',
       act: (dt, t) => {
-        if (t.elapsed < 2.5) return null;
+        // na ruszcie szybciej i po dwie sztuki naraz
+        if (t.elapsed < (fire.s.grill ? 1.4 : 2.5)) return null;
+        if (!(fire.s.fuel > 0)) return 'fail';
         t.elapsed = 0;
-        if (this.inv.rawMeat > 0) { this.inv.rawMeat--; this.inv.cookedMeat++; }
-        else if (this.inv.rawFish > 0) { this.inv.rawFish--; this.inv.cookedFish++; }
+        for (let n = fire.s.grill ? 2 : 1; n > 0; n--) {
+          if (this.inv.rawMeat > 0) { this.inv.rawMeat--; this.inv.cookedMeat++; }
+          else if (this.inv.rawFish > 0) { this.inv.rawFish--; this.inv.cookedFish++; }
+        }
         return this.rawCount() === 0 ? 'done' : null;
       },
     };
@@ -196,15 +256,15 @@ export const tasksMethods = {
     const spot = this.buildSpot();
     if (!spot) return null;
     return {
-      path: this.pathTo(spot.stand.i, spot.stand.j), label: kind === 'campfire' ? '🔥 Rozpala ognisko' : '🛖 Buduje szałas',
+      path: this.pathTo(spot.stand.i, spot.stand.j), label: BUILD[kind][0],
       face: toWorld(spot.i, spot.j),
       act: (dt, t) => {
-        if (t.elapsed < (kind === 'campfire' ? 5 : 9)) return null;
+        if (t.elapsed < BUILD[kind][2]) return null;
         for (const k in cost) if (this.inv[k] < cost[k]) return 'fail';
         if (w.res[idx(spot.i, spot.j)] || w.structures.some((s) => s.i === spot.i && s.j === spot.j)) return 'fail';
         for (const k in cost) this.inv[k] -= cost[k];
         this.rememberStruct(w.addStructure(kind, spot.i, spot.j, this.id));
-        this.say(kind === 'campfire' ? 'rozpala ognisko 🔥' : 'stawia szałas 🛖', 'big');
+        this.say(BUILD[kind][1], 'big');
         this.event(kind);
         return 'done';
       },
@@ -219,8 +279,8 @@ export const tasksMethods = {
         if (tree.removed || tree.growth < 1) return 'fail';
         if (t.elapsed < per * tree.wood) return null;
         // drzewo daje kłody i gałęzie
-        const logs = tree.kind === 'palm' ? 1 : 2, sticks = tree.kind === 'palm' ? 1 : 2;
-        this.inv.logs += logs; this.inv.sticks += sticks; this.stats.wood += logs; this.practice('chop');
+        const logs = tree.kind === 'palm' ? 1 : 2, sticks = tree.kind === 'palm' ? 1 : 2, leaves = tree.kind === 'palm' ? 2 : 3;
+        this.inv.logs += logs; this.inv.sticks += sticks; this.inv.leaves += leaves; this.stats.wood += logs; this.practice('chop');
         tree.wood = 0; tree.growth = 0; // zostaje pniak, odrośnie
         this.world.changed.add(tree);
         return 'done';

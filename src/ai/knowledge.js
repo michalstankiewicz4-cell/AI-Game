@@ -2,14 +2,16 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import {
+  FIRE_RECIPES, BENCH_RECIPES,
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
 } from './data.js';
 
 export const knowledgeMethods = {
-  nextExperiment() {
+  nextExperiment(at = null) {
     const have = MATS.filter((m) => this.inv[m] > 0);
-    const fire = this.world.structures.some((s) => s.kind === 'campfire' && Math.hypot(s.x - this.x, s.z - this.z) < 3);
+    const fire = at ? at.fire : !!this.nearStructure('campfire', 3);
+    const bench = at ? at.bench : !!this.nearStructure('workbench', 3);
     const combos = [];
     const n = have.length;
     for (let a = 0; a < n; a++) {
@@ -19,7 +21,9 @@ export const knowledgeMethods = {
         for (let c = b + 1; c < n; c++) combos.push([have[a], have[b], have[c]]);
       }
     }
-    const keyOf = (c) => comboKey(c) + (c.includes('iron') && fire ? '@ogień' : '');
+    // ta sama próba w innym miejscu (przy ogniu, przy stole) liczy się jako nowa, jeśli miejsce ma znaczenie
+    // przy ogniu warto spróbować jeszcze raz tego, co z kamieniem albo rudą; przy stole wszystkiego, co z co najmniej dwóch rzeczy
+    const keyOf = (c) => comboKey(c) + (fire && (c.includes('iron') || c.includes('stone')) ? '@ogień' : '') + (bench && c.length >= 2 ? '@stół' : '');
     const fresh = combos.filter((c) => {
       const k = keyOf(c);
       if (this.tried.has(k)) return false;
@@ -32,10 +36,10 @@ export const knowledgeMethods = {
     return { types: fresh[0], fire, key: keyOf(fresh[0]) };
   },
 
-  taskExperiment(combo) {
+  taskExperiment(combo, path = []) {
     const names = combo.types.map((t) => MAT_NAMES[t]).join(' + ');
     return {
-      path: [], label: `🧪 Próbuje: ${names}`,
+      path, label: `🧪 Próbuje: ${names}`,
       act: (dt, t) => {
         if (t.elapsed < 3.5) return null;
         const r = RECIPE_BY_COMBO.get(comboKey(combo.types));
@@ -44,8 +48,12 @@ export const knowledgeMethods = {
           this.event('expFail', { what: names });
           return 'done';
         }
-        if (r === 'ironTool' && !this.world.structures.some((s) => s.kind === 'campfire' && Math.hypot(s.x - this.x, s.z - this.z) < 3)) {
-          this.speak('Ruda i gałąź... może w ogniu by się dało to wykuć?', true);
+        if (FIRE_RECIPES.has(r) && !this.nearStructure('campfire', 3)) {
+          this.speak(r === 'ironTool' ? 'Ruda i gałąź... może w ogniu by się dało to wykuć?' : 'Kamienie i patyki... coś by z tego było nad ogniem.', true);
+          return 'done';
+        }
+        if (BENCH_RECIPES.has(r) && !this.nearStructure('workbench', 3)) {
+          this.speak('Coś mi tu świta, ale na kolanach tego nie zrobię. Przydałby się porządny stół.', true);
           return 'done';
         }
         if (r === 'planks' && !this.tools.axe) return 'done';

@@ -5,6 +5,12 @@ import { makeNoise2D } from '../core/rng.js';
 export const natureMethods = {
   update(dt) {
     this.time += dt;
+    // ogniska się wypalają
+    for (const s of this.structures) {
+      if (s.kind !== 'campfire' || s.fuel <= 0) continue;
+      s.fuel = Math.max(0, s.fuel - 0.5 * dt);
+      if (s.fuel <= 0) { this.log('🔥 Ognisko wygasło. Został popiół.', 'info'); this.structuresChanged = true; }
+    }
     // odrastanie zasobów
     for (const r of this.resources) {
       if (r.kind === 'seaweed' && r.amount < r.max) {
