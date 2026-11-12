@@ -1,0 +1,28 @@
+name: Wydanie (tag i release)
+
+# Po każdym pushu na main: jeśli wersji z src/version.js nie ma jeszcze jako tagu,
+# tworzy tag vX.Y.Z i wydanie na GitHub z opisem z CHANGELOG.md.
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Utwórz tag i wydanie
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v=$(grep -oP "VERSION = '\K[^']+" src/version.js)
+          if git rev-parse "v$v" >/dev/null 2>&1; then echo "Tag v$v już istnieje"; exit 0; fi
+          awk -v v="$v" '$0 ~ "^## \\[" v "\\]" {on=1; next} on && /^## / {exit} on {print}' CHANGELOG.md > notes.md
+          git tag "v$v" "$GITHUB_SHA"
+          git push origin "v$v"
+          gh release create "v$v" --title "Wyspy AI $v" --notes-file notes.md --verify-tag
