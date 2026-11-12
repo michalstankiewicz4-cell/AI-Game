@@ -187,7 +187,14 @@ export class Renderer {
           o.visible = k > 0 && crop === c && (!ripe || s.stage === 'ripe');
           if (o.visible) o.scale.setScalar(sc * Math.max(0.01, k));
         }
-        g.getObjectByName('wet').visible = s.water > 0;
+        // ziemia: od jasnej, spękanej (sucho) do ciemnej z kałużami (świeżo podlana); sucha roślina więdnie
+        const wv = Math.min(1, (s.water || 0) * 1.4);
+        if (g.userData.soil) g.userData.soil.color.setRGB(0.6 - 0.37 * wv, 0.48 - 0.33 * wv, 0.32 - 0.23 * wv);
+        if (g.userData.soil) g.userData.soil.roughness = 1 - 0.55 * wv;
+        g.getObjectByName('wet').visible = s.water > 0.6;
+        g.getObjectByName('cracks').visible = !(s.water > 0);
+        const droop = s.stage === 'planted' && !(s.water > 0) ? 0.35 : 0;
+        for (const name of ['plant', 'ryePlant', 'flowerPlant', 'ryeEars', 'bloom']) { const o = g.getObjectByName(name); if (o.visible) { o.rotation.z = droop; o.scale.y *= droop ? 0.8 : 1; } }
         continue;
       }
       if (s.kind !== 'campfire') continue;
