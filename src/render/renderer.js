@@ -175,6 +175,12 @@ export class Renderer {
     const fires = [];
     for (const [s, g] of this.structMeshes) {
       if (s.kind === 'stash') { g.visible = !!s.items && Object.values(s.items).some((v) => v > 0); continue; } // pusta kupka znika
+      if (s.kind === 'field') {
+        const pl = g.getObjectByName('plant'), fr = g.getObjectByName('fruit');
+        const k = s.stage === 'tilled' ? 0 : s.stage === 'ripe' ? 1 : 0.15 + s.growth * 0.85;
+        pl.visible = k > 0; pl.scale.setScalar(Math.max(0.01, k)); fr.visible = s.stage === 'ripe';
+        continue;
+      }
       if (s.kind !== 'campfire') continue;
       const fl = g.getObjectByName('flame'), fl2 = g.getObjectByName('flame2');
       // ruszt dokłada się, gdy postać go zrobi
@@ -272,7 +278,9 @@ export class Renderer {
       g.rotation.y = Math.PI / 2 - la(b.dir, b._pf);
       const run = b.state === 'charge' || b.state === 'flee';
       g.children.forEach((c) => { if (c.name === 'leg') c.rotation.x = Math.sin(rt * (run ? 18 : 8) + c.position.z * 10) * (run ? 0.6 : 0.3); });
-      g.visible = !b.dead && inCone(b.x, b.z);
+      // upolowany dzik leży na boku, dopóki ktoś go nie oskóruje
+      if (b.dead) { g.rotation.z = Math.PI / 2; g.position.y += 0.2; } else g.rotation.z = 0;
+      g.visible = (!b.dead || !b.skinned) && inCone(b.x, b.z);
     }
 
     // agenci

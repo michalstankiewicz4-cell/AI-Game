@@ -38,6 +38,19 @@ const KEYWORDS = [
   ['Ciosać deski', ['desk', 'cios']],
   ['Skręcić linę', ['lin', 'skrec', 'sznur']],
   ['Zbierać kamienie', ['kamien', 'kamyk', 'skal']],
+  ['Zrobić nóż', ['noz', 'ostrz', 'kamienny noz']],
+  ['Zrobić motykę', ['motyk', 'narzedzi do ziemi']],
+  ['Przygotować grządkę', ['grzadk', 'ziemi', 'spulch', 'uprawa', 'pole', 'ogrod', 'motyk']],
+  ['Zasiać nasiona', ['sia', 'sadz', 'nasion', 'pestk', 'zasiac', 'zasadz']],
+  ['Zebrać plony', ['plon', 'zbior', 'zebrac', 'grzadk']],
+  ['Wydrążyć miskę', ['misk', 'naczyn', 'wydraz']],
+  ['Nabrać wody do miski', ['misk', 'nabra', 'zapas wod', 'nalac']],
+  ['Napić się z miski', ['misk', 'pic', 'napi', 'wod']],
+  ['Oskórować dzika', ['skor', 'oskor', 'mies', 'dzik']],
+  ['Wystrugać łuk', ['luk', 'strug', 'cieciw']],
+  ['Zrobić strzały', ['strzal', 'pior', 'lotk', 'grot']],
+  ['Polować z łuku', ['luk', 'strzel', 'polow', 'ptak', 'strzal']],
+  ['Uszyć ubranie ze skóry', ['skor', 'ubra', 'kurtk', 'futr', 'uszy']],
   ['Zbierać wodorosty', ['wodorost', 'glon']],
   ['Kopać w kopalni', ['kopa', 'kopal', 'rud', 'zelaz', 'kilof']],
   ['Wykuć żelazny kilof', ['kilof', 'wyku', 'zelazn']],
@@ -112,7 +125,7 @@ export function describeFree(a) {
   if (pond) sees.push('słodkowodny staw niedaleko');
   if (a.saltKnown) sees.push('morze (wiesz, że woda jest słona)'); else sees.push('morze dookoła');
   // budowle w pobliżu, które postać zna
-  const SNAME = { campfire: (s) => (s.fuel > 0 ? 'palące się ognisko' : 'wygasłe ognisko') + (s.grill ? ' z rusztem' : ''), shelter: () => 'szałas', tent: () => 'namiot', workbench: () => 'stół rzemieślniczy', bed: () => 'łóżko', chest: (s) => 'skrzynia' + (s.items && Object.values(s.items).some((v) => v > 0) ? ' z zapasami' : ' (pusta)') };
+  const SNAME = { campfire: (s) => (s.fuel > 0 ? 'palące się ognisko' : 'wygasłe ognisko') + (s.grill ? ' z rusztem' : ''), shelter: () => 'szałas', tent: () => 'namiot', workbench: () => 'stół rzemieślniczy', bed: () => 'łóżko', field: (s) => (s.stage === 'ripe' ? 'grządka z dojrzałymi jagodami' : s.stage === 'planted' ? 'grządka z rosnącą sadzonką' : 'pusta grządka'), chest: (s) => 'skrzynia' + (s.items && Object.values(s.items).some((v) => v > 0) ? ' z zapasami' : ' (pusta)') };
   for (const s of w.structures) {
     if (!a.knownStructs.has(s.id) || !SNAME[s.kind]) continue;
     const d = Math.hypot(s.i - a.i, s.j - a.j);

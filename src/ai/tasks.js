@@ -2,7 +2,7 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import {
-  FIRE_FUEL,
+  FIRE_FUEL, FARM,
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   STORES, SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, WEIGHT, clamp,
 } from './data.js';
@@ -50,6 +50,10 @@ export const tasksMethods = {
           this.hunger = clamp(this.hunger + FOOD[k].val, 0, 100);
           if (k === 'cookedFish' || k === 'cookedMeat') this.joy = Math.min(30, this.joy + 6); // ciepły posiłek cieszy
           if (first) this.event('tasteGood', { food: FOOD[k].name });
+        }
+        if (k === 'berries' && this.inv.seeds < 12 && Math.random() < FARM.seedChance) {
+          this.inv.seeds++;
+          if (!this.known.has('seeds')) { this.known.add('seeds'); this.say('znajduje w jagodach pestki. Może to nasiona? 🌱', 'learn'); }
         }
         if (first) { this.edible.set(k, true); this.say(`odkrywa, że ${FOOD[k].name} ${raw ? 'da się zjeść (ale lepiej upiec)' : 'jest jadalne'} 🧠`, 'learn'); }
         t.elapsed = 0;
@@ -102,16 +106,19 @@ export const tasksMethods = {
 
   taskHunt(best) {
     const bird = best.b;
+    const bow = !this.tools.spear && this.tools.bow && this.inv.arrows > 0;
     return {
-      targetId: bird.id, path: this.pathTo(best.t.i, best.t.j), face: bird, label: '🔱 Poluje',
+      targetId: bird.id, path: this.pathTo(best.t.i, best.t.j), face: bird, label: bow ? '🏹 Poluje z łuku' : '🔱 Poluje',
       act: (dt, t) => {
         if (bird.dead || bird.state !== 'landed') return 'fail';
         if (t.elapsed < 0.8) return null;
         this.practice('hunt');
-        if (Math.random() < 0.5 + 0.35 * this.skill.hunt) {
+        // łuk: celniej, ale strzała czasem się gubi
+        if (bow && Math.random() < 0.4) this.inv.arrows = Math.max(0, this.inv.arrows - 1);
+        if (Math.random() < (bow ? 0.75 : 0.5) + 0.35 * this.skill.hunt) {
           this.world.catchBird(bird);
-          this.inv.rawMeat++; this.stats.birds++;
-          this.say('upolował(a) ptaka! 🐦');
+          this.inv.rawMeat++; this.inv.feathers += 2; this.stats.birds++;
+          this.say(`upolował(a) ptaka${bow ? ' z łuku' : ''}! Mięso i pióra 🐦🪶`);
           this.event('bird');
         } else {
           this.world.scareBird(bird);
@@ -286,7 +293,7 @@ export const tasksMethods = {
         if (b.dead) return 'fail';
         if (Math.hypot(b.x - this.x, b.z - this.z) > 2.2) { if (t.elapsed > 6) return 'fail'; const p = this.pathTo(b.i, b.j); if (p && p.length) t.path = p; return null; }
         this.fightBoar = b;
-        if (this.world.hurtBoar(b, (this.tools.sword ? 14 : 9) + this.skill.hunt * 4, this)) this.boarKilled();
+        if (this.world.hurtBoar(b, (this.tools.sword ? 14 : 9) + this.skill.hunt * 4, this)) this.boarKilled(b);
         return 'done';
       },
     };
@@ -336,7 +343,7 @@ export const tasksMethods = {
   },
 
   taskCraft(tool, cost, msg, announce, produce) {
-    const names = { rod: 'wędka', spear: 'włócznia', clothes: 'ubranie', shield: 'tarcza' };
+    const names = { rod: 'wędka', spear: 'włócznia', clothes: 'ubranie', shield: 'tarcza', knife: 'nóż', hoe: 'motyka', bow: 'łuk', leather: 'ubranie ze skóry' };
     return {
       path: [], label: tool === 'clothes' ? '👕 Szyje ubranie' : tool ? '🔨 Majsterkuje' : produce.planks ? '🪚 Ciosa deski' : '🪢 Skręca linę',
       act: (dt, t) => {
@@ -550,6 +557,119 @@ export const tasksMethods = {
 
   taskRest() {
     return { path: [], rest: true, label: '🪑 Odpoczywa', act: (dt, t) => { this.energy = clamp(this.energy + 0.25 * dt, 0, 100); return t.elapsed > 6 ? 'done' : null; } };
+  },
+
+  // ---------- rolnictwo, miska, skórowanie ----------
+  // miejsce na grządkę: najchętniej obok innych grządek, na trawie bez zasobów i budowli
+  fieldSpot() {
+    const w = this.world, bfs = this.bfsCache;
+    const fields = w.structures.filter((s) => s.kind === 'field' && this.knownStructs.has(s.id));
+    const free = (i, j) => w.inBounds(i, j) && w.type[idx(i, j)] === T.GRASS && !w.res[idx(i, j)] && !w.structures.some((s) => s.i === i && s.j === j)
+      && !w.pieces.some((p) => p.i === i && p.j === j) && bfs.dist[idx(i, j)] >= 0;
+    for (const f of fields) for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const i = f.i + di, j = f.j + dj;
+      if (free(i, j) && Math.hypot(i - this.i, j - this.j) < 20) return { i, j };
+    }
+    const b = this.buildSpot();
+    return b ? { i: b.i, j: b.j } : null;
+  },
+  taskTill() {
+    const spot = this.fieldSpot();
+    if (!spot) return null;
+    const w = this.world;
+    return {
+      path: this.pathTo(spot.i, spot.j), label: '🌾 Spulchnia ziemię motyką',
+      act: (dt, t) => {
+        if (t.elapsed < 5) return null;
+        if (w.res[idx(spot.i, spot.j)] || w.structures.some((s) => s.i === spot.i && s.j === spot.j)) return 'fail';
+        const f = w.addStructure('field', spot.i, spot.j, this.id);
+        this.rememberStruct(f);
+        this.say('przygotowuje grządkę pod sadzenie 🌾');
+        return 'done';
+      },
+    };
+  },
+  taskPlant(f) {
+    return {
+      targetId: 'f' + f.id, path: this.pathTo(f.i, f.j), label: '🌱 Sadzi nasiona',
+      act: (dt, t) => {
+        if (t.elapsed < 2.5) return null;
+        if (f.stage !== 'tilled' || this.inv.seeds < 1) return 'fail';
+        this.inv.seeds--; f.stage = 'planted'; f.growth = 0; f.planter = this.id;
+        if (!this.known.has('farm')) this.speak('Wsadzę to nasionko do ziemi. Ciekawe, czy coś wyrośnie?', true);
+        return 'done';
+      },
+    };
+  },
+  taskHarvest(f) {
+    return {
+      targetId: 'f' + f.id, path: this.pathTo(f.i, f.j), label: '🧺 Zbiera plony',
+      act: (dt, t) => {
+        if (t.elapsed < 2.5) return null;
+        if (f.stage !== 'ripe') return 'fail';
+        this.inv.berries += f.berries; this.stats.berries += f.berries;
+        this.inv.seeds += FARM.seeds;
+        f.berries = 0; f.stage = 'tilled'; f.growth = 0;
+        this.joy = Math.min(30, this.joy + 8);
+        if (!this.known.has('farm')) {
+          this.known.add('farm');
+          this.say('odkrywa, że z nasion wyrasta krzak z jagodami! 🌱🧠', 'learn');
+          this.event('discover', { what: 'uprawa' });
+        } else this.say('zbiera jagody ze swojej grządki 🧺');
+        return 'done';
+      },
+    };
+  },
+  taskFillBowl(spot) {
+    return {
+      path: this.pathTo(spot.i, spot.j), face: spot.water, label: '🥣 Nabiera wody do miski',
+      act: (dt, t) => {
+        if (t.elapsed < 2) return null;
+        if (this.inv.bowl < 1) return 'fail';
+        this.inv.waterBowl += this.inv.bowl; this.inv.bowl = 0;
+        return 'done';
+      },
+    };
+  },
+  taskDrinkBowl() {
+    return {
+      urgent: true, path: [], label: '🥣 Pije z miski',
+      act: (dt, t) => {
+        if (t.elapsed < 1.5) return null;
+        if (this.inv.waterBowl < 1) return 'fail';
+        this.inv.waterBowl--; this.inv.bowl++;
+        this.thirst = clamp(this.thirst + 40, 0, 100);
+        return 'done';
+      },
+    };
+  },
+  // upolowany dzik: nożem zdejmuje skórę i odcina mięso
+  taskSkin(b) {
+    return {
+      targetId: 's' + b.id, path: this.pathTo(b.i, b.j) || [], label: '🔪 Skóruje dzika',
+      act: (dt, t) => {
+        if (t.elapsed < 4) return null;
+        if (b.skinned || !b.dead) return 'fail';
+        b.skinned = true; this.carcass = null;
+        this.inv.rawMeat += 3; this.inv.hide += 1;
+        this.say('skóruje dzika nożem: mięso i skóra 🔪');
+        return 'done';
+      },
+    };
+  },
+  // rzecz robiona z ręki (miska, strzały): zużywa materiały i daje produkt
+  taskMake(cost, produce, label, msg) {
+    return {
+      path: [], label,
+      act: (dt, t) => {
+        if (t.elapsed < 3.5) return null;
+        for (const k in cost) if (this.inv[k] < cost[k]) return 'fail';
+        for (const k in cost) this.inv[k] -= cost[k];
+        for (const k in produce) this.inv[k] += produce[k];
+        if (msg) this.say(msg);
+        return 'done';
+      },
+    };
   },
 
   buildSpot() {

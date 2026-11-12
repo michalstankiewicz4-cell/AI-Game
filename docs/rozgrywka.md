@@ -88,15 +88,21 @@ Na starcie każda postać ma siekierę i kilof. Receptur nie zna, odkrywa je, ł
 | Łóżko | 3 deski + 2 gałęzie + 4 liście | odkrywane tylko przy stole rzemieślniczym; dużo szybszy sen |
 | Pochodnia | gałąź + 2 liście + lina | odkrywana tylko przy ognisku; zapala się od palącego się ogniska, w ręku pali się ok. 70 s |
 | Skrzynia | 4 deski + 2 gałęzie | odkrywana wszędzie; stawiana przy ognisku albo pod dachem; trzyma materiały i jedzenie |
+| Nóż kamienny | 2 kamienie + lina | skórowanie dzika (3 mięsa i skóra), struganie łuku i drążenie miski |
+| Motyka | deska + 2 kamienie + lina | spulchnia ziemię na grządkę |
+| Drewniana miska | deska | drążona nożem; można w niej nosić wodę ze stawu |
+| Łuk | kłoda + lina | strugany nożem; ze strzałami poluje na ptaki i walczy z dzikiem z daleka |
+| Strzały | gałąź + pióra + kamień | 4 sztuki; czasem się gubią albo łamią |
+| Ubranie ze skóry | 2 skóry + lina | odkrywane tylko przy stole rzemieślniczym; +7°C odczuwalnej temperatury |
 
-Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo przy ogniu, łóżko przy stole rzemieślniczym. Próba w złym miejscu kończy się wskazówką w myślach postaci.
+Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo przy ogniu, łóżko przy stole rzemieślniczym. Miski i łuku nie zrobi się bez noża. Próba w złym miejscu kończy się wskazówką w myślach postaci.
 
 ### Ognisko
 - Pali się ok. 200 s czasu gry, czyli nieco ponad dobę. Maksymalnie można je podsycić do 300 s.
 - Postać podsyca je kłodami (+60 s), gałęziami (+25 s) albo liśćmi (+8 s).
 - Wygasłe ognisko nie grzeje i nie piecze. Rozpala się je na nowo dwiema gałęziami.
 
-| Ubranie z liści | 6 liści + 2 liny | odkrywane tylko przy stole rzemieślniczym; +4°C odczuwalnej temperatury |
+| Ubranie z liści | 6 liści + 2 liny | odkrywane tylko przy stole rzemieślniczym; +4°C odczuwalnej temperatury (ze skóry +7°C) |
 
 ### Plecak i składziki
 - **Limity:** plecak mieści 30 rzeczy (`INV_CAP`) i 25 kg (`MAX_WEIGHT`). Wagi są w `WEIGHT` w `src/ai/data.js`, np. kłoda 3 kg, kamień 2 kg, ruda 3 kg, deska 1,5 kg, gałąź 0,5 kg, liść 0,1 kg.
@@ -106,6 +112,14 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 - **Branie z zapasów:** gdy czegoś brakuje do planów, postać najpierw bierze to ze znanego składziku, zanim pójdzie zbierać.
 - **Skrzynia:** postać, która odkryje skrzynię, zbija ją przy obozie. Do skrzyni trafia nadmiar materiałów (ma pierwszeństwo przed kupką na ziemi) i nadmiar jedzenia (przy sobie zostają po 2 sztuki). Głodna postać bez jedzenia w plecaku idzie po nie do skrzyni, a jedzenie w skrzyni liczy się do zapasu, więc postacie nie zbierają jagód bez końca.
 - **Wiedza o składzikach:** postacie mówią sobie o nich w rozmowach. Pusty składzik znika z mapy.
+
+## Uprawa, miska i zdobycze z polowania
+- **Nasiona:** jedząc jagody, postać czasem znajduje pestki (ok. 1 na 3 garście, najwyżej 12 przy sobie). Nasiona, pióra i strzały to drobiazgi: nie zajmują miejsca w plecaku.
+- **Grządka:** postać z motyką i nasionami spulchnia ziemię na trawie obok obozu (najchętniej przy innych grządkach, do 6 grządek). Zasiane nasiona po ok. 270 s czasu gry (półtorej doby) wyrastają w krzak z 6 jagodami. Przy zbiorze wracają 2 nasiona, a grządka czeka na kolejne sadzenie. W trybie „Odkrywa sam” postać sieje najpierw z ciekawości, a dopiero po pierwszym zbiorze wie, że to działa.
+- **Miska:** przy stawie postać nabiera wody do pustych misek. Spragniona, z dala od stawu (ponad 12 pól), pije z miski (+40 do pragnienia).
+- **Dzik:** z nożem postać skóruje upolowanego dzika (ok. 4 s): 3 mięsa i skóra. Bez noża urwie tylko 1 kawałek mięsa. Martwy dzik leży na boku, dopóki ktoś go nie oskóruje.
+- **Ptaki:** upolowany ptak daje mięso i 2 pióra.
+- **Łuk:** ze strzałami trafia ptaka częściej niż włócznia (75% zamiast 50% na start). Postać z łukiem i strzałami może też walczyć z dzikiem i na niego polować.
 
 ## Noc, pochodnie i przedmiot w ręku
 - **Widoczność:** w dzień postać widzi na 18 pól. W nocy widzi na ok. 1/4 tego (4–5 pól), a z płonącą pochodnią w ręku albo przy palącym się ognisku na połowę (9 pól). O zmierzchu i świcie zasięg zmienia się płynnie.

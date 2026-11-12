@@ -17,6 +17,8 @@ import { buildingMethods, BUILD_LABEL } from './building.js';
 export { PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MAT_NAMES, KIND_NAMES, VIEW_RANGE, VIEW_NEAR, viewHalfAngle } from './data.js';
 export { ITEM_LABELS, TOOL_LABELS } from './data.js';
 
+const POCKET = new Set(['seeds', 'feathers', 'arrows']);
+
 export class Agent {
   constructor(world, persona, i, j, id) {
     this.world = world;
@@ -31,8 +33,8 @@ export class Agent {
     this.hunger = 85; this.thirst = 80; this.energy = 90; this.health = 100;
     this.bodyT = 36.6; this.feltT = 18; // temperatura ciała i odczuwalna (°C)
     this.mood = 60; this.joy = 0; this.lastTalk = -999; // samopoczucie 0-100, chwilowa radość, ostatnia rozmowa
-    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0 };
-    this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false };
+    this.inv = { logs: 0, sticks: 0, leaves: 0, planks: 0, seaweed: 0, rope: 0, stone: 0, iron: 0, berries: 0, rawFish: 0, cookedFish: 0, rawMeat: 0, cookedMeat: 0, torch: 0, feathers: 0, hide: 0, seeds: 0, arrows: 0, bowl: 0, waterBowl: 0 };
+    this.tools = { axe: true, pickaxe: true, rod: false, spear: false, ironAxe: false, ironPick: false, clothes: false, sword: false, shield: false, knife: false, hoe: false, bow: false, leather: false };
     this.task = null;
     this.alive = true;
     this.asleep = false;
@@ -109,11 +111,14 @@ export class Agent {
       this.say('przekonuje się na własnej skórze, że dziki są groźne 🐗🧠', 'learn');
       this.speak('Au! Ten dzik mnie zaatakował!', true);
     }
-    if (!this.tools.sword && !this.tools.spear && !(this.task && this.task.flee)) { this.task = this.taskFlee(b); this.speak('Uciekam!', true); }
+    if (!this.tools.sword && !this.tools.spear && !(this.tools.bow && this.inv.arrows > 0) && !(this.task && this.task.flee)) { this.task = this.taskFlee(b); this.speak('Uciekam!', true); }
   }
 
-  boarKilled() {
-    this.inv.rawMeat += 3; this.stats.boars = (this.stats.boars || 0) + 1; this.practice('hunt');
+  boarKilled(b) {
+    this.stats.boars = (this.stats.boars || 0) + 1; this.practice('hunt');
+    // z nożem dzika da się oskórować (mięso i skóra), bez noża ledwo coś urwie
+    if (this.tools.knife && b) { this.carcass = b; this.carcassT = this.world.time; }
+    else { this.inv.rawMeat += 1; if (b) b.skinned = true; this.speak('Bez noża ledwo urwę kawałek mięsa...', true); return (this.fightBoar = null); }
     this.joy = Math.min(30, this.joy + 15); this.fightBoar = null;
     this.speak('Mam go! Będzie pieczeń.', true);
   }
@@ -167,7 +172,8 @@ export class Agent {
     return s;
   }
   rawCount() { return this.inv.rawFish + this.inv.rawMeat; }
-  invTotal() { let s = 0; for (const k in this.inv) s += this.inv[k]; return s; }
+  // drobiazgi (nasiona, pióra, strzały) mieszczą się w kieszeni i nie zajmują miejsca w plecaku
+  invTotal() { let s = 0; for (const k in this.inv) if (!POCKET.has(k)) s += this.inv[k]; return s; }
   invWeight() { let s = 0; for (const k in this.inv) s += this.inv[k] * (WEIGHT[k] || 0.5); return s; }
   full() { return this.invTotal() >= INV_CAP || this.invWeight() >= MAX_WEIGHT; }
   // czy zmieści jeszcze n rzeczy o wadze ok. kg
@@ -188,7 +194,7 @@ export class Agent {
     // dom z desek: gra liczy tylko przykrycie i ściany wokół pola, na którym stoi postać
     const house = w.pieces.length ? w.shelterAt(this.i, this.j) : null;
     const roof = hut || tent || (house && house.roof && house.closed >= 0.5);
-    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + Math.max(hut ? 7 : tent ? 5 : 0, house ? house.warm : 0) + (this.tools.clothes ? 4 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
+    this.feltT = w.airTemp(this.i, this.j) + (warmFire ? 14 : 0) + Math.max(hut ? 7 : tent ? 5 : 0, house ? house.warm : 0) + (this.tools.leather ? 7 : this.tools.clothes ? 4 : 0) + (this.working ? 4 : 0) + (this.asleep ? -2 : 0);
     const targetT = clamp(36.8 + (this.feltT < 18 ? (this.feltT - 18) * 0.12 : (this.feltT - 18) * 0.06), 33, 39.5);
     this.bodyT += (targetT - this.bodyT) * Math.min(1, 0.03 * dt);
     // doświadczenie: zmarznięta postać sama zauważa, że przy ogniu albo pod dachem robi się cieplej
@@ -261,14 +267,16 @@ export class Agent {
     // walka z dzikiem: uzbrojona postać stoi i zadaje ciosy, zamiast robić cokolwiek innego
     const fb = this.fightBoar;
     if (fb && (fb.dead || Math.hypot(fb.x - this.x, fb.z - this.z) > 2.2 || (fb.target !== this && fb.state !== 'roam'))) this.fightBoar = null;
-    else if (fb && (this.tools.sword || this.tools.spear)) {
+    else if (fb && (this.tools.sword || this.tools.spear || (this.tools.bow && this.inv.arrows > 0))) {
       this.facing = Math.atan2(fb.x - this.x, fb.z - this.z);
       this.working = true;
       this.strikeT = (this.strikeT || 0) - dt;
       if (this.strikeT <= 0) {
         this.strikeT = 1;
-        const dmg = (this.tools.sword ? 14 : 9) + this.skill.hunt * 4;
-        if (w.hurtBoar(fb, dmg, this)) this.boarKilled();
+        const bow = !this.tools.sword && !this.tools.spear;
+        if (bow && Math.random() < 0.5) this.inv.arrows = Math.max(0, this.inv.arrows - 1); // strzała czasem się łamie
+        const dmg = (this.tools.sword ? 14 : bow ? 11 : 9) + this.skill.hunt * 4;
+        if (w.hurtBoar(fb, dmg, this)) this.boarKilled(fb);
       }
       if (this.task && !this.task.urgent) this.task = null;
       this.visionT -= dt; if (this.visionT <= 0) { this.visionT = 0.3; this.see(false); }
@@ -317,7 +325,10 @@ export class Agent {
     const lbl = (this.task && this.task.label) || '';
     let h = null;
     if (this.asleep) h = null;
-    else if (this.fightBoar || /dzik/i.test(lbl)) h = this.tools.sword ? 'sword' : this.tools.spear ? 'spear' : 'axe';
+    else if (/Skóruje|nóż|miskę|Struga/i.test(lbl) && this.tools.knife) h = 'knife';
+    else if (/grządk|ziemię|motyk/i.test(lbl) && this.tools.hoe) h = 'hoe';
+    else if (/łuk/i.test(lbl) && this.tools.bow) h = 'bow';
+    else if (this.fightBoar || /dzik/i.test(lbl)) h = this.tools.sword ? 'sword' : this.tools.spear ? 'spear' : this.tools.bow && this.inv.arrows > 0 ? 'bow' : 'axe';
     else if (dark && this.torchBurn > 0) h = 'torch';
     else if (/Ścina|Bada drzewo|Bada palm|deski|Ciosa/i.test(lbl)) h = this.tools.ironAxe ? 'ironAxe' : 'axe';
     else if (/Kopie|skał|kamie|kopalni/i.test(lbl)) h = this.tools.ironPick ? 'ironPick' : 'pickaxe';

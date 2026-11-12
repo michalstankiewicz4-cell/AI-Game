@@ -30,6 +30,8 @@ export const decideMethods = {
     if (this.thirst < 80) {
       const spot = this.nearestTile(bfs, w.pondShore);
       if (spot) add(needCurve(this.thirst) * 1.35 + crit(this.thirst, 25) - spot.d * 0.002, '💧 Pić wodę', () => this.taskDrink(spot));
+      // woda w misce: przydaje się z dala od stawu
+      if (this.inv.waterBowl > 0 && (!spot || spot.d > 12)) add(needCurve(this.thirst) * 1.4 + crit(this.thirst, 25) + 0.05, '🥣 Napić się z miski', () => this.taskDrinkBowl());
       else {
         unknownNeed = Math.max(unknownNeed, needCurve(this.thirst) * 1.4 + 0.25);
         if (!this.saltKnown && this.thirst < 60) {
@@ -37,6 +39,11 @@ export const decideMethods = {
           if (sea) add(needCurve(this.thirst) * 1.3 + 0.2 - sea.d * 0.003, '🌊 Napić się z morza', () => this.taskSaltWater(sea));
         }
       }
+    }
+    // miska: nabrać wody na zapas, będąc przy stawie
+    if (this.inv.bowl > 0 && this.thirst > 50) {
+      const spot = this.nearestTile(bfs, w.pondShore);
+      if (spot && spot.d < 15) add(0.32 - spot.d * 0.01, '🥣 Nabrać wody do miski', () => this.taskFillBowl(spot));
     }
     // --- jedzenie z ekwipunku ---
     if (this.hunger < 75 && this.foodStock() > 0) {
@@ -70,7 +77,7 @@ export const decideMethods = {
         const spot = this.bestFishingSpot(bfs);
         if (spot) add(foodScore * (spot.fish > 0 ? 1.05 : 0.55) + (this.w.fish - 1) * 0.15 - spot.d * 0.004, '🎣 Łowić ryby', () => this.taskFish(spot));
       }
-      if (this.tools.spear) {
+      if (this.tools.spear || (this.tools.bow && this.inv.arrows > 0)) {
         let best = null;
         for (const m of this.memBirds.values()) {
           const b = m.b;
@@ -78,10 +85,10 @@ export const decideMethods = {
           const t = { i: m.i, j: m.j }; const d = distOf(t.i, t.j);
           if (d >= 0 && d < 30 && (!best || d < best.d)) best = { b, d, t };
         }
-        if (best) add(foodScore * 1.1 + (this.w.hunt - 1) * 0.15 - best.d * 0.008, '🔱 Polować na ptaka', () => this.taskHunt(best));
+        if (best) add(foodScore * 1.1 + (this.w.hunt - 1) * 0.15 - best.d * 0.008, this.tools.spear ? '🔱 Polować na ptaka' : '🏹 Polować z łuku', () => this.taskHunt(best));
       }
       // dzik: dużo mięsa, ale tylko z bronią i w dobrej formie
-      if ((this.tools.sword || this.tools.spear) && this.health > 60) {
+      if ((this.tools.sword || this.tools.spear || (this.tools.bow && this.inv.arrows > 1)) && this.health > 60) {
         let best = null;
         for (const [id, m] of this.memBoars) {
           if (m.b.dead || w.time - m.t > 40) { this.memBoars.delete(id); continue; }
@@ -92,6 +99,12 @@ export const decideMethods = {
       }
       if (opts.length === nOpts) unknownNeed = Math.max(unknownNeed, foodScore * 1.2);
       else if (!bush && foodScore > 0.4) unknownNeed = Math.max(unknownNeed, foodScore * 0.7); // tylko słabe opcje - warto poszukać jedzenia
+    }
+    // grządki z dojrzałymi jagodami: zebrać, nawet gdy nie jest głodna (jagody na zapas i nasiona do sadzenia)
+    if (this.roomFor(3, 1)) for (const s of w.structures) {
+      if (s.kind !== 'field' || s.stage !== 'ripe' || !this.knownStructs.has(s.id) || taken.has('f' + s.id)) continue;
+      const d = distOf(s.i, s.j);
+      if (d >= 0 && d < 30) { add(Math.max(foodScore + 0.15, 0.36) - d * 0.004, '🧺 Zebrać plony', () => this.taskHarvest(s)); break; }
     }
     // --- sen ---
     {
@@ -161,6 +174,24 @@ export const decideMethods = {
     if (!tools.sword && K('sword') && has(RECIPES.sword) && fire && fire.d < 30) add(0.42 + danger, '🗡️ Wykuć miecz', () => this.taskForgeSword(fire, RECIPES.sword));
     if (!tools.shield && myBench && K('shield') && has(RECIPES.shield)) add(0.36 + danger, '🛡️ Zrobić tarczę', () => this.taskCraft('shield', RECIPES.shield, 'robi drewnianą tarczę 🛡️', true));
     if (!tools.clothes && myBench && K('clothes') && has(RECIPES.clothes)) add(0.42 + cold * 0.4, '👕 Uszyć ubranie', () => this.taskCraft('clothes', RECIPES.clothes, 'szyje ubranie z liści i liny 👕', true));
+    // nóż, motyka, łuk, strzały, miska, ubranie ze skóry
+    const craftT = (tool, label, msg, score) => { if (!tools[tool] && K(tool) && has(RECIPES[tool])) add(score, label, () => ({ ...this.taskCraft(tool, RECIPES[tool], msg, true), label: label.replace('Zrobić', 'Robi').replace('Wystrugać', 'Struga') })); };
+    craftT('knife', '🔪 Zrobić nóż', 'robi kamienny nóż 🔪', 0.48);
+    craftT('hoe', '🌾 Zrobić motykę', 'robi motykę 🌾', 0.3 + (inv.seeds > 0 ? 0.12 : 0));
+    if (tools.knife) craftT('bow', '🏹 Wystrugać łuk', 'struga łuk 🏹', 0.36 + (this.w.hunt - 1) * 0.2);
+    if (myBench) craftT('leather', '🧥 Uszyć ubranie ze skóry', 'szyje ubranie ze skóry 🧥', 0.42 + cold * 0.5);
+    if (tools.knife && K('bowl') && inv.bowl + inv.waterBowl < 1 && has(RECIPES.bowl)) add(0.34, '🥣 Wydrążyć miskę', () => this.taskMake(RECIPES.bowl, { bowl: 1 }, '🥣 Drąży miskę nożem', 'drąży drewnianą miskę 🥣'));
+    if (tools.bow && K('arrows') && inv.arrows < 4 && has(RECIPES.arrows)) add(0.4, '🏹 Zrobić strzały', () => this.taskMake(RECIPES.arrows, { arrows: 4 }, '🏹 Robi strzały', 'robi 4 strzały z lotkami z piór 🏹'));
+    // upolowany dzik czeka na oskórowanie
+    if (this.carcass && tools.knife && !this.carcass.skinned && this.carcass.dead && w.time - (this.carcassT || 0) < 120) add(0.9, '🔪 Oskórować dzika', () => this.taskSkin(this.carcass));
+    // uprawa: grządka motyką, sadzenie nasion z jagód
+    if (tools.hoe && inv.seeds > 0) {
+      const fields = w.structures.filter((s) => s.kind === 'field' && this.knownStructs.has(s.id));
+      const tilled = fields.map((s) => ({ s, d: distOf(s.i, s.j) })).filter((x) => x.s.stage === 'tilled' && x.d >= 0 && x.d < 30 && !taken.has('f' + x.s.id)).sort((a, b) => a.d - b.d)[0];
+      const farm = K('farm') ? 0.12 : 0;
+      if (tilled) add(0.4 + farm - tilled.d * 0.003, '🌱 Zasiać nasiona', () => this.taskPlant(tilled.s));
+      else if (fields.length < 6 && (myFire || myRoof)) add(0.36 + farm, '🌾 Przygotować grządkę', () => this.taskTill());
+    }
     if (!myFire && K('campfire') && has(RECIPES.campfire)) add(0.7 + (this.known.has('warmFire') ? cold * 0.5 : 0), '🔥 Rozpalić ognisko', () => this.taskBuild('campfire', RECIPES.campfire));
     if (myFire && !myShelter && K('shelter') && has(RECIPES.shelter)) add(0.45 + (this.known.has('warmRoof') ? cold * 0.3 : 0), '🛖 Zbudować szałas', () => this.taskBuild('shelter', RECIPES.shelter));
     if (fire && fire.d < 30 && K('ironTool') && has(RECIPES.ironTool)) {
@@ -188,6 +219,12 @@ export const decideMethods = {
     if (!myChest && (myFire || myRoof) && K('chest')) wish(RECIPES.chest);
     if (plankOp) want.planks += 2; // zapas desek na budowę
     if (K('torch') && inv.torch < 2 && myFire) wish(RECIPES.torch);
+    if (!tools.knife && K('knife')) wish(RECIPES.knife);
+    if (!tools.hoe && K('hoe') && inv.seeds > 0) wish(RECIPES.hoe);
+    if (!tools.bow && K('bow') && tools.knife) wish(RECIPES.bow);
+    if (tools.knife && K('bowl') && inv.bowl + inv.waterBowl < 1) wish(RECIPES.bowl);
+    if (tools.bow && K('arrows') && inv.arrows < 4 && inv.feathers > 0) wish(RECIPES.arrows);
+    if (!tools.leather && K('leather') && myBench && inv.hide >= 2) wish(RECIPES.leather);
     if (myFire) want.sticks += 2; // zapas na podsycanie ogniska
     // zapas do eksperymentów, dopóki są nieodkryte receptury
     if (Object.keys(RECIPES).some((r) => !K(r))) {

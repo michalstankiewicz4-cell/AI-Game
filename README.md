@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.22.2 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.23.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -18,9 +18,10 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Dziki:** szarżują na postacie, które podejdą za blisko. Z włócznią albo mieczem postacie walczą i polują, tarcza osłabia ciosy, a bez broni uciekają.
 - **Plecak:** limit 30 rzeczy i 25 kg; ciężar spowalnia, nadmiar trafia do składzików albo do zbitej z desek skrzyni (ta trzyma też jedzenie), z których postacie potem biorą.
 - **Klimat umiarkowany:** temperatura zmienia się w ciągu doby i z dnia na dzień. To, że ogień i dach grzeją, postacie odkrywają same.
-- **Rzemiosło:** drzewo → kłody, gałęzie i liście; kłoda → deski (toporkiem); wodorosty → lina; dalej wędka, włócznia, ognisko (wypala się i trzeba je podsycać), ruszt, namiot, szałas, stół rzemieślniczy, łóżko i żelazne narzędzia. Niektóre receptury wychodzą tylko przy ogniu albo przy stole.
+- **Rzemiosło:** drzewo → kłody, gałęzie i liście; kłoda → deski (toporkiem); wodorosty → lina; dalej wędka, włócznia, ognisko (wypala się i trzeba je podsycać), ruszt, namiot, szałas, stół rzemieślniczy, łóżko, żelazne narzędzia, nóż kamienny, motyka, drewniana miska, łuk ze strzałami i ubranie ze skóry. Niektóre receptury wychodzą tylko przy ogniu albo przy stole.
 - **Budowanie z desek:** deski kładzione pojedynczo jako podłoga, ściana albo skos, przyciągane do siatki, z nazwami, do zdjęcia i przeniesienia. Model językowy dostaje analizę kształtu budowy (same liczby) i może wydawać polecenia. Bez nich postacie budują metodą prób i błędów; dom (przykryte, obudowane pola grzeją) wychodzi sam albo wcale.
 - **Noc i pochodnie:** w nocy postać widzi na ok. 1/4 dziennego zasięgu, z pochodnią w ręku na połowę. Pochodnię odkrywa się i zapala przy ognisku. Postać trzyma w ręku przedmiot z plecaka: pochodnię, broń albo narzędzie.
+- **Uprawa i łowy:** nasiona z jagód sieje się na grządkach przygotowanych motyką; miska nosi wodę; dzika skóruje się nożem (mięso i skóra), ptaki dają mięso i pióra na strzały do łuku.
 - **Mosty:** budowane segment po segmencie (2 deski + 1 lina), od obu brzegów.
 - **AI:** decyzje oparte na użyteczności (utility AI) – w panelu postaci widać, co rozważa. Każdy agent ma charakter.
 - **Wiedza postaci (menu):** „🧪 Odkrywa sam” albo „📚 Wie wszystko”. W pierwszym trybie AI nie znają mapy, receptur ani jadalności. Z ciekawości badają nowe zasoby, eksperymentują łącząc materiały i tak odkrywają receptury; uczą się, co jest jadalne (surowe może zaszkodzić) i że morskiej wody nie da się pić. W drugim znają wszystko od startu (receptury, jedzenie, mapę, zjawiska) i od razu zbierają oraz budują.

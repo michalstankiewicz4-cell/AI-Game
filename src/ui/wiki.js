@@ -7,6 +7,7 @@ const ICON = {
   planks: '🟫', rope: '🪢', rod: '🎣', spear: '🔱', campfire: '🔥', shelter: '🛖', ironTool: '⚒️', tent: '⛺', workbench: '🛠️',
   grill: '♨️', bed: '🛏️', chest: '📦', torch: '🔥', clothes: '👕', sword: '🗡️', shield: '🛡️',
   logs: '🪵', sticks: '🥢', leaves: '🍃', seaweed: '🌿', stone: '🪨', iron: '⛏️',
+  knife: '🔪', hoe: '🌾', bowl: '🥣', bow: '🏹', arrows: '🏹', leather: '🧥', feathers: '🪶', hide: '🟤', seeds: '🌱',
   berries: '🫐', rawFish: '🐟', cookedFish: '🍣', rawMeat: '🍗', cookedMeat: '🍖',
 };
 
@@ -26,6 +27,12 @@ const RECIPE_DESC = {
   sword: 'Żelazny miecz wykuty w ogniu. Najlepsza broń na dziki.',
   shield: 'Drewniana tarcza mocno zmniejsza obrażenia od szarży dzika.',
   torch: 'Gałąź z liśćmi obwiązanymi liną, zapalana od palącego się ogniska. W nocy postać widzi z nią o połowę słabiej niż w dzień (bez niej dużo gorzej). Pali się ok. 70 s w ręku.',
+  knife: 'Ostry kamień obwiązany liną. Nożem skóruje się upolowanego dzika (3 mięsa i skóra zamiast jednego kawałka), struga łuk i drąży miskę.',
+  hoe: 'Motyką spulchnia się ziemię na grządkę, na której można zasiać nasiona z jagód.',
+  bowl: 'Deska wydrążona nożem. Napełniona wodą ze stawu pozwala napić się z dala od wody.',
+  bow: 'Kłoda wystrugana nożem i lina jako cięciwa. Ze strzałami poluje się celniej na ptaki i walczy z dzikiem z daleka.',
+  arrows: 'Gałąź, kamienny grot i lotka z piór: 4 strzały. Czasem się gubią albo łamią.',
+  leather: 'Ubranie uszyte ze skóry dzika przy stole rzemieślniczym. Grzeje mocniej niż ubranie z liści.',
   chest: 'Porządne miejsce na zapasy przy obozie. W odróżnieniu od kupki na ziemi trzyma też jedzenie, po które postać wraca, gdy jest głodna.',
 };
 const BUILDINGS = new Set(['campfire', 'shelter', 'tent', 'workbench', 'grill', 'bed', 'chest']);
@@ -39,6 +46,8 @@ const MAT_DESC = {
   rope: 'Lina z wodorostów.',
   stone: 'Kamień ze skał i kopalni. Na ognisko, włócznię i ruszt.',
   iron: 'Ruda żelaza z kopalni. Z niej narzędzia i miecz.',
+  feathers: 'Pióra z upolowanych ptaków. Lotki do strzał.',
+  hide: 'Skóra z dzika oskórowanego nożem. Na ubranie ze skóry.',
 };
 const FOOD_DESC = {
   berries: 'Rosną na krzakach i odrastają. Mało sycące.',
@@ -69,6 +78,7 @@ const WORLD = [
   ['piece_floor', '🟫', 'Podłoga z desek', 'Pojedyncza deska położona płasko na ziemi albo wyżej, oparta o ściany. Ma własną nazwę.'],
   ['piece_wall', '🧱', 'Ściana z desek', 'Deska postawiona pionowo na krawędzi pola. Wyżej da się ją postawić tylko na innej ścianie.'],
   ['piece_slope', '📐', 'Skos z desek', 'Deska położona pod skosem, np. na ścianach. Postacie mogą ją zdjąć, przenieść i przemianować.'],
+  ['field', '🌾', 'Grządka', 'Ziemia spulchniona motyką. Zasiane nasiona po ok. półtorej doby wyrastają w krzak z 6 jagodami, a przy zbiorze wracają 2 nasiona.'],
   ['stash', '📦', 'Składzik', 'Kupka rzeczy odłożonych, gdy plecak jest za ciężki. Można po nie wrócić.'],
 ];
 const EXPERIENCE = [
@@ -77,6 +87,8 @@ const EXPERIENCE = [
   ['bedRest', '🛏️', 'Łóżko daje lepszy sen', 'Po nocy w łóżku postać czuje, że wypoczęła szybciej.'],
   ['cook', '🍖', 'Pieczenie', 'Pieczone jedzenie syci dużo bardziej niż surowe.'],
   ['saltWater', '🧂', 'Morska woda szkodzi', 'Słonej wody nie da się pić.'],
+  ['seeds', '🌱', 'Nasiona w jagodach', 'Postać, która je jagody, znajduje w nich pestki.'],
+  ['farm', '🌾', 'Uprawa', 'Po pierwszym zbiorze postać wie, że z nasion na grządce wyrastają jagody.'],
   ['boarDanger', '🐗', 'Dziki są groźne', 'Po pierwszym zderzeniu z dzikiem postać wie, że trzeba uważać.'],
 ];
 
@@ -95,7 +107,8 @@ function catalog() {
     {
       id: 'tools', name: '🧰 Narzędzia', items: [
         ...START_TOOLS.map(([k, icon, name, desc]) => ({ key: 'tool:' + k, icon, name, desc })),
-        ...['rod', 'spear', 'clothes', 'sword', 'shield'].map((t) => ({ key: 'tool:' + t, icon: ICON[t], name: RECIPE_NAMES[t], desc: RECIPE_DESC[t], meta: `receptura: ${cost(t)}` })),
+        ...['rod', 'spear', 'clothes', 'sword', 'shield', 'knife', 'hoe', 'bow', 'leather'].map((t) => ({ key: 'tool:' + t, icon: ICON[t], name: RECIPE_NAMES[t], desc: RECIPE_DESC[t], meta: `receptura: ${cost(t)}` })),
+        { key: 'item:seeds', icon: ICON.seeds, name: 'nasiona', desc: 'Pestki znalezione w zjedzonych jagodach (mniej więcej co trzecia garść) i zebrane z grządki. Sadzi się je na grządce przygotowanej motyką.', meta: '0.02 kg / szt.' },
         { key: 'item:torch', icon: ICON.torch, name: 'pochodnia (w ręku)', desc: RECIPE_DESC.torch, meta: `receptura: ${cost('torch')} · przy ognisku · 0.4 kg` },
       ],
     },
@@ -120,10 +133,12 @@ export function scanDiscoveries(world) {
     if (a.saltKnown) { add('world:sea'); add('exp:saltWater'); }
     if (a.stats.fish > 0) add('world:fish');
     if (a.stats.birds > 0) add('world:bird');
+    if (a.inv.waterBowl > 0) add('recipe:bowl');
     if (a.stats.boars > 0 || a.memBoars.size || a.known.has('boarDanger')) add('world:boar');
   }
   for (const s of world.structures) {
     if (s.kind === 'stash') add('world:stash');
+    else if (s.kind === 'field') add('world:field');
     else add('recipe:' + s.kind);
     if (s.grill) add('recipe:grill');
     if (s.items) for (const k in s.items) if (s.items[k] > 0) add((FOOD[k] ? 'food:' : 'item:') + k);

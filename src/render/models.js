@@ -155,6 +155,20 @@ export const modelsMethods = {
       const box = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.34, 0.42), m.plank); box.position.y = 0.17; box.castShadow = true; g.add(box);
       const lid = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.08, 0.46), m.trunk); lid.position.y = 0.38; lid.castShadow = true; g.add(lid);
       for (const sx of [-0.22, 0.22]) { const band = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.36, 0.44), m.post); band.position.set(sx, 0.19, 0); g.add(band); }
+    } else if (s.kind === 'field') {
+      // grządka: spulchniona ziemia w bruzdach, na niej sadzonka, która rośnie, i jagody, gdy dojrzeje
+      const soil = this.mat.soil || (this.mat.soil = new THREE.MeshStandardMaterial({ color: 0x6b4a2b, roughness: 1, flatShading: true }));
+      const bed = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.06, 0.92), soil); bed.position.y = 0.02; bed.receiveShadow = true; g.add(bed);
+      for (const z of [-0.28, 0, 0.28]) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.05, 0.1), soil); r.position.set(0, 0.07, z); g.add(r); }
+      const plant = new THREE.Group(); plant.name = 'plant';
+      for (const [px, pz] of [[-0.25, -0.28], [0.2, 0], [-0.1, 0.28], [0.3, 0.28], [-0.3, 0]]) {
+        const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.14, 0), m.leaf || m.weed); b.position.set(px, 0.17, pz); b.castShadow = true; plant.add(b);
+      }
+      g.add(plant);
+      const fruit = new THREE.Group(); fruit.name = 'fruit';
+      const berry = m.berry || (m.berry = new THREE.MeshStandardMaterial({ color: 0x5b3fc4, roughness: 0.5 }));
+      for (let k = 0; k < 8; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.04, 5, 4), berry); b.position.set(Math.cos(k * 2.4) * 0.3, 0.26, Math.sin(k * 2.4) * 0.3); fruit.add(b); }
+      g.add(fruit);
     } else if (s.kind === 'bed') {
       const frame = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.14, 0.95), m.plank); frame.position.y = 0.09; frame.castShadow = true; g.add(frame);
       const mat = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.08, 0.86), m.weed); mat.position.y = 0.2; g.add(mat);
@@ -204,6 +218,12 @@ export const modelsMethods = {
     held('pickaxe', (h) => { stick(h); const b = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.04, 0.04), this.mat.stone); b.position.set(0, 0.18, 0); h.add(b); });
     held('sword', (h) => { const hilt = stick(h, 0.12, this.mat.post); hilt.position.y = -0.1; const bl = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.42, 0.015), new THREE.MeshStandardMaterial({ color: 0xc8ccd2, metalness: 0.6, roughness: 0.3 })); bl.position.y = 0.17; h.add(bl); const g2 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.025, 0.04), this.mat.post); g2.position.y = -0.04; h.add(g2); });
     held('spear', (h) => { const s = stick(h, 0.7); s.position.y = 0.1; const tip = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.1, 4), this.mat.stone); tip.position.y = 0.5; h.add(tip); });
+    held('knife', (h) => { const hd = stick(h, 0.1); hd.position.y = -0.02; const bl = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.16, 0.012), this.mat.stone); bl.position.y = 0.1; h.add(bl); });
+    held('hoe', (h) => { const s = stick(h, 0.7); s.position.y = 0.1; const b = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.16), this.mat.stone); b.position.set(0, 0.44, 0.07); h.add(b); });
+    held('bow', (h) => {
+      const arc = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.016, 4, 10, Math.PI * 0.9), this.mat.post); arc.rotation.z = Math.PI / 2 + Math.PI * 0.05; arc.position.y = 0.08; h.add(arc);
+      const str = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.5, 0.005), this.mat.dark); str.position.set(0, 0.08, 0); h.add(str);
+    });
     held('rod', (h) => { const s = stick(h, 0.8); s.position.y = 0.15; s.scale.set(0.6, 1, 0.6); });
     held('torch', (h) => {
       stick(h, 0.32);
