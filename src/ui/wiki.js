@@ -5,7 +5,7 @@ import { $, esc } from './dom.js';
 
 const ICON = {
   planks: '🟫', rope: '🪢', rod: '🎣', spear: '🔱', campfire: '🔥', shelter: '🛖', ironTool: '⚒️', tent: '⛺', workbench: '🛠️',
-  grill: '♨️', bed: '🛏️', chest: '📦', clothes: '👕', sword: '🗡️', shield: '🛡️',
+  grill: '♨️', bed: '🛏️', chest: '📦', torch: '🔥', clothes: '👕', sword: '🗡️', shield: '🛡️',
   logs: '🪵', sticks: '🥢', leaves: '🍃', seaweed: '🌿', stone: '🪨', iron: '⛏️',
   berries: '🫐', rawFish: '🐟', cookedFish: '🍣', rawMeat: '🍗', cookedMeat: '🍖',
 };
@@ -25,6 +25,7 @@ const RECIPE_DESC = {
   clothes: 'Ubranie z liści chroni przed zimnem.',
   sword: 'Żelazny miecz wykuty w ogniu. Najlepsza broń na dziki.',
   shield: 'Drewniana tarcza mocno zmniejsza obrażenia od szarży dzika.',
+  torch: 'Gałąź z liśćmi obwiązanymi liną, zapalana od palącego się ogniska. W nocy postać widzi z nią o połowę słabiej niż w dzień (bez niej dużo gorzej). Pali się ok. 70 s w ręku.',
   chest: 'Porządne miejsce na zapasy przy obozie. W odróżnieniu od kupki na ziemi trzyma też jedzenie, po które postać wraca, gdy jest głodna.',
 };
 const BUILDINGS = new Set(['campfire', 'shelter', 'tent', 'workbench', 'grill', 'bed', 'chest']);
@@ -95,6 +96,7 @@ function catalog() {
       id: 'tools', name: '🧰 Narzędzia', items: [
         ...START_TOOLS.map(([k, icon, name, desc]) => ({ key: 'tool:' + k, icon, name, desc })),
         ...['rod', 'spear', 'clothes', 'sword', 'shield'].map((t) => ({ key: 'tool:' + t, icon: ICON[t], name: RECIPE_NAMES[t], desc: RECIPE_DESC[t], meta: `receptura: ${cost(t)}` })),
+        { key: 'item:torch', icon: ICON.torch, name: 'pochodnia (w ręku)', desc: RECIPE_DESC.torch, meta: `receptura: ${cost('torch')} · przy ognisku · 0.4 kg` },
       ],
     },
     { id: 'world', name: '🌍 Świat', items: WORLD.map(([k, icon, name, desc]) => ({ key: 'world:' + k, icon, name, desc })) },

@@ -152,6 +152,11 @@ export const decideMethods = {
         if (plankOp && inv.planks >= 1) add(0.1 + 0.06 * this.w.build + Math.min(0.15, this.buildDrive() * 0.03) + (inv.planks >= 4 ? 0.04 : 0) - (w.isNight() ? 0.08 : 0), BUILD_LABEL, () => this.taskPlank(plankOp));
       }
     }
+    // --- pochodnie: zrobić zapas przy ognisku, po zmroku zapalić ---
+    if (K('torch') && fire && fire.d < 30) {
+      if (inv.torch < 2 && has(RECIPES.torch)) add(0.3 + (w.daylight() < 0.5 ? 0.12 : 0), '🔥 Zrobić pochodnię', () => this.taskMakeTorch(fire, RECIPES.torch, 2 - inv.torch));
+      if (inv.torch > 0 && !(this.torchBurn > 0) && w.daylight() < 0.35 && this.energy > 30 && fire.d > 2) add(0.34, '🔥 Zapalić pochodnię', () => this.taskLightTorch(fire));
+    }
     const danger = K('boarDanger') ? 0.2 : 0;
     if (!tools.sword && K('sword') && has(RECIPES.sword) && fire && fire.d < 30) add(0.42 + danger, '🗡️ Wykuć miecz', () => this.taskForgeSword(fire, RECIPES.sword));
     if (!tools.shield && K('shield') && has(RECIPES.shield)) add(0.36 + danger, '🛡️ Zrobić tarczę', () => this.taskCraft('shield', RECIPES.shield, 'robi drewnianą tarczę 🛡️', true));
@@ -181,6 +186,7 @@ export const decideMethods = {
     if (!tools.sword && K('sword')) want.planks += 1;
     if (!myChest && (myFire || myRoof) && K('chest')) wish(RECIPES.chest);
     if (plankOp) want.planks += 2; // zapas desek na budowę
+    if (K('torch') && inv.torch < 2) wish(RECIPES.torch);
     if (myFire) want.sticks += 2; // zapas na podsycanie ogniska
     // zapas do eksperymentów, dopóki są nieodkryte receptury
     if (Object.keys(RECIPES).some((r) => !K(r))) {

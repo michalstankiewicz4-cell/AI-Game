@@ -34,28 +34,32 @@ export const RECIPES = {
   sword: { iron: 2, planks: 1 },              // żelazny miecz (wykuwany przy ogniu)
   shield: { planks: 3, rope: 1 },             // drewniana tarcza (tylko przy stole)
   chest: { planks: 4, sticks: 2 },            // skrzynia na zapasy (trzyma też jedzenie)
+  torch: { sticks: 1, leaves: 2, rope: 1 },   // pochodnia (odkrywana przy ogniu, zapala się od ogniska)
 };
 // receptury, które da się odkryć i zrobić tylko w określonym miejscu
-export const FIRE_RECIPES = new Set(['ironTool', 'grill', 'sword']);
+export const FIRE_RECIPES = new Set(['ironTool', 'grill', 'sword', 'torch']);
 export const BENCH_RECIPES = new Set(['bed', 'clothes', 'shield']);
 export const FIRE_FUEL = { max: 150, start: 100, burn: 0.5, logs: 60, sticks: 25, leaves: 8 }; // paliwo ogniska (s palenia)
 
 export const RECIPE_NAMES = {
   planks: 'deski', rope: 'lina', rod: 'wędka', spear: 'włócznia', campfire: 'ognisko', shelter: 'szałas', ironTool: 'żelazne narzędzia',
-  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko', clothes: 'ubranie z liści', sword: 'miecz', shield: 'tarcza', chest: 'skrzynia',
+  tent: 'namiot', workbench: 'stół rzemieślniczy', grill: 'ruszt', bed: 'łóżko', clothes: 'ubranie z liści', sword: 'miecz', shield: 'tarcza', chest: 'skrzynia', torch: 'pochodnia',
 };
 // miejsca na zapasy: kupka na ziemi i skrzynia
 export const STORES = new Set(['stash', 'chest']);
 export const MATS = ['logs', 'sticks', 'leaves', 'planks', 'seaweed', 'rope', 'stone', 'iron'];
 export const MAT_NAMES = { logs: 'kłody', sticks: 'gałęzie', leaves: 'liście', planks: 'deski', seaweed: 'wodorosty', rope: 'lina', stone: 'kamień', iron: 'ruda' };
 export const comboKey = (types) => [...types].sort().join('+');
+// zestawy materiałów, które przy ogniu dają coś innego niż bez ognia
+export const FIRE_COMBOS = new Set([...FIRE_RECIPES].map((r) => comboKey(Object.keys(RECIPES[r]))));
+export const TORCH = { burn: 70, light: 0.5, night: 0.25 }; // pochodnia: s palenia; zasięg wzroku w nocy z pochodnią i bez (część dziennego)
 export const RECIPE_BY_COMBO = new Map(Object.entries(RECIPES).map(([k, r]) => [comboKey(Object.keys(r)), k]));
 export const KIND_NAMES = { tree: 'drzewo', palm: 'palmę', rock: 'skałę', bush: 'krzak', seaweed: 'wodorosty', mine: 'kopalnię' };
 
 export const ITEM_LABELS = {
   logs: '🪵 Kłody', sticks: '🥢 Gałęzie', leaves: '🍃 Liście', planks: '🟫 Deski', seaweed: '🌿 Wodorosty', rope: '🪢 Lina',
   stone: '🪨 Kamień', iron: '⛏️ Ruda żelaza',
-  berries: '🫐 Jagody', rawFish: '🐟 Ryba', cookedFish: '🍣 Piecz. ryba', rawMeat: '🍗 Mięso', cookedMeat: '🍖 Piecz. mięso',
+  torch: '🔥 Pochodnia', berries: '🫐 Jagody', rawFish: '🐟 Ryba', cookedFish: '🍣 Piecz. ryba', rawMeat: '🍗 Mięso', cookedMeat: '🍖 Piecz. mięso',
 };
 export const TOOL_LABELS = {
   axe: '🪓 Siekiera', pickaxe: '⛏️ Kilof', rod: '🎣 Wędka', spear: '🔱 Włócznia', ironAxe: '🪓 Żel. siekiera', ironPick: '⛏️ Żel. kilof', clothes: '👕 Ubranie z liści', sword: '🗡️ Miecz', shield: '🛡️ Tarcza',
@@ -72,6 +76,6 @@ export const MAX_WEIGHT = 25; // ile kg da się nieść
 // waga jednej sztuki (kg)
 export const WEIGHT = {
   logs: 3, sticks: 0.5, leaves: 0.1, planks: 1.5, seaweed: 0.3, rope: 0.4, stone: 2, iron: 3,
-  berries: 0.1, rawFish: 0.6, cookedFish: 0.5, rawMeat: 0.8, cookedMeat: 0.7,
+  torch: 0.4, berries: 0.1, rawFish: 0.6, cookedFish: 0.5, rawMeat: 0.8, cookedMeat: 0.7,
 };
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

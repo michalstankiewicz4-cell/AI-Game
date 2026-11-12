@@ -19,7 +19,7 @@ Sześć najlepszych opcji widać w karcie postaci, w sekcji „Rozważane decyzj
 Zadania (`src/ai/tasks.js`) to małe automaty: dojdź ścieżką, wykonaj czynność przez określony czas, odbierz efekt. Zadanie zostaje przerwane, gdy pragnienie, głód albo energia spadną do poziomu krytycznego.
 
 ## Percepcja i pamięć (`src/ai/perception.js`)
-- **Pole widzenia:** stożek o zasięgu 18 kafelków. Im dalej, tym węższy (`viewHalfAngle`), a tuż obok postać widzi dookoła.
+- **Pole widzenia:** stożek o zasięgu 18 kafelków w dzień. Im dalej, tym węższy (`viewHalfAngle`), a tuż obok postać widzi dookoła. W nocy zasięg spada do 1/4, a z płonącą pochodnią albo przy ognisku do 1/2 (`viewMul`, `TORCH` w `data.js`).
 - **Pamięć:** postać zapamiętuje widziane miejsca, zasoby (z wiekiem wspomnienia), budowle, ptaki i ryby.
 - **Nieaktualna wiedza:** pamięć odświeża się tylko wtedy, gdy postać znów spojrzy, więc może iść do drzewa, które ktoś już ściął. Zadanie „Rozejrzeć się” odświeża okolicę.
 - **Ścieżki:** BFS działa tylko po kafelkach, które postać już widziała.

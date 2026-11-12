@@ -3,6 +3,13 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.21.0] - 2026-11-12
+### Dodane
+- Noc ogranicza wzrok: postać widzi na ok. 1/4 dziennego zasięgu, a z płonącą pochodnią w ręku albo przy ognisku na połowę. Stożek w widoku „Oczami AI” kurczy się razem z zasięgiem.
+- Pochodnia (gałąź + 2 liście + lina): receptura odkrywana tylko przy ognisku, zapas 2 sztuk, zapalana od palącego się ogniska, pali się ok. 70 s w ręku. Światło pochodni widać w świecie.
+- Przedmiot w ręku: po zmroku pochodnia, w walce miecz albo włócznia, przy pracy siekiera, kilof albo wędka. Widać go na modelu postaci i w jej karcie, razem z zasięgiem wzroku.
+- Model językowy wie, że jest ciemno i na ile kroków postać widzi. Wpisy w wiki.
+
 ## [0.20.0] - 2026-11-12
 ### Zmienione
 - Budowanie z desek bez z góry zaplanowanego domku. Bez poleceń modelu postać kładzie deskę w losowym miejscu przy innych deskach i zapamiętuje, czy przy budowie zrobiło się zaciszniej (osobno dla podłogi, ściany i skosu na każdym poziomie). Później częściej wybiera to, co pomogło, a co trzecią deskę kładzie na próbę.
@@ -171,6 +178,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.21.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.21.0
 [0.20.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.20.0
 [0.19.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.19.0
 [0.18.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.18.0

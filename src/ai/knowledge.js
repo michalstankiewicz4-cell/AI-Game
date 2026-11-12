@@ -2,7 +2,7 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import {
-  FIRE_RECIPES, BENCH_RECIPES,
+  FIRE_RECIPES, BENCH_RECIPES, FIRE_COMBOS,
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
 } from './data.js';
@@ -23,7 +23,7 @@ export const knowledgeMethods = {
     }
     // ta sama próba w innym miejscu (przy ogniu, przy stole) liczy się jako nowa, jeśli miejsce ma znaczenie
     // przy ogniu warto spróbować jeszcze raz tego, co z kamieniem albo rudą; przy stole wszystkiego, co z co najmniej dwóch rzeczy
-    const keyOf = (c) => comboKey(c) + (fire && (c.includes('iron') || c.includes('stone')) ? '@ogień' : '') + (bench && c.length >= 2 ? '@stół' : '');
+    const keyOf = (c) => comboKey(c) + (fire && (c.includes('iron') || c.includes('stone') || FIRE_COMBOS.has(comboKey(c))) ? '@ogień' : '') + (bench && c.length >= 2 ? '@stół' : '');
     const fresh = combos.filter((c) => {
       const k = keyOf(c);
       if (this.tried.has(k)) return false;
@@ -49,7 +49,7 @@ export const knowledgeMethods = {
           return 'done';
         }
         if (FIRE_RECIPES.has(r) && !this.nearStructure('campfire', 3)) {
-          this.speak(r === 'ironTool' ? 'Ruda i gałąź... może w ogniu by się dało to wykuć?' : 'Kamienie i patyki... coś by z tego było nad ogniem.', true);
+          this.speak({ ironTool: 'Ruda i gałąź... może w ogniu by się dało to wykuć?', sword: 'Ruda i deska... w ogniu dałoby się to wykuć?', torch: 'Gałąź owinięta liśćmi... gdyby ją tak podpalić?' }[r] || 'Kamienie i patyki... coś by z tego było nad ogniem.', true);
           return 'done';
         }
         if (BENCH_RECIPES.has(r) && !this.nearStructure('workbench', 3)) {

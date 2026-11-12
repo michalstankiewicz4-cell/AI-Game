@@ -21,6 +21,8 @@ const THOUGHTS = {
   '👕 Uszyć ubranie': ['Liście i lina... uszyję coś na grzbiet.', 'Czas na jakieś ubranie, robi się chłodno.'],
   '📦 Odłożyć zapasy': ['Plecak mi ciąży, odłożę część na później.', 'Zrobię sobie mały składzik.'],
   '🪵 Budować z desek': ['Deska do deski, może coś z tego wyjdzie.', 'Mam trochę desek, dołożę kolejną.', 'Zobaczymy, jak to będzie wyglądać.'],
+  '🔥 Zrobić pochodnię': ['Gałąź, liście i lina... zrobię sobie światło na noc.', 'Przyda się coś, żeby widzieć po ciemku.'],
+  '🔥 Zapalić pochodnię': ['Ciemno choć oko wykol. Zapalę pochodnię od ogniska.', 'Bez światła nic nie widzę, idę do ognia.'],
   '📦 Zrobić skrzynię': ['Zamiast kupek na ziemi zrobię porządną skrzynię.', 'Deski i gałęzie, zbiję skrzynię na zapasy.'],
   '🍱 Wziąć jedzenie ze skrzyni': ['Mam coś do jedzenia w skrzyni.', 'Zajrzę do skrzyni, tam zostawiłem jedzenie.'],
   '📦 Wziąć z zapasów': ['Mam to w zapasach, po co szukać.', 'Wezmę ze składziku, co trzeba.'],
