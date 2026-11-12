@@ -2,7 +2,7 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import {
-  FIRE_RECIPES, BENCH_RECIPES, FIRE_COMBOS,
+  FIRE_RECIPES, BENCH_RECIPES, FIRE_COMBOS, KNIFE_RECIPES,
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, clamp,
 } from './data.js';
@@ -13,7 +13,7 @@ export const knowledgeMethods = {
     const w = this.world;
     this.omniscient = true;
     for (const r of Object.keys(RECIPES)) this.known.add(r);
-    for (const k of ['cook', 'bridge', 'warmFire', 'warmRoof', 'bedRest', 'boarDanger']) this.known.add(k);
+    for (const k of ['cook', 'bridge', 'warmFire', 'warmRoof', 'bedRest', 'boarDanger', 'seeds', 'farm']) this.known.add(k);
     for (const k of Object.keys(FOOD)) this.edible.set(k, true);
     for (const k of Object.keys(KIND_NAMES)) this.triedKinds.add(k);
     this.saltKnown = true;
@@ -80,15 +80,21 @@ export const knowledgeMethods = {
           this.speak('Coś mi tu świta, ale na kolanach tego nie zrobię. Przydałby się porządny stół.', true);
           return 'done';
         }
+        if (KNIFE_RECIPES.has(r) && !this.tools.knife) {
+          this.speak(r === 'bow' ? 'Z tej kłody i liny wyszłoby coś sprężystego... gdybym miał(a) czym strugać.' : 'Tę deskę dałoby się wydrążyć, gdybym miał(a) coś ostrego.', true);
+          return 'done';
+        }
         if (r === 'planks' && !this.tools.axe) return 'done';
         this.learn(r);
         // od razu zrób, jeśli starcza materiałów (narzędzia i półprodukty)
         const cost = RECIPES[r];
         const enough = Object.keys(cost).every((k) => this.inv[k] >= cost[k]);
-        if (enough && ['planks', 'rope', 'rod', 'spear'].includes(r)) {
+        if (enough && ['planks', 'rope', 'rod', 'spear', 'knife', 'hoe', 'bow', 'bowl', 'arrows'].includes(r)) {
           for (const k in cost) this.inv[k] -= cost[k];
           if (r === 'planks') this.inv.planks += 2;
           else if (r === 'rope') this.inv.rope += 1;
+          else if (r === 'bowl') this.inv.bowl += 1;
+          else if (r === 'arrows') this.inv.arrows += 4;
           else this.tools[r] = true;
         }
         return 'done';

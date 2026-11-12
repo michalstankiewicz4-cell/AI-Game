@@ -1,6 +1,7 @@
 // Życie przyrody: odrastanie zasobów, ruch ryb i ptaków, upływ czasu.
 import { W, H, T, idx, toWorld, toTile, DIRS4, DIRS8, BRIDGE_COST, BRIDGE_BUILD_TIME, heightToY } from './world.js';
 import { makeNoise2D } from '../core/rng.js';
+import { FARM } from '../ai/data.js';
 
 export const natureMethods = {
   update(dt) {
@@ -10,6 +11,12 @@ export const natureMethods = {
       if (s.kind !== 'campfire' || s.fuel <= 0) continue;
       s.fuel = Math.max(0, s.fuel - 0.5 * dt);
       if (s.fuel <= 0) { this.log('🔥 Ognisko wygasło. Został popiół.', 'info'); this.structuresChanged = true; }
+    }
+    // grządki: zasiane nasiona rosną i po czasie dają jagody
+    for (const s of this.structures) {
+      if (s.kind !== 'field' || s.stage !== 'planted') continue;
+      s.growth = Math.min(1, s.growth + dt / FARM.grow);
+      if (s.growth >= 1) { s.stage = 'ripe'; s.berries = FARM.berries; }
     }
     // odrastanie zasobów
     for (const r of this.resources) {

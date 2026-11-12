@@ -3,6 +3,25 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.23.0] - 2026-11-12
+### Dodane
+- Nowe receptury do odkrycia:
+  - **nóż kamienny** (2 kamienie + lina),
+  - **motyka** (deska + 2 kamienie + lina),
+  - **drewniana miska** (deska, drąży się ją nożem),
+  - **łuk** (kłoda + lina, strugany nożem),
+  - **strzały** (gałąź + pióra + kamień, 4 sztuki),
+  - **ubranie ze skóry** (2 skóry + lina, przy stole; +7°C, ubranie z liści daje +4°C).
+- Nóż i rzeczy strugane: bez noża próba z miską albo łukiem kończy się wskazówką w myślach postaci.
+- Uprawa: w zjedzonych jagodach postać znajduje czasem nasiona (ok. 1 na 3 garście). Motyką przygotowuje grządkę obok obozu, sieje, a po ok. półtorej doby wyrasta krzak z 6 jagodami. Przy zbiorze wracają 2 nasiona. To, że z nasion coś wyrasta, postać odkrywa przy pierwszym zbiorze.
+- Miska: przy stawie postać nabiera do niej wody i pije z niej z dala od wody.
+- Skórowanie: upolowanego dzika postać z nożem skóruje (3 mięsa i skóra). Bez noża urwie tylko kawałek mięsa. Martwy dzik leży, dopóki ktoś go nie oskóruje.
+- Ptaki dają mięso i 2 pióra.
+- Łuk ze strzałami: celniejsze polowanie na ptaki i walka z dzikiem z daleka (strzały czasem się gubią albo łamią).
+- Nowe przedmioty w ręku (nóż, motyka, łuk), model grządki z rosnącą sadzonką i jagodami, wpisy w wiki, słowa kluczowe pełnej swobody, fakty dla modelu w trybie „Wie wszystko”.
+### Zmienione
+- Drobiazgi (nasiona, pióra, strzały) nie zajmują miejsca w plecaku. Nasion postać trzyma najwyżej 12.
+
 ## [0.22.2] - 2026-11-12
 ### Poprawione
 - Płynny ruch: symulacja liczy pozycje 10 razy na sekundę, a ekran rysuje nawet ponad 100 klatek, więc postacie poruszały się skokami. Teraz render przesuwa postacie, dziki, ptaki i ryby płynnie między krokami symulacji (także obrót i kamerę śledzącą postać).
@@ -196,6 +215,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.23.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.23.0
 [0.22.2]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.2
 [0.22.1]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.1
 [0.22.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.22.0

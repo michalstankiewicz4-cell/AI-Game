@@ -24,7 +24,7 @@ export const boarMethods = {
     }
     if (!best) best = { i: Math.round(this.islandDefs[isl].ci), j: Math.round(this.islandDefs[isl].cj) };
     const p = toWorld(best.i, best.j);
-    return { id: this.nextId++, isl, x: p.x, z: p.z, i: best.i, j: best.j, hp: BOAR.hp, state: 'roam', dir: this.rand() * Math.PI * 2, timer: 2, target: null, hitT: 0, calm: 180, dead: false }; // pierwszą dobę dziki są spokojne
+    return { id: this.nextId++, isl, x: p.x, z: p.z, i: best.i, j: best.j, hp: BOAR.hp, state: 'roam', dir: this.rand() * Math.PI * 2, timer: 2, target: null, hitT: 0, calm: 180, dead: false, skinned: false }; // pierwszą dobę dziki są spokojne
   },
 
   boarWalkable(b, i, j) { return this.inBounds(i, j) && this.walkable(i, j) && this.type[idx(i, j)] !== T.BRIDGE && this.island[idx(i, j)] === b.isl; },
