@@ -3,6 +3,12 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.20.0] - 2026-11-12
+### Zmienione
+- Budowanie z desek bez z góry zaplanowanego domku. Bez poleceń modelu postać kładzie deskę w losowym miejscu przy innych deskach i zapamiętuje, czy przy budowie zrobiło się zaciszniej (osobno dla podłogi, ściany i skosu na każdym poziomie). Później częściej wybiera to, co pomogło, a co trzecią deskę kładzie na próbę.
+- Opis budowy dla modelu to same liczby (deski każdego rodzaju, podłoga, ściany na obwodzie, pola z deską nad głową), bez list „luk” i „odkrytych pól”. Wolne miejsca są w losowej kolejności.
+- Niski skos na ziemi przykrywa pole tylko w połowie. Postać śpi w najlepiej osłoniętym miejscu przy deskach, nie tylko na podłodze.
+
 ## [0.19.0] - 2026-11-12
 ### Dodane
 - Budowanie z pojedynczych desek (`src/world/pieces.js`, `src/ai/building.js`): podłoga, ściana i skos, poziomy 0–2, przyciąganie do siatki pól i krawędzi, zasady podpór.
@@ -165,6 +171,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.20.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.20.0
 [0.19.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.19.0
 [0.18.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.18.0
 [0.17.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.17.0

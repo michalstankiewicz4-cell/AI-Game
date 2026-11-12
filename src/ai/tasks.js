@@ -132,12 +132,15 @@ export const tasksMethods = {
     // dom z desek: postać, która wie, że pod dachem cieplej, wybiera najlepiej osłonięte pole
     let house = null;
     if (this.known.has('warmRoof') && this.world.pieces.length) {
-      for (const p of this.world.pieces) {
-        if (p.type !== 'floor' || p.lvl !== 0) continue;
-        const d = bfs.dist[idx(p.i, p.j)];
+      const seen = new Set();
+      for (const p of this.world.pieces) for (const [di, dj] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const i = p.i + di, j = p.j + dj, k = idx(i, j);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        const d = bfs.dist[k];
         if (d < 0 || d > 30) continue;
-        const s = this.world.shelterAt(p.i, p.j);
-        if (s && s.warm >= 5 && (!house || s.warm > house.warm)) house = { i: p.i, j: p.j, d, warm: s.warm };
+        const s = this.world.shelterAt(i, j);
+        if (s && s.warm >= 5 && (!house || s.warm > house.warm)) house = { i, j, d, warm: s.warm };
       }
     }
     if (bed && bed.d < 30) { target = bed; this.bedTried = true; }

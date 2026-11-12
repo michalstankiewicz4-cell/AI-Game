@@ -111,17 +111,21 @@ export const piecesMethods = {
     return true;
   },
 
-  roofAt(i, j) {
-    for (let l = 0; l <= PIECE_MAX_LVL; l++) if (this.pieceAt('slope', i, j, l) || (l >= 1 && this.pieceAt('floor', i, j, l))) return true;
-    return false;
+  // przykrycie pola: 1 = deska nad głową, 0.5 = niski skos na ziemi (da się tylko skulić), 0 = nic
+  roofLevel(i, j) {
+    let r = 0;
+    for (let l = 1; l <= PIECE_MAX_LVL; l++) if (this.pieceAt('slope', i, j, l) || this.pieceAt('floor', i, j, l)) return 1;
+    if (this.pieceAt('slope', i, j, 0)) r = 0.5;
+    return r;
   },
+  roofAt(i, j) { return this.roofLevel(i, j) >= 1; },
   // czy kafelek jest przykryty z góry i jak bardzo jest obudowany; wynik zapamiętany do następnej zmiany desek
   shelterAt(i, j) {
     if (!this.pieces.length) return null;
     if (this.shelterVer !== this.pieceVer) { this.shelterCache = new Map(); this.shelterVer = this.pieceVer; }
     const key = idx(i, j);
     if (this.shelterCache.has(key)) return this.shelterCache.get(key);
-    const roof = this.roofAt(i, j);
+    const rl = this.roofLevel(i, j), roof = rl > 0;
     let walls = 0;
     for (const s of SIDES) if (this.wallOn(i, j, s, 0)) walls++;
     // na podłodze liczy się cały obwód pomieszczenia, a nie tylko ściany przy tym jednym polu
@@ -130,7 +134,7 @@ export const piecesMethods = {
       const site = this.analyzeSite(i, j, 6);
       if (site && site.perim && site.floor.some((t) => t.i === i && t.j === j)) closed = Math.max(closed, site.walls / site.perim);
     }
-    const res = !roof && closed === 0 ? null : { roof, walls, closed, warm: (roof ? 3 : 0) + closed * (roof ? 4 : 2.4) };
+    const res = !roof && closed === 0 ? null : { roof, walls, closed, warm: rl * 3 + closed * (roof ? 2.4 + rl * 1.6 : 2.4) };
     this.shelterCache.set(key, res);
     return res;
   },
@@ -169,33 +173,41 @@ export const piecesMethods = {
     return { origin: { i: box.i0, j: box.j0 }, w: box.i1 - box.i0 + 1, h: box.j1 - box.j0 + 1, floor: best, perim, walls, missingWalls, roofed, unroofed, pieces: near };
   },
 
-  // wolne miejsca, do których deska „przyskoczy” wokół budowy (albo wokół wskazanego pola, gdy budowy jeszcze nie ma)
+  // wolne miejsca, do których deska „przyskoczy”: wszystko, co dotyka istniejących desek, bez żadnej kolejności
+  // (gdy budowy jeszcze nie ma: miejsca wokół wskazanego pola)
   snapSlots(ci, cj, limit = 8) {
-    const site = this.analyzeSite(ci, cj);
-    const out = [], have = new Set();
-    const push = (spec, why, prio) => {
-      const k = slotKey(spec);
-      if (have.has(k) || this.placeProblem(spec)) return;
-      have.add(k); out.push({ ...spec, why, prio });
-    };
-    if (!site) {
-      push({ type: 'floor', i: ci, j: cj, lvl: 0 }, 'pierwsza deska podłogi', 1);
-      for (const s of SIDES) push({ type: 'floor', i: ci + DIR[s][0], j: cj + DIR[s][1], lvl: 0 }, 'podłoga', 2);
-      for (const s of SIDES) push({ type: 'wall', i: ci, j: cj, lvl: 0, side: s }, 'ściana', 3);
-      return out.slice(0, limit);
+    const near = this.pieces.filter((p) => Math.abs(p.i - ci) <= 7 && Math.abs(p.j - cj) <= 7);
+    const key = `${this.pieceVer || 0}:${ci}:${cj}`;
+    if (!this.slotCache || this.slotCache.key !== key) {
+      const all = [], have = new Set();
+      const push = (spec) => {
+        const k = slotKey(spec);
+        if (have.has(k)) return;
+        have.add(k);
+        if (!this.placeProblem(spec)) all.push(spec);
+      };
+      const around = (i, j, lvls) => {
+        for (const [di, dj] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) for (const l of lvls) {
+          if (l < 0 || l > PIECE_MAX_LVL) continue;
+          const a = i + di, b = j + dj;
+          push({ type: 'floor', i: a, j: b, lvl: l });
+          for (const sd of SIDES) { push({ type: 'wall', i: a, j: b, lvl: l, side: sd }); push({ type: 'slope', i: a, j: b, lvl: l, side: sd }); }
+        }
+      };
+      if (!near.length) around(ci, cj, [0]);
+      for (const p of near) around(p.i, p.j, [p.lvl, p.lvl + 1]);
+      this.slotCache = { key, all };
     }
-    for (const m of site.missingWalls) push({ type: 'wall', i: m.i, j: m.j, lvl: 0, side: m.side }, 'luka w obwodzie', 1);
-    for (const t of site.unroofed) {
-      // skos wznosi się od ściany do środka (dwa rzędy tworzą dach dwuspadowy)
-      const OPP = { N: 'S', S: 'N', E: 'W', W: 'E' };
-      const wall = SIDES.find((x) => this.wallOn(t.i, t.j, x, 0));
-      const s = wall ? OPP[wall] : 'N';
-      push({ type: 'slope', i: t.i, j: t.j, lvl: 1, side: s }, 'nad podłogą', 2);
-      push({ type: 'floor', i: t.i, j: t.j, lvl: 1 }, 'nad podłogą', 3);
-    }
-    for (const t of site.floor) for (const s of SIDES) push({ type: 'floor', i: t.i + DIR[s][0], j: t.j + DIR[s][1], lvl: 0 }, 'poszerzenie podłogi', 4);
-    for (const p of site.pieces) if (p.type === 'wall' && p.lvl < PIECE_MAX_LVL) push({ type: 'wall', i: p.i, j: p.j, lvl: p.lvl + 1, side: p.side }, 'wyżej na ścianie', 5);
-    out.sort((a, b) => a.prio - b.prio);
+    // losowa kolejność: żadne miejsce nie jest „podpowiadane”
+    const out = this.slotCache.all.slice();
+    for (let n = out.length - 1; n > 0; n--) { const k = Math.floor(Math.random() * (n + 1)); [out[n], out[k]] = [out[k], out[n]]; }
     return out.slice(0, limit);
+  },
+
+  // suma osłony na polach wokół miejsca (tyle, ile postać może odczuć, chodząc po budowie)
+  shelterSum(ci, cj, r = 3) {
+    let s = 0;
+    for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) { const x = this.shelterAt(ci + di, cj + dj); if (x) s += x.warm; }
+    return s;
   },
 };

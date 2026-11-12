@@ -149,7 +149,7 @@ export const decideMethods = {
       this.buildQueue.length = 0;
       if (K('planks') && (myFire || myRoof || myChest)) {
         plankOp = this.scriptBuildOp();
-        if (plankOp && inv.planks >= 1) add(0.12 + 0.07 * this.w.build + (inv.planks >= 4 ? 0.05 : 0) - (w.isNight() ? 0.08 : 0), BUILD_LABEL, () => this.taskPlank(plankOp));
+        if (plankOp && inv.planks >= 1) add(0.1 + 0.06 * this.w.build + Math.min(0.15, this.buildDrive() * 0.03) + (inv.planks >= 4 ? 0.04 : 0) - (w.isNight() ? 0.08 : 0), BUILD_LABEL, () => this.taskPlank(plankOp));
       }
     }
     const danger = K('boarDanger') ? 0.2 : 0;
