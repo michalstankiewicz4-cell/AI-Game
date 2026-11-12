@@ -116,9 +116,15 @@ Niektóre rzeczy da się odkryć tylko w odpowiednim miejscu: ruszt i żelazo pr
 | Następna / poprzednia postać | Tab / Shift+Tab |
 | Wyłączenie śledzenia | F |
 | Widok „Oczami AI” (stożek widzenia i mgła niewiedzy) | V |
+| Wiki (receptury, przedmioty, budowle, świat) | K lub przycisk 📖 Wiki, Esc zamyka |
 | Pauza | spacja |
 | Prędkość 1×, 2×, 4×, 8× | 1–4 |
 | Jakość grafiki (cienie) | przycisk 🎨 w górnym pasku |
 | Błędy do skopiowania | zakładka „⚠️ Błędy” pod czatem |
+
+## Wiki w grze
+Przycisk „📖 Wiki” w górnym pasku (albo klawisz K) otwiera encyklopedię wysp. Jest podzielona na kategorie: crafting, budowle, materiały, jedzenie, narzędzia, świat (drzewa, skały, kopalnia, staw, morze, ryby, ptaki, dziki, mosty, składziki) i doświadczenia (np. że przy ogniu cieplej).
+
+Widać w niej wszystko, z kosztem receptur, miejscem, gdzie da się je odkryć (przy ognisku albo przy stole), wagą i sytością. Rzeczy, które odkryła choć jedna postać, mają zielony znaczek ✓ i zostają odkryte także po jej śmierci. Licznik „Odkryto X z Y” pokazuje postęp. Wiki jest tylko dla gracza: model językowy jej nie dostaje, więc postacie dalej uczą się wyłącznie na próbach.
 
 Okienko „Postacie” i kartę postaci przesuwasz, chwytając za nagłówek.

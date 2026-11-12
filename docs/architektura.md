@@ -22,7 +22,7 @@ src/
     intent.js         pełna swoboda: opis zmysłów, mapIntent (zamiar → działanie)
   render/             Three.js: scena, modele low-poly, teren, mgła
     instances.js      Instancer: InstancedMesh dla zasobów
-  ui/                 menu, panele, sterowanie, czat
+  ui/                 menu, panele, sterowanie, czat, wiki (wiki.js: katalog i skan odkryć do world.wikiFound)
     llmPanel.js       ustawienia modeli w menu, licznik tokenów, przesuwanie okienek
     errors.js         zakładka „⚠️ Błędy”: zbieranie i kopiowanie błędów
 ```

@@ -3,6 +3,11 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.16.0] - 2026-11-12
+### Dodane
+- Wiki w grze (przycisk „📖 Wiki” albo klawisz K, `src/ui/wiki.js`): crafting, budowle, materiały, jedzenie, narzędzia, obiekty świata i doświadczenia w kategoriach. Widać wszystko, z kosztem, miejscem odkrycia, wagą i sytością.
+- Rzeczy odkryte przez którąkolwiek postać mają znaczek ✓ i licznik „Odkryto X z Y”. Odkrycia zostają po śmierci postaci. Model językowy wiki nie dostaje.
+
 ## [0.15.0] - 2026-11-12
 ### Dodane
 - Dziki (`src/world/boars.js`): chodzą po swojej wyspie, przez pierwszą dobę są spokojne, potem czasem szarżują na postać, która podejdzie za blisko. Po ciosie często odpuszczają, ranne uciekają, a pokonane dają 3 mięsa i odradzają się po 300 s.
@@ -139,6 +144,7 @@ Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.m
 ### Dodane
 - Pierwsza wersja: 3D low-poly (Three.js), 1–4 AI × 1–4 wysp, rzemiosło, mosty, łowienie, odrastające drzewa, pole widzenia z pamięcią, widok „Oczami AI”, rozmowy i wymiana między postaciami, komentarze na żywo.
 
+[0.16.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.16.0
 [0.15.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.15.0
 [0.14.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.14.0
 [0.13.0]: https://github.com/michalstankiewicz4-cell/AI-Game/releases/tag/v0.13.0
