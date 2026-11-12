@@ -117,3 +117,5 @@ button { font: inherit; cursor: pointer; }
 #tokBtn.err { color: #ff7b7b; }
 .acard .llm { font-size: 11px; margin-left: 4px; }
 #detail, #agentsWin { z-index: 3; }
+.ver { font-size: 11px; color: #7f93a8; text-decoration: none; }
+h1 .ver { font-size: 14px; font-weight: 600; color: #8fd0f0; background: rgba(63,167,214,.15); padding: 2px 8px; border-radius: 8px; vertical-align: middle; }

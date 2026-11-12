@@ -5,10 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wyspy AI – symulacja przetrwania</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏝️</text></svg>">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=0.5.0">
+<!-- importmap:begin -->
 <script type="importmap">
-{ "imports": { "three": "./lib/three.module.min.js" } }
+{
+ "imports": {
+  "three": "./lib/three.module.min.js?v=0.5.0",
+  "./src/ai/agent.js": "./src/ai/agent.js?v=0.5.0",
+  "./src/ai/commentary.js": "./src/ai/commentary.js?v=0.5.0",
+  "./src/ai/data.js": "./src/ai/data.js?v=0.5.0",
+  "./src/ai/decide.js": "./src/ai/decide.js?v=0.5.0",
+  "./src/ai/knowledge.js": "./src/ai/knowledge.js?v=0.5.0",
+  "./src/ai/llm.js": "./src/ai/llm.js?v=0.5.0",
+  "./src/ai/perception.js": "./src/ai/perception.js?v=0.5.0",
+  "./src/ai/social.js": "./src/ai/social.js?v=0.5.0",
+  "./src/ai/tasks.js": "./src/ai/tasks.js?v=0.5.0",
+  "./src/core/rng.js": "./src/core/rng.js?v=0.5.0",
+  "./src/game.js": "./src/game.js?v=0.5.0",
+  "./src/main.js": "./src/main.js?v=0.5.0",
+  "./src/render/models.js": "./src/render/models.js?v=0.5.0",
+  "./src/render/renderer.js": "./src/render/renderer.js?v=0.5.0",
+  "./src/render/terrain.js": "./src/render/terrain.js?v=0.5.0",
+  "./src/ui/controls.js": "./src/ui/controls.js?v=0.5.0",
+  "./src/ui/dom.js": "./src/ui/dom.js?v=0.5.0",
+  "./src/ui/feed.js": "./src/ui/feed.js?v=0.5.0",
+  "./src/ui/llmPanel.js": "./src/ui/llmPanel.js?v=0.5.0",
+  "./src/ui/menu.js": "./src/ui/menu.js?v=0.5.0",
+  "./src/ui/panels.js": "./src/ui/panels.js?v=0.5.0",
+  "./src/version.js": "./src/version.js?v=0.5.0",
+  "./src/world/bridges.js": "./src/world/bridges.js?v=0.5.0",
+  "./src/world/generate.js": "./src/world/generate.js?v=0.5.0",
+  "./src/world/nature.js": "./src/world/nature.js?v=0.5.0",
+  "./src/world/world.js": "./src/world/world.js?v=0.5.0",
+  "./lib/OrbitControls.js": "./lib/OrbitControls.js?v=0.5.0"
+ }
+}
 </script>
+<!-- importmap:end -->
 </head>
 <body>
 <div id="app"></div>
@@ -17,7 +50,7 @@
 <!-- ekran startowy -->
 <div id="menu" class="overlay">
   <div class="menu-card">
-    <h1>🏝️ Wyspy AI</h1>
+    <h1>🏝️ Wyspy AI <a id="verLbl" class="ver" href="https://github.com/michalstankiewicz4-cell/AI-Game/blob/main/CHANGELOG.md" target="_blank" rel="noopener" title="Lista zmian"></a></h1>
     <p class="sub">Symulacja przetrwania, w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.</p>
     <div class="opt">
       <div class="opt-label">Liczba AI</div>
@@ -46,7 +79,7 @@
         <div class="seed-row"><select id="webModel"></select><button id="webLoad" title="Pobierz i uruchom model">📥</button></div>
         <div class="progress hidden" id="webProg"><i></i></div>
         <div id="webStatus" class="llm-note"></div>
-        <div class="llm-note">Darmowy, otwarty model z Hugging Face działa w całości na Twojej karcie graficznej (WebLLM, WebGPU). Za pierwszym razem pobiera się raz i zostaje w pamięci przeglądarki. Model co kilka sekund wybiera, co postać robi, i układa jej wypowiedzi. Chodzenie, zbieranie i odruchy przy krytycznym głodzie czy pragnieniu wykonuje kod gry. Zacznij od najmniejszego modelu; jeśli karta graficzna nie daje rady, gra sama przełączy się na lżejszy.</div>
+        <div class="llm-note">Darmowy, otwarty model z Hugging Face działa w całości na Twojej karcie graficznej (WebLLM, WebGPU). Za pierwszym razem pobiera się raz i zostaje w pamięci przeglądarki. Model co kilka sekund wybiera, co postać robi, i układa jej wypowiedzi. Chodzenie, zbieranie i odruchy przy krytycznym głodzie czy pragnieniu wykonuje kod gry. Zacznij od najmniejszego modelu; jeśli karta graficzna nie daje rady, gra sama przełączy się na lżejszy. Laptop z dwiema kartami: w Windows wejdź w Ustawienia › System › Ekran › Grafika i ustaw Chrome na „Wysoka wydajność”, żeby model liczył na mocniejszej karcie (np. NVIDIA).</div>
       </div>
       <div id="claudeBox" class="llm-box hidden">
         <form class="seed-row" onsubmit="return false"><input type="text" name="username" value="anthropic" autocomplete="username" hidden><input id="llmKey" type="password" placeholder="Klucz API Anthropic (sk-ant-...)" autocomplete="off"><button type="button" id="llmKeyClear" title="Usuń klucz z przeglądarki">🗑️</button></form>
@@ -81,6 +114,7 @@
       <button id="aiViewBtn" title="Pokaż stożek widzenia i pamięć wybranej postaci (V)">👁️ Oczami AI</button>
       <button id="tokBtn" class="hidden" title="Licznik tokenów Claude API (kliknij, by wyzerować)"></button>
       <button id="menuBtn">☰ Menu</button>
+      <span id="hudVer" class="ver"></span>
     </div>
   </div>
   <div id="bridgeBar"><span id="bridgeLbl"></span><div class="bar"><div id="bridgeFill"></div></div></div>
@@ -107,6 +141,6 @@
   </div>
 </div>
 
-<script type="module" src="src/main.js"></script>
+<script type="module" src="src/main.js?v=0.5.0"></script>
 </body>
 </html>

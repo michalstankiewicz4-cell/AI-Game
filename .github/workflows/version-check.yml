@@ -1,0 +1,29 @@
+name: Kontrola wersji
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Spójność wersji, importmapy i CHANGELOG
+        run: python3 tools/version.py check
+      - name: Wersja podniesiona względem main
+        if: github.event_name == 'pull_request'
+        run: |
+          new=$(grep -oP "VERSION = '\K[^']+" src/version.js)
+          old=$(git show origin/${{ github.base_ref }}:src/version.js 2>/dev/null | grep -oP "VERSION = '\K[^']+" || echo 0.0.0)
+          echo "main: $old, PR: $new"
+          if [ "$(printf '%s\n%s\n' "$old" "$new" | sort -V | tail -1)" != "$new" ] || [ "$old" = "$new" ]; then
+            echo "::error::Podnieś wersję: python3 tools/version.py bump X.Y.Z (teraz $new, na main $old)"; exit 1
+          fi

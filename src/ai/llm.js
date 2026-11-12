@@ -123,7 +123,7 @@ class LLM {
     const decide = true; // model zawsze decyduje i mówi
     const sys = `Grasz postacią w symulacji przetrwania na tropikalnych wyspach. Odpowiadasz wyłącznie jednym obiektem JSON, bez żadnego innego tekstu. `
       + (decide ? 'Format: {"wybor": <numer opcji>, "mysl": "<krótka wypowiedź>"}. ' : 'Format: {"mysl": "<krótka wypowiedź>"}. ')
-      + 'Wypowiedź to jedno zdanie po polsku (do 14 słów), mówione na głos w pierwszej osobie, zgodnie z charakterem postaci, jak komentarz streamera. Bez cudzysłowów w środku.';
+      + 'Wypowiedź to jedno zdanie po polsku (do 14 słów), mówione na głos w pierwszej osobie, zgodnie z charakterem postaci, jak komentarz streamera. Wymyśl ją sam(a), za każdym razem inaczej. Bez cudzysłowów w środku.';
     const user = describe(agent, labels, decide);
     const started = agent.world.time;
     this.call(sys, user, decide ? 160 : 120)
@@ -215,7 +215,8 @@ function describe(a, labels, decide) {
     + `Potrzeby 0-100 (100 = w pełni zaspokojone): głód ${Math.round(a.hunger)}, pragnienie ${Math.round(a.thirst)}, energia ${Math.round(a.energy)}, zdrowie ${Math.round(a.health)}.\n`
     + `Ekwipunek: ${inv}. Narzędzia: ${tools}. Znane receptury: ${recipes}. Jadalne: ${edible}.\n`
     + `Pozostali: ${others}.\n`;
-  if (a.bubble) s += `Twoja ostatnia wypowiedź: ${a.bubble.text}\n`;
+  if (a.notes && a.notes.length) s += `Co się ostatnio działo w twojej głowie i wokół (opisz to własnymi słowami, nie cytuj): ${a.notes.join(' | ')}\n`;
+  if (a.lastSaid) s += `Twoja poprzednia wypowiedź (nie powtarzaj jej): ${a.lastSaid}\n`;
   if (decide) s += `Możliwe działania (lokalna ocena od najlepszego):\n${labels.map((l, n) => `${n + 1}. ${l}`).join('\n')}\nWybierz jedno działanie, dbając o przeżycie, i powiedz, co myślisz.`;
   else s += `Właśnie zaczynasz: ${labels[0]}. Skomentuj to na głos.`;
   return s;
