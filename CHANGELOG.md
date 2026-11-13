@@ -3,6 +3,18 @@
 Wszystkie istotne zmiany w grze. Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), numeracja: [SemVer](https://semver.org/lang/pl/).
 Każda zmiana na `main` podnosi wersję (zasady w [docs/rozwoj.md](docs/rozwoj.md#wersjonowanie)).
 
+## [0.33.0] - 2026-11-13
+### Dodane
+- Pełna swoboda: model może wskazać, z czego chce eksperymentować („eksperymentować z gałęziami, kłodą i krzemieniem”), a postać próbuje właśnie tej kombinacji. Może też wskazać, co chce zbadać („zbadać krzemienie”): skrypt podaje teraz opcję „🔎 Zbadać …” dla każdego nieznanego rodzaju zasobu, a nie tylko dla najbliższego.
+- Pełna swoboda: odkryte receptury trafiają do modelu razem z ilościami i miejscem (np. „namiot (gałęzie ×4 + liście ×6)”), więc model wie, czego mu brakuje.
+- Opis budowy z desek mówi, na którym polu stoi postać, żeby model nie zamurował jej w środku ani nie stawiał ścian obok.
+
+### Naprawione
+- Pełna swoboda: zamiar trafiał do złego działania. „Eksperymentować z gałęziami, kłodą i krzemieniem” i „ściąć drzewo” zamieniały się w „Zbadać kopalnię”, bo każde „Zbadać …” łapało słowa o wszystkich zasobach. Teraz „Zbadać X” liczy się tylko wtedy, gdy zamiar mówi o X albo o niczym innym do zbadania.
+- Pełna swoboda: polecenia budowy z desek dostawały fałszywe „nie dało się go wtedy zrobić” i nie przerywały bieżącego zajęcia. Zamiar „budować z desek” nie był rozpoznawany („desek”, „budować”).
+- Opis krzemienia sugerował, że iskrę krzesze się o kamień, choć do ogniska kamień nie jest potrzebny (teraz: „przy uderzeniu sypie iskrami”).
+- Odmiana: „jagody są jadalne”, „jagody nadają się do jedzenia”, „ryba jest jadalna”, „Twoja budowa: 2 deski” (wcześniej „jagody jest jadalne”, „2 desek”).
+
 ## [0.32.0] - 2026-11-12
 ### Dodane
 - Wchodzenie na piętro po schodach i drabinie. Postać podchodzi od strony wejścia, wspina się (po drabinie wolniej), chodzi po połączonych podłogach piętra i schodzi tą samą drogą. Gdy schody albo podłoga zniknie, zeskakuje i trochę się obija; pilna potrzeba sprowadza ją na dół.

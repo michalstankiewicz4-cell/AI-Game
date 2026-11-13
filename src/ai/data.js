@@ -10,12 +10,14 @@ export const PERSONAS = [
 ];
 
 export const FOOD = {
-  berries: { val: 12, name: 'jagody' },
-  rawFish: { val: 16, name: 'surowa ryba' },
-  cookedFish: { val: 38, name: 'pieczona ryba' },
-  rawMeat: { val: 20, name: 'surowe mięso' },
-  cookedMeat: { val: 45, name: 'pieczone mięso' },
+  berries: { val: 12, name: 'jagody', g: 'pl' },
+  rawFish: { val: 16, name: 'surowa ryba', g: 'f' },
+  cookedFish: { val: 38, name: 'pieczona ryba', g: 'f' },
+  rawMeat: { val: 20, name: 'surowe mięso', g: 'n' },
+  cookedMeat: { val: 45, name: 'pieczone mięso', g: 'n' },
 };
+// „jagody są jadalne”, „ryba jest jadalna”, „mięso jest jadalne”
+export const edibleWord = (k) => ({ pl: 'są jadalne', f: 'jest jadalna', n: 'jest jadalne' }[FOOD[k].g] || 'jest jadalne');
 
 // przepisy rzemieślnicze
 export const RECIPES = {
@@ -73,7 +75,8 @@ export const WORLD_FACTS = 'Znasz ten świat: ogień krzesze się krzemieniem (l
   + 'z kwiatów są nasiona kwiatów, a zerwane kwiaty cieszą, brzeg stawu jest gliniasty: glina wypalona w ognisku daje doniczkę, '
   + 'do doniczki albo miski nasypuje się ziemi i sadzi nasiona, a doniczką, tak jak miską, można też nosić wodę, '
   + 'łopatą ubija się drogę: po drodze chodzi się o połowę szybciej, a pień ściętego drzewa można wyrwać kilofem albo łopatą (zostaje kawałek drewna, ale drzewo już nie odrośnie).';
-export const recipeList = () => Object.entries(RECIPES).map(([r, c]) => `${RECIPE_NAMES[r]} (${Object.entries(c).map(([k, n]) => `${MAT_NAMES[k]} ×${n}`).join(' + ')}${FIRE_RECIPES.has(r) ? ', przy ogniu' : BENCH_RECIPES.has(r) ? ', przy stole' : KNIFE_RECIPES.has(r) ? ', nożem' : ''})`).join('; ');
+// receptury ze składnikami i miejscem; only: zbiór receptur do pokazania (domyślnie wszystkie)
+export const recipeList = (only = null) => Object.entries(RECIPES).filter(([r]) => !only || only.has(r)).map(([r, c]) => `${RECIPE_NAMES[r]} (${Object.entries(c).map(([k, n]) => `${MAT_NAMES[k]} ×${n}`).join(' + ')}${FIRE_RECIPES.has(r) ? ', przy ogniu' : BENCH_RECIPES.has(r) ? ', przy stole' : KNIFE_RECIPES.has(r) ? ', nożem' : ''})`).join('; ');
 export const RECIPE_BY_COMBO = new Map(Object.entries(RECIPES).map(([k, r]) => [comboKey(Object.keys(r)), k]));
 export const KIND_NAMES = { tree: 'drzewo', palm: 'palmę', rock: 'skałę', bush: 'krzak', seaweed: 'wodorosty', mine: 'kopalnię', rye: 'żyto', flower: 'kwiaty', flint: 'krzemienie' };
 

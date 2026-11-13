@@ -3,7 +3,7 @@ import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import {
   FIRE_FUEL, FARM, CROPS, VESSELS, POCKET_CAP,
-  PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
+  PERSONAS, FOOD, edibleWord, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   STORES, SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, WEIGHT, clamp,
 } from './data.js';
 
@@ -55,13 +55,13 @@ export const tasksMethods = {
         } else {
           this.hunger = clamp(this.hunger + FOOD[k].val, 0, 100);
           if (k === 'cookedFish' || k === 'cookedMeat') this.joy = Math.min(30, this.joy + 6); // ciepły posiłek cieszy
-          if (first) this.event('tasteGood', { food: FOOD[k].name });
+          if (first) this.event('tasteGood', { food: FOOD[k].name, edible: edibleWord(k), fits: FOOD[k].g === 'pl' ? 'nadają się' : 'nadaje się' });
         }
         if (k === 'berries' && this.inv.seeds < POCKET_CAP.seeds && Math.random() < FARM.seedChance) {
           this.inv.seeds++;
           if (!this.known.has('seeds')) { this.known.add('seeds'); this.say('znajduje w jagodach pestki. Może to nasiona? 🌱', 'learn'); }
         }
-        if (first) { this.edible.set(k, true); this.say(`odkrywa, że ${FOOD[k].name} ${raw ? 'da się zjeść (ale lepiej upiec)' : 'jest jadalne'} 🧠`, 'learn'); }
+        if (first) { this.edible.set(k, true); this.say(`odkrywa, że ${FOOD[k].name} ${raw ? (FOOD[k].g === 'pl' ? 'dają się zjeść' : 'da się zjeść') + ' (ale lepiej upiec)' : edibleWord(k)} 🧠`, 'learn'); }
         t.elapsed = 0;
         return this.hunger > 85 || this.foodStock() === 0 ? 'done' : null;
       },

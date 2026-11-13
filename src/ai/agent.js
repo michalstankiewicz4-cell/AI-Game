@@ -3,7 +3,7 @@
 import { T, W, H, idx, toWorld, toTile, BRIDGE_COST } from '../world/world.js';
 import { thought, urgent, eventLine } from './commentary.js';
 import { llm } from './llm.js';
-import { mapIntent } from './intent.js';
+import { mapIntent, intentMats } from './intent.js';
 import {
   PERSONAS, FOOD, RECIPES, RECIPE_NAMES, MATS, MAT_NAMES, comboKey, RECIPE_BY_COMBO, KIND_NAMES,
   SPEED, ROAD_SPEED, VIEW_RANGE, VIEW_NEAR, viewHalfAngle, wrapAng, INV_CAP, MAX_WEIGHT, WEIGHT, clamp, TORCH, STORES,
@@ -233,10 +233,13 @@ export class Agent {
   onLLM({ label, thought, intent, at, build }) {
     if (!this.alive) return;
     // polecenia dla desek: nazwy od razu, kładzenie i przenoszenie jako zadanie
-    if (build && build.length && this.applyBuildOps(build)) label = BUILD_LABEL;
+    const built = !!(build && build.length && this.applyBuildOps(build));
+    if (built) label = BUILD_LABEL;
     if (intent != null) { // pełna swoboda: przetłumacz zamiar na dostępne działanie
-      label = intent ? mapIntent(intent, this.allLabels || []) : null;
-      this.llmIntent = { text: intent, label, t: this.world.time };
+      const mapped = intent ? mapIntent(intent, this.allLabels || []) : null;
+      // polecenia dla desek mają pierwszeństwo przed zamiarem, którego nie da się dopasować
+      label = built && (!mapped || mapped === BUILD_LABEL) ? BUILD_LABEL : mapped;
+      this.llmIntent = { text: intent, label, t: this.world.time, mats: intent ? intentMats(intent) : [] };
     }
     if (thought) { this.llmSaid = true; this.speak(thought, true); this.llmSaid = false; this.notes = []; }
     if (label && this.task && label !== this.lastLabel && !this.task.urgent && this.world.time - at < 30) {

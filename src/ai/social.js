@@ -1,6 +1,6 @@
 // Rozmowy między agentami: wymiana wiedzy (pamięci mapy), doświadczenia i przedmiotów.
 import { idx, toWorld, T } from '../world/world.js';
-import { FOOD, RECIPES, RECIPE_NAMES, MAT_NAMES } from './data.js';
+import { FOOD, edibleWord, RECIPES, RECIPE_NAMES, MAT_NAMES } from './data.js';
 
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const TALK_RANGE = 2.6;
@@ -60,7 +60,7 @@ function news(a, b, world) {
   const recipe = [...a.known].find((r) => RECIPES[r] && !b.known.has(r));
   if (recipe) out.push({ v: 7, text: `Odkryłem, że z ${Object.keys(RECIPES[recipe]).map((k) => MAT_NAMES[k]).join(' i ')} da się zrobić: ${RECIPE_NAMES[recipe]}!` });
   const food = [...a.edible].find(([k, v]) => v && !b.edible.has(k));
-  if (food) out.push({ v: 5, text: `${FOOD[food[0]].name[0].toUpperCase() + FOOD[food[0]].name.slice(1)} jest jadalne, sprawdziłem.` });
+  if (food) out.push({ v: 5, text: `${FOOD[food[0]].name[0].toUpperCase() + FOOD[food[0]].name.slice(1)} ${edibleWord(food[0])}, sprawdziłem.` });
   if (a.saltKnown && !b.saltKnown) out.push({ v: 4.5, text: 'Nie pij morskiej wody, jest słona. Sprawdziłem na sobie.' });
   out.sort((x, y) => y.v - x.v);
   return out[0] || null;

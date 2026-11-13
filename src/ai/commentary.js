@@ -83,7 +83,7 @@ const EVENTS = {
   forge: ['Żelazne narzędzie w ręku! ⚒️'],
   discover: ['Eureka! Wiem, jak zrobić: {what}!', 'Udało się! Tak powstaje {what}!', 'Hej, z tego wychodzi {what}! 💡'],
   expFail: ['{what}... nic z tego nie wyszło.', 'Hmm, {what} to chyba ślepa uliczka.', 'Nie, {what} to nie to.'],
-  tasteGood: ['Mmm, {food} jest jadalne!', 'Smakuje! {food} nadaje się do jedzenia.'],
+  tasteGood: ['Mmm, {food} {edible}!', 'Smakuje! {food} {fits} do jedzenia.'],
   stomach: ['Auć, brzuch mnie boli... trzeba było to upiec.', 'Ugh, surowe mi zaszkodziło.'],
   saltWater: ['Bleh! Słone! Morskiej wody nie da się pić.', 'Fuj, od tej wody tylko bardziej chce się pić.'],
   bridgeIdea: ['A gdyby tak z desek i liny zbudować most?', 'Mam pomysł! Most na drugą wyspę!'],

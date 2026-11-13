@@ -44,6 +44,8 @@ W odpowiedzi może dodać pole `"deska"` z listą do 4 poleceń:
 ]}
 ```
 
+Opis budowy mówi też, na którym polu stoi postać („Stoisz na polu x1 y0”), żeby model wiedział, czy ściany zamkną ją w środku, czy zostawią na zewnątrz.
+
 Nazwy zmieniają się od razu, a resztę postać wykonuje po kolei jako zadanie „🪵 Budować z desek”. Opis nie mówi, do czego służy dach ani ściany: to postać ma odkryć sama.
 
 ## Tryb wiedzy
@@ -53,11 +55,14 @@ W trybie „🧪 Odkrywa sam” model nie dostaje żadnych podpowiedzi o świeci
 Model nie dostaje listy działań ani notatek ze skryptu, tylko to, co postać:
 - **czuje:** potrzeby opisane słowami, np. „bardzo chce ci się pić”,
 - **widzi i pamięta w pobliżu:** drzewa, krzaki, skały, staw, morze i ludzi, z kierunkami,
-- **ma i umie:** przedmioty, narzędzia, znane receptury i jadalne rzeczy.
+- **ma i umie:** przedmioty, narzędzia, odkryte receptury razem z ilościami i miejscem (np. „namiot (gałęzie ×4 + liście ×6)”, „ruszt (…, przy ogniu)”) i jadalne rzeczy. Dzięki ilościom model może sam porównać przepis z plecakiem.
 
 Model odpowiada `{"mysl": "...", "zamiar": "ściąć drzewo"}`. Gra (`src/ai/intent.js`, `mapIntent`) dopasowuje zamiar po słowach kluczowych do działań, które są teraz możliwe:
 - wygrywa działanie z największą liczbą trafień,
 - przy remisie wygrywa to, które wyżej ocenia skrypt,
+- „Zbadać …” liczy się tylko wtedy, gdy zamiar mówi o tym celu (np. „zbadać krzemienie”, „obejrzeć ciemne kamyki”) albo nie wymienia żadnego innego. Skrypt podaje po jednej opcji „🔎 Zbadać …” dla każdego nieznanego rodzaju zasobu w pamięci (najbliższy ma pełną ocenę, reszta niższą), więc model może wskazać, co chce zbadać,
+- „eksperymentować z gałęziami, kłodą i krzemieniem”: materiały wymienione w zamiarze (`intentMats`) trafiają do `llmIntent.mats`, a `nextExperiment` przez 60 s woli właśnie taką kombinację (jeszcze nie próbowaną),
+- polecenia dla desek (`"deska"`) mają pierwszeństwo przed zamiarem, którego nie udało się dopasować, więc postać od razu zaczyna budować,
 - zamiaru, którego nie da się wykonać (np. „zatańczyć” albo wędka bez liny), gra nie wykonuje, tylko pokazuje w karcie postaci jako „(nie da się teraz)” i przypomina modelowi przy następnym pytaniu.
 
 Krytyczne potrzeby nadal mają pierwszeństwo. Mały model częściej wymyśla rzeczy niewykonalne, więc lepiej sprawdzają się Qwen3.5 2B lub 4B albo Claude.

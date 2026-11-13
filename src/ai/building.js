@@ -80,17 +80,20 @@ export const buildingMethods = {
     const rel = (i, j) => `x${i - o.i} y${j - o.j}`;
     const slots = w.snapSlots(c.i, c.j, 6);
     this.buildSnap = { origin: o, slots, t: w.time };
+    const plural = (n) => (n === 1 ? 'deskę' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'deski' : 'desek');
     const L = ['Budowanie z desek: każdy element (podłoga, ściana, skos: 1 deska; schody: 2 deski; drabina: deska i 2 gałęzie) przyciąga się do siatki pól. x rośnie na wschód, y na południe, poziom 0 to ziemia, strona N/E/S/W to krawędź pola (u schodów strona, w którą idą w górę, u drabiny strona, o którą jest oparta). Przez ściany, schody, drabiny i niskie skosy nie da się przejść; element można rozebrać i odzyskać materiał.'];
     if (site) {
       // same liczby, bez ocen typu „brakuje” albo „luka”
       const cnt = { floor: 0, wall: 0, slope: 0, stairs: 0, ladder: 0 };
       for (const p of site.pieces) cnt[p.type]++;
-      L.push(`Twoja budowa: ${site.pieces.length} desek (podłoga ${cnt.floor}, ściana ${cnt.wall}, skos ${cnt.slope}${cnt.stairs ? ', schody ' + cnt.stairs : ''}${cnt.ladder ? ', drabina ' + cnt.ladder : ''}). Największa spójna podłoga: ${site.floor.length} pól, obrys ${site.w}×${site.h}; `
+      L.push(`Twoja budowa: ${site.pieces.length} ${plural(site.pieces.length).replace('deskę', 'deska')} (podłoga ${cnt.floor}, ściana ${cnt.wall}, skos ${cnt.slope}${cnt.stairs ? ', schody ' + cnt.stairs : ''}${cnt.ladder ? ', drabina ' + cnt.ladder : ''}). Największa spójna podłoga: ${site.floor.length} pól, obrys ${site.w}×${site.h}; `
         + `jej krawędzie zewnętrzne ze ścianą: ${site.walls} z ${site.perim}; jej pola z deską nad głową: ${site.roofed} z ${site.floor.length}.`);
       L.push('Deski: ' + site.pieces.slice(0, 8).map((p) => `#${p.id} „${p.name}” ${PIECE_TYPES[p.type]} ${rel(p.i, p.j)} poziom ${p.lvl}${p.side ? ' strona ' + p.side : ''}`).join('; ') + (site.pieces.length > 8 ? '; …' : '') + '.');
     }
+    // gdzie stoi postać: bez tego model nie wie, czy ściany zamkną ją w środku, czy zostawią na zewnątrz
+    L.push(`Stoisz na polu ${rel(this.i, this.j)}${this.lvl ? ', na piętrze (poziom ' + this.lvl + ')' : ''}.`);
     if (slots.length) L.push('Wolne miejsca: ' + slots.map((s, n) => `${n + 1}) ${PIECE_TYPES[s.type]} ${rel(s.i, s.j)} poziom ${s.lvl}${s.side ? ' strona ' + s.side : ''}`).join('; ') + '.');
-    const n = this.inv.planks, word = n === 1 ? 'deskę' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'deski' : 'desek';
+    const n = this.inv.planks, word = plural(n);
     L.push(`Masz ${n} ${word}. Jeśli chcesz coś zrobić z deskami, dodaj do odpowiedzi "deska": lista do 4 poleceń, np. [{"akcja":"poloz","miejsce":1,"nazwa":"podłoga 1"}], `
       + '{"akcja":"poloz","typ":"sciana","x":1,"y":0,"poziom":0,"strona":"E","nazwa":"ściana kuchni"}, {"akcja":"rozbierz","id":3}, {"akcja":"przenies","id":3,"miejsce":2}, {"akcja":"nazwij","id":3,"nazwa":"drzwi"}. Bez desek pomiń "deska".');
     return L.join('\n');
