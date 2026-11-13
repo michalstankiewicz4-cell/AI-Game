@@ -1,6 +1,6 @@
 // Tryb „pełna swoboda”: model dostaje tylko to, co postać widzi i czuje,
 // sam wymyśla zamiar, a gra tłumaczy go na jedno z dostępnych teraz działań.
-import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPE_NAMES, WORLD_FACTS, recipeList } from './data.js';
+import { FOOD, ITEM_LABELS, TOOL_LABELS, RECIPES, WORLD_FACTS, recipeList } from './data.js';
 import { idx } from '../world/world.js';
 
 // słowa kluczowe (bez polskich znaków) dla każdego działania; wygrywa działanie z największą liczbą trafień
@@ -27,7 +27,7 @@ const KEYWORDS = [
   ['Odłożyć zapasy', ['odloz', 'zostaw', 'schowa', 'magazyn', 'skladzi', 'ciezk', 'za duzo']],
   ['Wziąć z zapasów', ['wziac', 'zabra', 'zapas', 'skladzi', 'magazyn']],
   ['Wziąć jedzenie ze skrzyni', ['skrzyn', 'kufer', 'zapas jedzen', 'wyjm']],
-  ['Budować z desek', ['desk', 'poloz', 'podlog', 'scian', 'dach', 'dom', 'buduj', 'skos', 'chat', 'schod', 'drabin']],
+  ['Budować z desek', ['desk', 'desek', 'budow', 'poloz', 'podlog', 'scian', 'dach', 'dom', 'buduj', 'skos', 'chat', 'schod', 'drabin']],
   ['Wejść na piętro', ['pietr', 'wejd', 'wejs', 'na gor', 'z gory', 'widok', 'drabin', 'schod']],
   ['Rozebrać ścianę, żeby wyjść', ['rozbier', 'rozebr', 'wyjs', 'uwiez', 'zamkn']],
   ['Zrobić pochodnię', ['pochodn', 'swiatl', 'oswietl', 'ciemn']],
@@ -78,8 +78,25 @@ const KEYWORDS = [
   ['Rozejrzeć się', ['rozejrz', 'rozgl', 'obejrz', 'popatrz']],
   ['Porozmawiać', ['rozmaw', 'pogad', 'powiedz', 'zapyt', 'spotk', 'podejs do']],
   ['Pospacerować', ['spacer', 'przejs', 'przejd']],
-  ['Zbadać', ['zbada', 'sprawdz', 'obejrz', 'drzew', 'skal', 'krzak', 'palm', 'wodorost', 'kopal', 'zyt', 'kwiat', 'krzemi']],
+  ['Zbadać', ['zbada', 'sprawdz', 'obejrz']],
 ];
+
+// cel „Zbadać …” (z etykiety) i słowa, po których go poznać w zamiarze
+const TARGETS = {
+  drzewo: ['drzew'], palmę: ['palm'], skałę: ['skal', 'skał'], krzak: ['krzak'], wodorosty: ['wodorost', 'glon'],
+  kopalnię: ['kopal'], żyto: ['zyt', 'klos'], kwiaty: ['kwiat'], krzemienie: ['krzemi', 'kamyk', 'iskr'],
+};
+
+// rdzenie nazw materiałów (bez polskich znaków), np. do „eksperymentować z gałęziami i krzemieniem”
+const MAT_STEMS = {
+  logs: ['klod'], sticks: ['gale', 'galaz', 'patyk', 'chrust'], leaves: ['lisc', 'lisci'], planks: ['desk'], seaweed: ['wodorost'],
+  rope: ['lin'], stone: ['kamien', 'kamie'], iron: ['rud'], feathers: ['pior'], hide: ['skor'], clay: ['glin'], flint: ['krzemi'],
+};
+// materiały wymienione w zamiarze („z kamieniem” nie łapie „krzemieniem”: szukamy całych słów od początku)
+export function intentMats(intent) {
+  const words = norm(intent).split(/[^a-z]+/).filter(Boolean);
+  return Object.keys(MAT_STEMS).filter((m) => words.some((w) => MAT_STEMS[m].some((st) => w.startsWith(st))));
+}
 
 const norm = (t) => (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
 
@@ -93,6 +110,14 @@ export function mapIntent(intent, labels) {
     if (!entry) return;
     let score = 0;
     for (const k of entry[1]) if (t.includes(k)) score++;
+    // „Zbadać X”: liczy się tylko wtedy, gdy zamiar mówi o X albo nie mówi o niczym innym do zbadania
+    if (entry[0] === 'Zbadać') {
+      const target = TARGETS[plain.slice('Zbadać '.length)] || [];
+      if (target.some((k) => t.includes(k))) score = score ? score + 2 : 1;
+      else if (Object.values(TARGETS).flat().some((k) => t.includes(k))) score = 0;
+    }
+    // „eksperymentować z X i Y”: wymienione materiały to mocny znak, że chodzi o próbę, a nie o coś innego
+    if ((entry[0] === 'Eksperymentować' || entry[0] === 'Eksperymentować przy stole') && score && intentMats(intent).length >= 2) score += 2;
     if (score > 0 && (!best || score > best.score || (score === best.score && rank < best.rank))) best = { label, score, rank };
   });
   return best ? best.label : null;
@@ -163,9 +188,10 @@ export function describeFree(a) {
   { const r = a.relSummary ? a.relSummary() : ''; if (r) lines.push(`Twój stosunek do innych: ${r}`); }
   const inv = Object.entries(a.inv).filter(([, v]) => v > 0).map(([k, v]) => `${ITEM_LABELS[k].replace(/^[^\p{L}]+/u, '').toLowerCase()} ×${v}`);
   lines.push(`Masz przy sobie: ${[...Object.entries(a.tools).filter(([, v]) => v).map(([k]) => TOOL_LABELS[k].replace(/^[^\p{L}]+/u, '').toLowerCase()), ...inv].join(', ') || 'nic'}.`);
-  const recipes = [...a.known].filter((r) => RECIPE_NAMES[r]).map((r) => RECIPE_NAMES[r]);
+  // odkryte receptury razem z ilościami: postać wie, ile czego trzeba, więc model może porównać to z plecakiem
+  const recipes = new Set([...a.known].filter((r) => RECIPES[r]));
   if (a.omniscient) lines.push(WORLD_FACTS, `Umiesz zrobić: ${recipeList()}.`);
-  else if (recipes.length) lines.push(`Umiesz zrobić: ${recipes.join(', ')}.`);
+  else if (recipes.size) lines.push(`Umiesz zrobić: ${recipeList(recipes)}.`);
   const edible = [...a.edible].filter(([, v]) => v).map(([k]) => FOOD[k].name);
   if (edible.length) lines.push(`Wiesz, że da się jeść: ${edible.join(', ')}.`);
   if (a.task) lines.push(`Teraz: ${a.task.label.replace(/^[^\p{L}]+/u, '').toLowerCase()}.`);

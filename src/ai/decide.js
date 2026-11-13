@@ -412,14 +412,18 @@ export const decideMethods = {
     }
     // --- ciekawość: zbadaj nieznany rodzaj zasobu ---
     if (room) {
-      let best = null;
+      // najbliższy okaz każdego nieznanego rodzaju: najbliższy ze wszystkich ma pełną ocenę, pozostałe niższą
+      // (są na liście, żeby w pełnej swobodzie model mógł wskazać, co chce zbadać)
+      const byKind = new Map();
       for (const m of this.mem.values()) {
         if (this.triedKinds.has(m.kind) || (taken && taken.has(m.r.id))) continue;
         if ((m.kind === 'bush' && m.berries <= 0) || (m.kind === 'rye' && m.ears <= 0) || (m.kind === 'flower' && m.flowers <= 0) || ((m.kind === 'tree' || m.kind === 'palm') && m.growth < 1) || (m.kind === 'seaweed' && m.amount <= 0)) continue;
         const d = m.kind === 'seaweed' ? bfs.dist[idx(m.r.stand.i, m.r.stand.j)] : bfs.dist[idx(m.i, m.j)];
-        if (d >= 0 && (!best || d < best.d)) best = { m, d };
+        const b = byKind.get(m.kind);
+        if (d >= 0 && (!b || d < b.d)) byKind.set(m.kind, { m, d });
       }
-      if (best) add(0.34 + (w.day() <= 2 ? 0.08 : 0) - best.d * 0.004, `🔎 Zbadać ${KIND_NAMES[best.m.kind]}`, () => this.taskInvestigate(best.m, bfs));
+      const near = [...byKind.values()].sort((x, y) => x.d - y.d);
+      near.forEach((b, k) => add(0.34 + (w.day() <= 2 ? 0.08 : 0) - b.d * 0.004 - (k ? 0.15 : 0), `🔎 Zbadać ${KIND_NAMES[b.m.kind]}`, () => this.taskInvestigate(b.m, bfs)));
     }
     // --- eksperymenty: łączenie materiałów ---
     {

@@ -85,7 +85,11 @@ export const knowledgeMethods = {
     // krzemień iskrzy (postać to widziała, badając go): iskra + coś, co się pali, to dobry pomysł, póki nie zna ognia
     const spark = this.triedKinds.has('flint') && !this.known.has('campfire');
     const fiery = (c) => spark && c.includes('flint') && c.some((m) => m === 'sticks' || m === 'logs' || m === 'leaves');
-    const bonus = (c) => (isNew(c) ? 1.2 : 0) + (fiery(c) ? 3 : 0);
+    // pełna swoboda: model wymienił materiały („eksperymentować z gałęziami i krzemieniem”), więc próbuje właśnie ich
+    const li = this.llmIntent;
+    const asked = li && li.mats && li.mats.length && now - li.t < 60 ? li.mats : null;
+    const wish = (c) => (!asked ? 0 : asked.every((m) => c.includes(m)) ? (c.length === asked.length ? 6 : 4) : 0);
+    const bonus = (c) => (isNew(c) ? 1.2 : 0) + (fiery(c) ? 3 : 0) + wish(c);
     fresh.sort((x, y) => x.length - y.length - bonus(x) + bonus(y) + (Math.random() - 0.5) * 2.5);
     return { types: fresh[0], fire, key: keyOf(fresh[0]) };
   },
@@ -162,7 +166,7 @@ export const knowledgeMethods = {
     task.onEnd = (res) => {
       if (res !== 'done' || this.triedKinds.has(m.kind)) return;
       this.triedKinds.add(m.kind);
-      const got = { tree: 'kłody i gałęzie', palm: 'kłodę i gałąź', rock: 'kamienie', bush: 'jagody (jadalne?)', rye: 'ziarno z kłosów', flower: 'kwiaty i trochę nasion', seaweed: 'wodorosty', mine: 'kamień i może rudę', flint: 'krzemień: twardy, ostry, iskrzy, gdy uderzyć nim o kamień' }[m.kind];
+      const got = { tree: 'kłody i gałęzie', palm: 'kłodę i gałąź', rock: 'kamienie', bush: 'jagody (jadalne?)', rye: 'ziarno z kłosów', flower: 'kwiaty i trochę nasion', seaweed: 'wodorosty', mine: 'kamień i może rudę', flint: 'krzemień: twardy, ostry, a przy uderzeniu sypie iskrami' }[m.kind];
       this.say(`bada ${KIND_NAMES[m.kind]} i zdobywa: ${got} 🔎`, 'learn');
       if (m.kind === 'tree' || m.kind === 'palm') this.triedKinds.add(m.kind === 'tree' ? 'palm' : 'tree');
     };

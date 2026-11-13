@@ -30,7 +30,7 @@ Widok „👁️ Oczami AI” pokazuje stożek, a to, czego postać nie zna, prz
 Ta sekcja opisuje tryb „🧪 Odkrywa sam”. Tryb „📚 Wie wszystko” opisuje następna sekcja.
 
 Na starcie postać nie zna mapy, receptur ani jadalności.
-- **Ciekawość:** nowe rodzaje zasobów warto zbadać, co daje opcję „🔎 Zbadać…”.
+- **Ciekawość:** nowe rodzaje zasobów warto zbadać, co daje opcje „🔎 Zbadać…” (po jednej na każdy nieznany rodzaj w pamięci; najbliższy ma pełną ocenę, pozostałe o 0,15 niższą).
 - **Eksperymenty:** postać łączy posiadane materiały. Trafiona kombinacja (`RECIPE_BY_COMBO`) oznacza odkrycie receptury, a każda próba jest zapamiętywana.
 - **Jedzenie:** pierwsze zjedzenie czegoś to próba. Surowe mięso może zaszkodzić, wtedy postać zapamiętuje, że to niejadalne.
 - **Woda:** spróbowanie wody morskiej uczy, że jest słona.
@@ -81,7 +81,7 @@ Model językowy dostaje wtedy `WORLD_FACTS` z `data.js`, a w pełnej swobodzie t
 ## Priorytety: zdrowie, nastrój, eksperymenty (`decide.js`, `knowledge.js`)
 - Zdrowie < 60: „🩹 Odpocząć, żeby wydobrzeć” (0,25 + do 0,6); poniżej 50 ciężka praca −0,006 za punkt; < 30 ucieczka przed dzikiem mimo broni. Gojenie: 0,02/s, w spoczynku 0,1/s, we śnie 0,05 + dach (szałas 0,12, namiot 0,08) + łóżko 0,08. Skaleczenia w `practice('chop'|'mine')`.
 - Nastrój < 40: „Posiedzieć przy ognisku”, +0,15 do rozmowy; > 70: +0,05 do tworzenia (eksperymenty, budowa, rzemiosło, sadzenie), < 35: −0,06.
-- `nextExperiment`: najpierw podpatrzone receptury (`ideas`, z `noticeIdea`), potem kombinacje z materiałem zdobytym w ostatnich 150 s i, póki nie zna ognia, krzemień + drewno. `failStreak` obniża ocenę ślepych prób do −0,24.
+- `nextExperiment`: najpierw podpatrzone receptury (`ideas`, z `noticeIdea`), potem kombinacje z materiałem zdobytym w ostatnich 150 s i, póki nie zna ognia, krzemień + drewno. W pełnej swobodzie wygrywa kombinacja materiałów, które model wymienił w zamiarze (`llmIntent.mats`, ważne 60 s). `failStreak` obniża ocenę ślepych prób do −0,24.
 
 ## Słyszenie (`agent.js`)
 - `hearAround`: wszystko, co postać powie, słyszą przytomne postacie do 7 pól (`heard`, ostatnie 4 kwestie, trafiają do modelu przez 40 s).

@@ -2,7 +2,7 @@
 
 Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. Ty obserwujesz, oni muszą przeżyć.
 
-**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.32.0 ([lista zmian](CHANGELOG.md))
+**Zagraj:** https://michalstankiewicz4-cell.github.io/AI-Game/ · **Wersja:** 0.33.0 ([lista zmian](CHANGELOG.md))
 
 ## Dokumentacja
 - [Rozgrywka](docs/rozgrywka.md): tryby, świat, potrzeby, rzemiosło, mosty, sterowanie
@@ -31,7 +31,7 @@ Symulacja przetrwania w 3D (Three.js), w którą grają autonomiczni agenci AI. 
 - **Reakcje i stosunki:** postacie zauważają zmiany w świecie i to, co inni robią z ich rzeczami (branie ze skrzyni, spanie w ich łóżku, zbieranie ich plonów, podlewanie), i reagują albo nie, zależnie od humoru, zdrowia i priorytetów. Z tych zdarzeń same powstają sympatie i antypatie (kolega, przyjaciel, nielubiany, wróg), które zmieniają rozmowy, prezenty i zaufanie. Podpatrują też u innych, z czego zrobione są rzeczy. Karta postaci ma zakładki Stan, Priorytety, Reakcje, Plecak i Wiedza.
 - **Komentarze na żywo:** gdy model działa, postacie mówią jego słowami (🤖), a nad myślącą postacią widać „💭 …”. Gdy model się ładuje albo nie działa, mówi za nie skrypt (dymek kursywą, 📜). Narrator komentuje sytuację.
 - **Mózg postaci (menu):** model językowy decyduje, co postać robi, i układa jej wypowiedzi. Do wyboru darmowy model z Hugging Face w przeglądarce (WebLLM na WebGPU: od Qwen2.5 0.5B po Qwen3.5 4B i Gemmę 4 E2B, z opcjonalnym trybem myślenia Qwen3.5; pobiera się raz, potem z pamięci przeglądarki, a pobrane mają na liście ✅; liczy w osobnym wątku, żeby nie przycinać gry; po przeciążeniu karty gra sama schodzi na lżejszy model) albo Claude API. LM Studio jest zapowiedziane (wyszarzone w menu). Chodzenie, zbieranie i odruchy przy krytycznych potrzebach wykonuje kod gry, więc postacie żyją także, gdy model się ładuje.
-- **Pełna swoboda (przełącznik w menu):** model dostaje tylko to, co postać czuje, widzi, pamięta i ma, i sam wymyśla zamiar, który gra tłumaczy na działanie.
+- **Pełna swoboda (przełącznik w menu):** model dostaje tylko to, co postać czuje, widzi, pamięta i ma (odkryte receptury razem z ilościami), i sam wymyśla zamiar, który gra tłumaczy na działanie. Może wskazać, co chce zbadać („zbadać krzemienie”) i z czego eksperymentować („eksperymentować z gałęziami i krzemieniem”).
 - **Grafika:** zasoby rysowane przez instancjonowanie, przełącznik jakości 🎨 (cienie, rozdzielczość) i licznik FPS w górnym pasku.
 - **Błędy:** zakładka „⚠️ Błędy” pod czatem zbiera błędy modelu, strony i konsoli; „📋 Kopiuj wszystko” kopiuje je z wersją gry i nazwą karty graficznej.
 - **Wiki w grze (📖, klawisz K):** receptury, budowle, materiały, jedzenie, narzędzia, obiekty świata, doświadczenia i zachowanie postaci (na co reagują, stosunki, priorytety) w kategoriach. Widać wszystko, a to, co odkryła któraś postać, ma znaczek ✓. Postacie wiki nie widzą.
